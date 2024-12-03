@@ -1,46 +1,35 @@
 # Tech Stack
 
-Fill out the headings below with your Tech Stack information. List the tools and technology you would like to use for your final project. Explain your reasoning for this as well. For example, how does the proposed tool or technology provide value to your overall portfolio of work? 
-
-
 ## Application Design
 
-What tool(s) will you use to create click-through designs of the application? List any UI kits you would like to utilize as well. 
-
-[your response here]
-
-
+I propose using **Figma** for creating click-through designs of the application. Figma is a versatile tool that enables collaboration and provides a wide range of UI kits, which can speed up the design process. For additional design elements, I plan to use the **Material Design UI kit** to ensure a clean and consistent user interface.
 
 ## Front End Framework
 
-List your approach for front end development. For example, React is an often used front-end solution for projects in addition to using moduleCSS, PropTypes, and an ESLint style guide.   
-
-[your response here]
-
+For front-end development, I will use **React.js** due to its component-based architecture, which allows for reusable and modular code. To style the application, I propose using **CSS Modules** for scoped styling and ensuring maintainability. I will also include **ESLint** to enforce coding standards and **PropTypes** to validate component props.
 
 ## State Management
 
-What is your proposed solution for managing data? This could mean utilizing a database, local-storage, and in general state management libraries for the application (e.g. Redux).    
-
-[your response here]
-
+I plan to use **Redux** as the state management solution. Redux is ideal for handling complex application states and ensures predictable state changes. Additionally, it integrates well with React, allowing for a seamless development process. For non-persistent data, I will use the **Context API** in smaller, isolated components.
 
 ## Node
 
-Node is often used to serve both an API and to render a front-end. This includes using best practices, npm, and npx. What do you propose? 
-
-[your response here]
-
+For the back-end, I will use **Node.js** to serve the API and handle server-side rendering if needed. Node.js is a scalable solution and supports modern JavaScript, making it easier to maintain consistency across the application stack. I will use **npm** to manage dependencies and **npx** for running Node-related commands efficiently.
 
 ## Express
 
-Express is a popular framework to power an API. Describe your idea for building similar functionality offered by express: e.g. middleware, routes, controllers, sending and receiving JSON data.
+To power the API, I will use **Express.js**, a lightweight framework known for its flexibility and ease of use. I will structure the application using:
 
-[your response here]
-
+- **Middleware**: For request validation, authentication, and logging.
+- **Routes**: To define endpoints for all CRUD operations.
+- **Controllers**: For handling API logic and interacting with the database.
+  The API will send and receive **JSON data** to ensure compatibility with the front end.
 
 ## SQL/Postgres/Sequelize
 
-A popular solution for relational database work is to utilize Sequelize as an ORM. Are you familiar with migrations, models, and seeding? What tools and solutions do you propose for your application? For example, utilizing an ORM to build out models with full validated CRUD.
+For the database, I will use **PostgreSQL** with **Sequelize** as the ORM. Sequelize simplifies database interactions by providing an abstraction for writing queries, managing migrations, and seeding data. The application will include:
 
-[your response here]
+- **Validated Models**: For entities like Users, Products, and Orders.
+- **CRUD Operations**: To create, read, update, and delete data.
+- **Migrations and Seed Data**: To manage database structure and populate initial data.
+  This approach ensures a robust and maintainable relational database layer.
