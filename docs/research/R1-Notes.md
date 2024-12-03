@@ -54,3 +54,7 @@ Brief overview of research: Adopting best practices ensures smooth collaboration
 [GitHub Docs - Pull Requests](https://docs.github.com/en/pull-requests): Comprehensive documentation on creating and managing pull requests on GitHub.
 
 <br>
+
+---
+
+**Note:** This document is subject to updates based on further research or instructor feedback.
