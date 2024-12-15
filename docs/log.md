@@ -47,9 +47,33 @@ This week, I worked on:
 
 <br>
 
-### Week 2
+### Week 2- Mileston 2
 
-My next stand-up will go here...
+**Overview:**
+This week, I worked on:
+
+- Designing wireframes for all key application pages, including Homepage, User Dashboard, LIVE!, Upload, and File Library.
+- Developing the style tile to define the branding elements (colors, typography, icons, and UI components).
+- Exporting and organizing wireframes and the style tile in the `docs` folder.
+- Managing GitHub workflow by creating the `wireframes` branch and pushing all deliverables.
+
+🌵 Challenges:
+
+- Ensuring consistency across all wireframes while maintaining a balance between modern professionalism and playful accessibility.
+- Selecting complementary fonts that align with the project's branding and purpose.
+- Deciding whether to combine wireframes and the style tile into one branch or separate branches.
+
+🏆 Accomplishments:
+
+- Successfully completed and exported all wireframes and the style tile.
+- Pushed deliverables to the `wireframes` branch and prepared them for merging into `dev`.
+- Finalized branding decisions, including fonts, color schemes, and logo design.
+
+🔮 Next Steps:
+
+- Merge the `wireframes` branch into `dev` after reviewing the pull request.
+- Close Milestone 2 and ensure all issues are resolved.
+- Begin preparing for Milestone 3, focusing on refining designs and initial development tasks.
 
 ### Week 3
 
