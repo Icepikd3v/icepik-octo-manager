@@ -47,7 +47,7 @@ This week, I worked on:
 
 <br>
 
-### Week 2- Mileston 2
+### Week 2- Milestone 2
 
 **Overview:**
 This week, I worked on:
