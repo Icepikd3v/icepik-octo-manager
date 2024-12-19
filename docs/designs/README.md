@@ -1,23 +1,24 @@
-# Designs.
+# **Designs**
 
 This folder is for structure and design work. Use this README as a log of updates made to your design. Link to your Figma work below and only add images to this folder when your design work is complete.
 
+---
 
-### Links
+## **Links**
 
-Add links to your design work here. 
-* [Style Tile](https://www.someaddress.com/full/url/)  
-* [Design](https://www.someaddress.com/full/url/)
-* Additional Links...
+- **Style Tile**: [Icepik's Octo Manager Style Tile](https://www.figma.com/file/your-style-tile-link)
+- **Prototype**: [Icepik's Octo Manager Prototype](<https://www.figma.com/design/sDLBgoj8N2tJognndATkBs/Icepik's-Octo-Manager-(IOM)?node-id=0-1>)
 
-<br>
+---
 
-# Log ...🚀 
+## **Log**
 
-Follow this format for your log entries:  
+### **Date: Dec 19, 2024**
 
-Date: [ Add Log Entry Date Here ]   
-Update: [ Add a brief description of any changes made to design work in progress ]  
+**Update**: Uploaded final Figma prototype, including navigation and interactions for Homepage, Dashboard, Signup Page, Upload Page, File Library, LIVE! Printing, and Subscription Page.
 
+---
 
+### **Instructions**
 
+- Add further updates to the log as you progress.
