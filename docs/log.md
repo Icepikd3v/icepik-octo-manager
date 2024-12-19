@@ -75,9 +75,33 @@ This week, I worked on:
 - Close Milestone 2 and ensure all issues are resolved.
 - Begin preparing for Milestone 3, focusing on refining designs and initial development tasks.
 
-### Week 3
+### Week 3 - Milestone 3
 
-Stay tuned, this stand-up is coming soon...
+⚙️ **Overview:**  
+This week, I worked on:
+
+- Refining the clickable prototype for **Icepik's Octo Manager (IOM)**, including all navigation actions and interactions.
+- Conducting research on usability principles, design theory, and production planning, updating `R3-Notes.md` with findings.
+- Creating standalone GitHub issues for models, state management, and routes.
+- Managing GitHub workflow by merging the `Prototype` branch into `dev` after resolving merge conflicts.
+- Exporting wireframe designs and organizing them in the `docs/designs` folder.
+
+🌵 **Challenges:**
+
+- **Navigation in Figma**: Initially struggled with linking prototype actions, particularly for drag-and-drop interactions. Resolved this by focusing on live feedback within the upload area.
+- **Conflict Resolution**: Encountered a merge conflict with `R3-Notes.md` while merging the `Prototype` branch into `dev`. Successfully resolved by integrating changes from both branches.
+
+🏆 **Accomplishments:**
+
+- Completed a fully functional clickable prototype with all navigation actions.
+- Successfully updated `R3-Notes.md` with detailed research notes on usability, design theory, and production planning.
+- Created standalone issues for key elements like models, state management, and routes.
+- Organized all exported wireframes and designs in the `docs/designs` folder.
+
+🔮 **Next Steps:**
+
+- Finalize the pull request from `dev` to `stage` for Milestone 3 submission.
+- Prepare for Week 4 by starting work on backend implementation, including API design and state management planning.
 
 ### Week 4
 
