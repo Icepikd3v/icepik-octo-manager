@@ -103,8 +103,36 @@ This week, I worked on:
 - Finalize the pull request from `dev` to `stage` for Milestone 3 submission.
 - Prepare for Week 4 by starting work on backend implementation, including API design and state management planning.
 
-### Week 4
+### Week 4 - Milestone 4
 
-My final stand-up...
+⚙️ **Overview:**  
+This week, I focused on:
+
+- **Frontend Development Completion:** Finalized the development of all core pages: **HomePage.js**, **Dashboard.js**, **Live.js**, **Upload.js**, **FileLibrary.js**, **Subscription.js**, and **Signup.js**.
+- **Authentication Mock Integration:** Implemented a **mock login/logout system** to simulate authentication flows and enable route protection.
+- **Routing:** Ensured protected routes are properly configured using `ProtectedRoute.js`.
+- **Styling Refinements:** Applied consistent styling across all pages using **Tailwind CSS**, including improvements to **navbar gradients**, **header alignment**, and **footer consistency**.
+- **Project Documentation:** Updated project notes, closed completed GitHub issues, and added final log entries.
+- **GitHub Workflow:** Managed feature branches, pull requests, and milestone tracking effectively using the project board.
+
+🌵 **Challenges:**
+
+- **Navbar Gradient Alignment:** Faced difficulties aligning the navbar gradient direction and underline styles. This was addressed by fine-tuning Tailwind configurations.
+- **Mock Authentication Logic:** Balancing a demo-friendly login/logout mechanism while maintaining clarity in the code structure was initially challenging but resolved with clear logic separation.
+- **Footer Alignment Issues:** Ensured footer content and social media icons were consistently aligned across all views without conflicting with page-specific content.
+
+🏆 **Accomplishments:**
+
+- Successfully completed all frontend pages with consistent and professional design.
+- Implemented a robust **mock login/logout system** for demo purposes, enabling seamless navigation and route protection.
+- Ensured the **navbar, header, and footer** met both design and functionality requirements.
+- Finalized and documented **Milestone 4**, including GitHub Issues, pull requests, and project board updates.
+
+🔮 **Next Steps:**
+
+- Finalize the **PR from `dev` to `stage`** to prepare for milestone submission.
+- Update the **weekly log** and ensure all issues are closed with relevant comments.
+- Conduct final QA testing across all pages for consistency and responsiveness.
+- Submit links to **closed PRs**, **Milestone 4**, and **Project Board** for review.
 
 <br>
