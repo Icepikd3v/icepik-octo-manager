@@ -68,14 +68,12 @@ This week, I worked on:
 🏆 **Accomplishments:**
 
 - Successfully completed and exported all wireframes and the style tile.
-- Pushed deliverables to the `wireframes` branch and prepared them for merging into `dev`.
 - Finalized branding decisions, including fonts, color schemes, and logo design.
 
 🔮 **Next Steps:**
 
 - Merge the `wireframes` branch into `dev` after reviewing the pull request.
-- Close Milestone 2 and ensure all issues are resolved.
-- Begin preparing for Milestone 3, focusing on refining designs and initial development tasks.
+- Close Milestone 2 and begin preparing for Milestone 3.
 
 ---
 
@@ -84,28 +82,25 @@ This week, I worked on:
 ⚙️ **Overview:**  
 This week, I worked on:
 
-- Refining the clickable prototype for **Icepik's Octo Manager (IOM)**, including all navigation actions and interactions.
-- Conducting research on usability principles, design theory, and production planning, updating `R3-Notes.md` with findings.
-- Creating standalone GitHub issues for models, state management, and routes.
-- Managing GitHub workflow by merging the `Prototype` branch into `dev` after resolving merge conflicts.
-- Exporting wireframe designs and organizing them in the `docs/designs` folder.
+- Building a clickable prototype for the IOM app.
+- Adding issues for models and state management planning.
+- Researching usability principles and documenting in `R3-Notes.md`.
+- Merging the `prototype` branch into `dev`.
 
 🌵 **Challenges:**
 
-- **Navigation in Figma**: Initially struggled with linking prototype actions, particularly for drag-and-drop interactions. Resolved this by focusing on live feedback within the upload area.
-- **Conflict Resolution**: Encountered a merge conflict with `R3-Notes.md` while merging the `Prototype` branch into `dev`. Successfully resolved by integrating changes from both branches.
+- Linking all navigation states in Figma.
+- Handling merge conflicts with R3-Notes.md.
 
 🏆 **Accomplishments:**
 
-- Completed a fully functional clickable prototype with all navigation actions.
-- Successfully updated `R3-Notes.md` with detailed research notes on usability, design theory, and production planning.
-- Created standalone issues for key elements like models, state management, and routes.
-- Organized all exported wireframes and designs in the `docs/designs` folder.
+- Completed a fully working prototype.
+- Merged prototype to `dev` with conflicts resolved.
 
 🔮 **Next Steps:**
 
-- Finalize the pull request from `dev` to `stage` for Milestone 3 submission.
-- Prepare for Week 4 by starting work on backend implementation, including API design and state management planning.
+- Finalize submission for Week 3 milestone.
+- Begin backend work for final milestone.
 
 ---
 
@@ -114,32 +109,24 @@ This week, I worked on:
 ⚙️ **Overview:**  
 This week, I focused on:
 
-- **Frontend Development Completion:** Finalized the development of all core pages: **HomePage.js**, **Dashboard.js**, **Live.js**, **Upload.js**, **FileLibrary.js**, **Subscription.js**, and **Signup.js**.
-- **Authentication Mock Integration:** Implemented a **mock login/logout system** to simulate authentication flows and enable route protection.
-- **Routing:** Ensured protected routes are properly configured using `ProtectedRoute.js`.
-- **Styling Refinements:** Applied consistent styling across all pages using **Tailwind CSS**, including improvements to **navbar gradients**, **header alignment**, and **footer consistency**.
-- **Project Documentation:** Updated project notes, closed completed GitHub issues, and added final log entries.
-- **GitHub Workflow:** Managed feature branches, pull requests, and milestone tracking effectively using the project board.
+- Completing all core frontend pages.
+- Mock login/logout and route protection.
+- Styling polish using Tailwind.
+- GitHub documentation and milestone finalization.
 
 🌵 **Challenges:**
 
-- **Navbar Gradient Alignment:** Faced difficulties aligning the navbar gradient direction and underline styles. This was addressed by fine-tuning Tailwind configurations.
-- **Mock Authentication Logic:** Balancing a demo-friendly login/logout mechanism while maintaining clarity in the code structure was initially challenging but resolved with clear logic separation.
-- **Footer Alignment Issues:** Ensured footer content and social media icons were consistently aligned across all views without conflicting with page-specific content.
+- Tailwind navbar alignment.
+- Footer layout consistency.
 
 🏆 **Accomplishments:**
 
-- Successfully completed all frontend pages with consistent and professional design.
-- Implemented a robust **mock login/logout system** for demo purposes, enabling seamless navigation and route protection.
-- Ensured the **navbar, header, and footer** met both design and functionality requirements.
-- Finalized and documented **Milestone 4**, including GitHub Issues, pull requests, and project board updates.
+- Fully styled app.
+- All frontend features completed.
 
 🔮 **Next Steps:**
 
-- Finalize the **PR from `dev` to `stage`** to prepare for milestone submission.
-- Update the **weekly log** and ensure all issues are closed with relevant comments.
-- Conduct final QA testing across all pages for consistency and responsiveness.
-- Submit links to **closed PRs**, **Milestone 4**, and **Project Board** for review.
+- Submit final PR and project board.
 
 ---
 
@@ -184,9 +171,13 @@ This week, I worked on:
 
 My next stand up will go here...
 
+---
+
 ### Week 3 - Milestone 3
 
 Coming soon...
+
+---
 
 ### Week 4 - Milestone 4
 
