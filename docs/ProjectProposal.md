@@ -1,77 +1,97 @@
-# [Concept Name]
+# Icepik's Octo Manager (IOM)
 
 ## Application Definition Statement
 
-*A clear high-level summary should be used to introduce the concept. This should be similar to an elevator pitch or a conversational reply to "What are you building?”. You will explore the audience and their demographics, the problem they are having, and your solution in subsequent sections in more detail but touch on them here.* 
-
-*Clarity over quantity should be the focus, to that end, creating visuals/charts to explain the more complex data or logical points could help to reinforce your Application’s Definition Statement.*
-
-[ Replace this text with your Application Definition Statement ] 
-
+**Icepik's Octo Manager (IOM)** is a web application designed to integrate with the OctoPrint API, enabling users to manage their 3D printing tasks efficiently. This application provides tools for uploading and managing 3D model files, live control of 3D printers, and real-time status monitoring. Advanced features, such as model editing and subscription-based services, are also planned to enhance the experience for serious hobbyists and small businesses.
 
 ## Target Market
 
-*Using Primary and Secondary research, describe the people most likely to be utilizing your application. What are their ages, education level, employment sector, income level, hobbies, or any other defining characteristics that set them apart from other groups of people? Identifying specific groups will help drive application design choices.*
+The target market includes:
 
-*Primary Research is research that you have conducted yourself and is not based on secondary sources. Examples of Primary Research include surveys, interviews, and focus groups. This doesn't have to be formal in nature and can include discussions you have with individuals that are likely users of your application. Secondary Research is research that has been conducted by others and is based on their findings. Examples of Secondary Research include market research reports, industry publications, and news articles.*
+- **Age:** 18–45 years old.
+- **Demographics:** Makers, hobbyists, educators, and small businesses interested in 3D printing.
+- **Employment Sectors:** Engineers, designers, educators, and entrepreneurs.
+- **Income Level:** Middle-to-high income groups capable of investing in 3D printing technology.
+- **Hobbies/Interests:** DIY projects, prototyping, model building, and creative technology.
 
-[ Replace this text with a description of any Primary and Secondary research you conducted to determine the Target Market for your application. Link to any references used during this research. ]
+**Primary Research:** Discussions with local makerspace members revealed common frustrations with managing print jobs and the need for better model organization and monitoring tools.
 
+**Secondary Research:** Industry articles, including reports from 3D printing blogs, highlighted OctoPrint as a widely used solution, but users often seek a more polished interface and advanced features.
 
 ## User Profile / Persona
 
-*User profiles are a snapshot of an actual person and helps to open a window into the mind of an actual user and will provide insight while tailoring and refining interaction details to best fit your ideal users within your Target Market.*
+**Persona 1: Alex, The Hobbyist**
 
+- **Age:** 27
+- **Occupation:** Software Developer
+- **Goals:** Simplify print management and avoid failed prints during long jobs.
+- **Pain Points:** Finds OctoPrint's UI overwhelming and lacks access to model preview features.
 
-[ Replace this text with a User Profile / Persona for your application. If necessary, research 'Web User Persona' to generate ideas. ]
+**Persona 2: Mia, The Educator**
 
+- **Age:** 35
+- **Occupation:** High School Teacher
+- **Goals:** Manage print queues for classroom projects efficiently.
+- **Pain Points:** Needs real-time monitoring and better job scheduling.
 
 ## Use Cases
 
-*A 'Use Case' describes how a user may interact with your application. It provides a series of steps to reach a desired result. If a user wants to listen to some music during a workout, how many clicks would it take to do that? Begin with a simple question like that and then map out the different steps to reach the desired goal. Use cases help us think through how our application will be used.*
+1. **Uploading a 3D Model for Printing**
 
-*Use Cases help drive design decisions as well as testing procedures. During development we regularly test and confirm the work in progress matches up with our Use Cases. This provides valuable insight into how our application is addressing the needs of the user and allows us to correct missteps early. This [article](https://www.softwaretestinghelp.com/use-case-testing/) gives additional background Use Cases and Use Case Testing.*
+   - User logs in.
+   - Uploads a `.gcode` file.
+   - Application validates and stores the file.
+   - User selects a printer and starts the job.
 
-[ Describe two or more Use Cases for your application. Use a bulleted list to describe the steps involved in each Use Case. ]
-
+2. **Monitoring Printer Status**
+   - User logs in.
+   - Navigates to the dashboard.
+   - Views real-time printer status and job progress.
+   - Receives alerts for errors or completion.
 
 ## Problem Statement
 
-*In a few sentences explain the problem your target market is seeing that requires this project to be built. This will identify why is your application needed and needs to be supported by Primary Research.*
-
-[ Replace this text with a Problem Statement for your application. Include any Research that supports your Problem Statement. ]
-
+Managing 3D printing tasks can be time-consuming and error-prone, especially for users relying on OctoPrint's basic interface. This application addresses the need for an intuitive, streamlined experience to minimize wasted time and materials.
 
 ## Pain Points
 
-*Explain your audience’s pain points that are contributing to their defined problem and their impact on the user. Primary Research should support your explanations.*
-
-[ Replace this text with a description of the Pain Points your audience is experiencing. Include any Research that supports your Pain Points. ]
+1. **Complexity:** Existing interfaces like OctoPrint are powerful but not user-friendly.
+2. **Lack of Advanced Features:** Model previews, editing tools, and queue management are often missing.
+3. **Monitoring Challenges:** Users lack efficient real-time notifications or remote control options.
 
 ## Solution Statement
 
-*How is your project going to solve the problem outlined above? Consider the competing products in your market space. What makes your solution different from other’s attempts to solve the problem? How are you able to better solve the defined problem for your audience than your competition?*
-
-[ Replace this text with a Solution Statement for your application. Include any Research that supports your Solution Statement. ]
+**Icepik's Octo Manager (IOM)** simplifies 3D printing by providing an intuitive interface, real-time monitoring, and advanced model management tools. It differentiates itself from competitors by enhancing OctoPrint's functionality with polished visuals and subscription-based features.
 
 ## Competition
 
-*What competing products exist to solve this or a similar problem? Identify and summarize competing products and how their approach to solving your identified problem differ from your own.*
-
-[ Replace this text with a description of the Competition for your application. Include any Research that supports your description. Competition can be direct or indirect. Direct competition is a product that solves the same problem as your application. Indirect competition is a product that solves a similar problem as your application. ]
-
+1. **OctoPrint**: Direct competitor offering a robust but outdated and technical UI.
+2. **AstroPrint**: Indirect competitor focused on cloud-based 3D printer management but lacks live editing features.
+3. **PrusaSlicer**: A slicing tool offering some similar functionalities but no API integration for remote management.
 
 ## Features & Functionality
 
-*Define key features and functionality intended to provide solutions to specific problems and pain points you have identified. These key items should be specifically defined in response to problems / pain points.*
-
-*A good way to identify a Key Feature is to use the phrase 'In order to [solve this problem] I need to [do this]'. For example, 'In order to listen to music while I workout I need to be able to create a playlist'.*
-
-*Features and functionality should be prioritized based on their importance to the user. This will help you focus on the most important features first and then add additional features as time allows.*
-
-[ Replace this text with a list of Key Features and Functionality for your application. Include a description of each feature and how it will solve a specific problem or pain point. For example, 'Playlist: The user will have the ability to create a playlist of songs they want to listen to while working out. This will allow them to listen to the music they want to hear while working out.' ]
-
+1. **Dashboard**: Provides a central hub for managing all connected printers.
+2. **File Upload & Validation**: Users can upload `.gcode` files, which are validated for errors before printing.
+3. **Real-Time Monitoring**: Tracks printer status and job progress with notifications.
+4. **Advanced Model Editing**: Allows users to make simple changes to 3D models within the app.
+5. **Subscription Features**: Includes enhanced editing tools, print analytics, and cloud storage.
 
 ## Integrations
 
-*Use of an API is expected. This can be 3rd party APIs, your own API, or a combination of data sets. Identify which integrations are planned for and outline how you will use them transformatively. For 3rd party APIs provide links to their respective documentation and verify that your intended use complies with their Terms of Service.*
+1. **OctoPrint API**: Primary integration for interacting with 3D printers. [API Documentation](https://docs.octoprint.org/en/master/api/)
+   - **Usage:** Fetch and send printer data, manage print jobs, and monitor status.
+2. **Cloud Storage API (e.g., AWS S3)**: For storing user-uploaded 3D models.
+   - **Usage:** Secure file storage for advanced subscription users.
+
+---
+
+## 🔁 Change Order
+
+**Proposal and Tech Stack Confirmed**: ✅ Yes
+
+**Estimated Work Remaining**:  
+Approximately 60–70% of the project remains. The frontend has been bootstrapped and partially implemented. The backend API, database, and deployment are planned for Milestone 2 and 3.
+
+**Proposed Changes to Scope**:  
+No changes to the confirmed scope at this time. However, if time allows later this month, additional features such as user authentication and subscription billing may be proposed as enhancements in future milestones.
