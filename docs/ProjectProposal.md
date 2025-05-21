@@ -84,3 +84,14 @@ Managing 3D printing tasks can be time-consuming and error-prone, especially for
 2. **Cloud Storage API (e.g., AWS S3)**: For storing user-uploaded 3D models.
    - **Usage:** Secure file storage for advanced subscription users.
 
+---
+
+## 🔁 Change Order
+
+**Proposal and Tech Stack Confirmed**: ✅ Yes
+
+**Estimated Work Remaining**:  
+Approximately 60–70% of the project remains. The frontend has been bootstrapped and partially implemented. The backend API, database, and deployment are planned for Milestone 2 and 3.
+
+**Proposed Changes to Scope**:  
+No changes to the confirmed scope at this time. However, if time allows later this month, additional features such as user authentication and subscription billing may be proposed as enhancements in future milestones.

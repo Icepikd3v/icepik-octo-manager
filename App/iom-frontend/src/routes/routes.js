@@ -10,11 +10,17 @@ import Signup from "../pages/Signup";
 import NotFound from "../pages/NotFound";
 import ProtectedRoute from "./ProtectedRoutes";
 
+//  New import
+import BackendStatus from "../pages/BackendStatus";
+
 const AppRoutes = () => (
   <Routes>
     {/* Public Routes */}
     <Route path="/" element={<HomePage />} />
     <Route path="/signup" element={<Signup />} />
+
+    {/*  Backend Test Route (Temporary) */}
+    <Route path="/backend-status" element={<BackendStatus />} />
 
     {/* Protected Routes */}
     <Route

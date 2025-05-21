@@ -33,3 +33,19 @@ For the database, I will use **PostgreSQL** with **Sequelize** as the ORM. Seque
 - **CRUD Operations**: To create, read, update, and delete data.
 - **Migrations and Seed Data**: To manage database structure and populate initial data.
   This approach ensures a robust and maintainable relational database layer.
+
+---
+
+## 🔁 Change Order
+
+**Confirmed Tech Stack**: ✅ Yes
+
+**Estimated Work Remaining**:  
+The front-end is in active development using Vite + React. Backend API (Express + Sequelize) setup is still pending and will begin in Week 2. State management is not yet implemented.
+
+**Proposed Changes**:  
+No changes this week. However, depending on progress, I may explore:
+
+- Auth0 for authentication
+- Stripe for subscription billing
+- WebSockets or MQTT for real-time event updates from printers
