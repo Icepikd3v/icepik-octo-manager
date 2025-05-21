@@ -169,7 +169,27 @@ This week, I worked on:
 
 ### Week 2 - Milestone 2
 
-My next stand up will go here...
+⚙️ **Overview:**  
+This week I focused on backend development and integration. I connected the frontend React app to the backend Express API and verified communication using live endpoints. I implemented JWT authentication and middleware protection for secure routes. I also completed setup for MongoDB and Express server logic.
+
+🌵 **Challenges:**  
+One challenge was encountering a Git push rejection due to my local `dev` branch being out of sync. I resolved this by using `git pull --rebase`, which helped me integrate remote changes without conflicts. I also troubleshooted some CORS issues and refined how the token is sent and stored during authentication.
+
+🏆 **Accomplishments:**
+
+- Connected frontend to backend API
+- Verified token-based login and data fetch workflows
+- Implemented JWT creation, middleware, and route protection
+- Completed Express and MongoDB initialization
+- Closed 3 GitHub issues tied to milestone: Express, MongoDB, and JWT setup
+- Submitted a clean, milestone-tied pull request from `dev` to `staging`
+
+🔮 **Next Steps:**
+
+- Expand protected routes and print job creation logic
+- Build out `PrintJob` model and upload controller
+- Begin integrating OctoPrint service for live print handling
+- Add frontend feedback for login success/failure and secure redirects
 
 ---
 
