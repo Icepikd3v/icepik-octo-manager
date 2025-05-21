@@ -16,10 +16,12 @@ app.use(express.json());
 
 // Routes
 const authRoutes = require("./routes/auth");
-const modelRoutes = require("./routes/models"); //  Add this line
+const modelRoutes = require("./routes/models");
+const printJobRoutes = require("./routes/printJobs"); // ✅ NEW
 
 app.use("/api/auth", authRoutes);
-app.use("/api/models", modelRoutes); //  Mount models upload route
+app.use("/api/models", modelRoutes);
+app.use("/api/print-jobs", printJobRoutes); // ✅ Mount new route
 
 // API status check
 app.get("/api/status", (req, res) => {
