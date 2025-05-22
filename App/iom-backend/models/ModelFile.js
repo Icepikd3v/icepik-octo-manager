@@ -7,8 +7,13 @@ const modelFileSchema = new mongoose.Schema({
   uploadDate: { type: Date, default: Date.now },
   status: {
     type: String,
-    enum: ["queued", "ready", "sent"],
+    enum: ["queued", "ready", "sent"], // upload status tracking
     default: "queued",
+  },
+  printer: {
+    type: String,
+    enum: ["EnderMultiColor", "EnderDirect"], // printer destination
+    default: "EnderDirect",
   },
 });
 
