@@ -1,4 +1,3 @@
-// Example in routes/auth.js
 const authMiddleware = require("../middleware/authMiddleware");
 
 router.get("/me", authMiddleware, async (req, res) => {
