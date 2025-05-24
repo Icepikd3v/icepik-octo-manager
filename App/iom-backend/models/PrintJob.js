@@ -12,8 +12,16 @@ const printJobSchema = new mongoose.Schema({
   startedAt: { type: Date, default: Date.now },
   status: {
     type: String,
-    enum: ["printing", "completed", "failed"],
-    default: "printing",
+    enum: [
+      "queued",
+      "printing",
+      "paused",
+      "completed",
+      "canceled",
+      "failed",
+      "shipped",
+    ],
+    default: "queued",
   },
 });
 

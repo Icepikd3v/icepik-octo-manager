@@ -1,3 +1,4 @@
+// controllers/printController.js
 const axios = require("axios");
 require("dotenv").config();
 
@@ -9,28 +10,28 @@ const PATH_DIRECT = process.env.OCTOPRINT_DIRECT_PATH;
 /**
  * Start a print job by selecting a file and triggering print on the target printer
  *
- * @param {Object} params - Required params
- * @param {string} params.printer - Printer identifier (e.g. "EnderDirect")
- * @param {string} params.filename - Name of the uploaded file in OctoPrint (must match exactly)
- * @returns {Object} success or error object
+ * @param {Object} params
+ * @param {string} params.printer     Printer key: "EnderMulticolor" or "EnderDirect"
+ * @param {string} params.filename    Exact filename in OctoPrint (e.g. "... .aw.gcode")
  */
-const startPrintJob = async ({ printer, filename }) => {
+async function startPrintJob({ printer, filename }) {
   try {
     if (!printer || !filename) {
       return { error: "Missing printer or filename." };
     }
 
+    // pick the right URL path prefix
     const printerPath =
-      printer === "EnderMulticolor" ? PATH_MULTICOLOR : PATH_DIRECT;
+      printer === "EnderMultiColor" ? PATH_MULTICOLOR : PATH_DIRECT;
     const apiBase = `${BASE_URL}${printerPath}`;
-    const encodedFilename = encodeURIComponent(filename);
 
-    // Optional: Delay to ensure OctoPrint has indexed the uploaded file
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    // build the select & print URL (no encodeURIComponent)
+    const endpoint = `${apiBase}/api/files/local/${filename}`;
+    console.log(`➡️  Selecting file at: ${endpoint}`);
 
-    // Step 1: Select and print the file
+    // Step 1: select & print
     await axios.post(
-      `${apiBase}/api/files/local/${encodedFilename}`,
+      endpoint,
       { command: "select", print: true },
       {
         headers: {
@@ -47,10 +48,11 @@ const startPrintJob = async ({ printer, filename }) => {
     console.error("❌ Print start failed:", raw);
     return {
       error:
-        err.response?.data?.message ||
-        `Failed to start print job for "${filename || "unknown"}".`,
+        (err.response?.data?.message &&
+          `OctoPrint error: ${err.response.data.message}`) ||
+        `Failed to start print job for "${filename}".`,
     };
   }
-};
+}
 
 module.exports = { startPrintJob };

@@ -1,7 +1,4 @@
-// routes/models.js
-
 const express = require("express");
-const router = express.Router();
 const multer = require("multer");
 const fs = require("fs");
 const path = require("path");
@@ -9,15 +6,20 @@ const path = require("path");
 const upload = require("../middleware/uploadMiddleware");
 const auth = require("../middleware/authMiddleware");
 const ModelFile = require("../models/ModelFile");
-const { deleteOctoPrintFile } = require("../services/octoprintServices");
+const {
+  uploadToOctoPrint,
+  deleteOctoPrintFile,
+} = require("../services/octoprintServices");
 
-// POST /api/models/upload - Upload a model file
+const router = express.Router();
+
+// POST /api/models/upload
 router.post(
   "/upload",
   auth,
   (req, res, next) => {
     upload.single("file")(req, res, function (err) {
-      if (err instanceof multer.MulterError || err) {
+      if (err) {
         return res.status(400).json({ message: err.message });
       }
       next();
@@ -29,15 +31,31 @@ router.post(
         return res.status(400).json({ message: "No file uploaded" });
       }
 
+      // 1) Save metadata to MongoDB
       const newFile = await ModelFile.create({
         name: req.file.originalname,
         filename: req.file.filename,
         userId: req.user.id,
-        printer: req.body.printer || "EnderDirect", // store printer info if passed
-        status: "ready",
+        printer: req.body.printer || "EnderDirect",
+        status: "queued", // change default to queued
       });
 
-      res.status(201).json({
+      // 2) Upload to OctoPrint
+      const octoResponse = await uploadToOctoPrint(
+        newFile.filename,
+        newFile.printer,
+      );
+      if (octoResponse) {
+        // mark as 'ready' once OctoPrint acknowledges
+        newFile.status = "ready";
+        await newFile.save();
+      } else {
+        // if uploadToOctoPrint returned null, leave as queued and warn
+        console.warn(`⚠️ OctoPrint upload failed for ${newFile.filename}`);
+      }
+
+      // 3) Return combined result
+      return res.status(201).json({
         message: "File uploaded",
         file: {
           id: newFile._id,
@@ -46,15 +64,18 @@ router.post(
           size: req.file.size,
           mimetype: req.file.mimetype,
           printer: newFile.printer,
+          status: newFile.status,
         },
+        octoprint: octoResponse || { error: "OctoPrint upload failed" },
       });
     } catch (err) {
-      res.status(500).json({ message: err.message });
+      console.error("❌ Upload route error:", err);
+      return res.status(500).json({ message: err.message });
     }
   },
 );
 
-// GET /api/models - List uploaded files for current user
+// GET /api/models
 router.get("/", auth, async (req, res) => {
   try {
     const files = await ModelFile.find({ userId: req.user.id }).sort({
@@ -66,24 +87,17 @@ router.get("/", auth, async (req, res) => {
   }
 });
 
-// DELETE /api/models/:id - Delete a user's model file
+// DELETE /api/models/:id
 router.delete("/:id", auth, async (req, res) => {
   try {
     const file = await ModelFile.findById(req.params.id);
-
-    if (!file) {
-      return res.status(404).json({ message: "File not found" });
-    }
-
+    if (!file) return res.status(404).json({ message: "File not found" });
     if (file.userId.toString() !== req.user.id) {
       return res.status(403).json({ message: "Unauthorized" });
     }
 
-    // Delete from OctoPrint if applicable
-    const ext = path.extname(file.filename).toLowerCase();
-    if (ext === ".gcode" || ext === ".aw.gcode") {
-      await deleteOctoPrintFile(file.filename, file.printer || "EnderDirect");
-    }
+    // Delete from OctoPrint
+    await deleteOctoPrintFile(file.filename, file.printer);
 
     // Delete from disk
     const filePath = path.join(__dirname, "..", "uploads", file.filename);
@@ -99,10 +113,7 @@ router.delete("/:id", auth, async (req, res) => {
     // Delete from MongoDB
     await ModelFile.deleteOne({ _id: file._id });
 
-    // Log and respond
-    console.log(
-      `🗑️ Deleted model ${file.filename} (ID: ${file._id}) by user ${req.user.id}`,
-    );
+    console.log(`🗑️ Deleted model ${file.filename} (ID: ${file._id})`);
     res.status(200).json({
       message: "File deleted",
       filename: file.filename,
