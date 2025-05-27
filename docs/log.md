@@ -167,9 +167,26 @@ This week, I worked on:
 
 ---
 
-### Week 3 - Milestone 3
+### ✅ Week 3 Log – Milestone 3
 
-Coming soon...
+#### ⚙️ Overview – What I worked on this past week
+
+This week, I focused on **security, compliance, and analytics** improvements across the backend of the IOM project. I implemented admin-only analytics routes (`/api/analytics`) with support for summary data, top users, breakdowns, and CSV export. I also expanded our print job lifecycle to log events like start, pause, cancel, resume, and ship — and integrated email notifications accordingly. In addition, I wrote a [Terms of Service draft](../terms.md) and completed Week 3 research on OWASP security risks and GitHub CodeQL scanning.
+
+#### 🌵 Challenges – What problems did I have & how I’m addressing them
+
+I ran into some access control issues when testing the admin routes and needed to verify that only admin users could access the analytics endpoints. Debugging that and verifying the role-based middleware was key. Another challenge was refining the analytics event logging to include `jobId` metadata and validating event integrity without creating duplicates. I addressed this by adding logging at each major backend lifecycle point with consistent structure.
+
+#### 🏆 Accomplishments – What is something I "leveled up" on this week
+
+I leveled up my **full-stack backend engineering** skills by implementing a full analytics reporting system from MongoDB to API to CSV export. This required planning out aggregation pipelines, writing clean and modular services, and ensuring admin-only access control throughout the routes. I also refined GitHub workflows by tracking every task with labeled issues and pushing all changes through structured pull requests.
+
+#### 🔮 Next Steps – What I plan to prioritize and do next
+
+- Begin frontend implementation of the analytics dashboard (read-only for admins)
+- Prepare milestone 4 planning (user dashboards, print job tracking UI)
+- Add user settings page for managing email preferences
+- Finalize and merge dev to stage, and stage to main if stable
 
 ---
 
