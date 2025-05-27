@@ -2,7 +2,7 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
-
+const analyticsRoutes = require("./routes/analytics"); // ✅ new
 // Load env variables FIRST
 dotenv.config();
 
@@ -29,7 +29,7 @@ app.use("/api/print-jobs", printJobRoutes);
 app.use("/api/printers", printerRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/test-email", testEmailRoutes);
-
+app.use("/api/analytics", analyticsRoutes); // ✅ mount route
 // API status check
 app.get("/api/status", (req, res) => {
   res.json({ success: true, message: "API is running" });

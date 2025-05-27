@@ -1,19 +1,23 @@
+// routes/models.js
+
 const express = require("express");
-const multer = require("multer");
 const fs = require("fs");
 const path = require("path");
 
 const upload = require("../middleware/uploadMiddleware");
 const auth = require("../middleware/authMiddleware");
+
 const ModelFile = require("../models/ModelFile");
 const {
   uploadToOctoPrint,
   deleteOctoPrintFile,
 } = require("../services/octoprintServices");
 
+const { handleModelUpload } = require("../controllers/uploadController"); // ✅ Import controller
+
 const router = express.Router();
 
-// POST /api/models/upload
+// ✅ POST /api/models/upload — Now calls controller
 router.post(
   "/upload",
   auth,
@@ -25,57 +29,10 @@ router.post(
       next();
     });
   },
-  async (req, res) => {
-    try {
-      if (!req.file) {
-        return res.status(400).json({ message: "No file uploaded" });
-      }
-
-      // 1) Save metadata to MongoDB
-      const newFile = await ModelFile.create({
-        name: req.file.originalname,
-        filename: req.file.filename,
-        userId: req.user.id,
-        printer: req.body.printer || "EnderDirect",
-        status: "queued", // change default to queued
-      });
-
-      // 2) Upload to OctoPrint
-      const octoResponse = await uploadToOctoPrint(
-        newFile.filename,
-        newFile.printer,
-      );
-      if (octoResponse) {
-        // mark as 'ready' once OctoPrint acknowledges
-        newFile.status = "ready";
-        await newFile.save();
-      } else {
-        // if uploadToOctoPrint returned null, leave as queued and warn
-        console.warn(`⚠️ OctoPrint upload failed for ${newFile.filename}`);
-      }
-
-      // 3) Return combined result
-      return res.status(201).json({
-        message: "File uploaded",
-        file: {
-          id: newFile._id,
-          name: newFile.name,
-          filename: newFile.filename,
-          size: req.file.size,
-          mimetype: req.file.mimetype,
-          printer: newFile.printer,
-          status: newFile.status,
-        },
-        octoprint: octoResponse || { error: "OctoPrint upload failed" },
-      });
-    } catch (err) {
-      console.error("❌ Upload route error:", err);
-      return res.status(500).json({ message: err.message });
-    }
-  },
+  handleModelUpload, // ✅ Controller handles upload + analytics
 );
 
-// GET /api/models
+// ✅ GET /api/models — List models for user
 router.get("/", auth, async (req, res) => {
   try {
     const files = await ModelFile.find({ userId: req.user.id }).sort({
@@ -87,7 +44,7 @@ router.get("/", auth, async (req, res) => {
   }
 });
 
-// DELETE /api/models/:id
+// ✅ DELETE /api/models/:id — Delete model + OctoPrint file
 router.delete("/:id", auth, async (req, res) => {
   try {
     const file = await ModelFile.findById(req.params.id);

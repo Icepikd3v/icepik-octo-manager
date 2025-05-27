@@ -11,6 +11,7 @@ const userSchema = new mongoose.Schema(
       default: "basic",
       required: true,
     },
+    isAdmin: { type: Boolean, default: false }, // ✅ Added for admin-only access
   },
   {
     timestamps: true,
