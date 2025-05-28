@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global Styles */
+body {
+  @apply min-h-screen flex flex-col bg-no-repeat bg-cover bg-center text-fontBlack;
+  background:
+    linear-gradient(to bottom, transparent, #6af1e3 550%),
+    /* Teal gradient fade */ url("./assets/webb-dark.png"); /* Background image */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+h1,
+h2,
+h3 {
+  @apply font-heading text-fontBlack;
+}
+
+h4,
+h5,
+h6 {
+  @apply font-subheading text-fontBlack;
+}
+
+p {
+  @apply font-paragraph text-fontBlack;
+}
