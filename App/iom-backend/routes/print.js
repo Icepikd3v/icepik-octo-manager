@@ -1,52 +1,92 @@
+// routes/print.js
 const express = require("express");
 const router = express.Router();
 const auth = require("../middleware/authMiddleware");
-
-const { startPrintJob } = require("../controllers/printController");
+const adminOnly = require("../middleware/adminMiddleware");
 
 const {
-  pausePrint,
-  resumePrint,
-  cancelPrint,
-} = require("../services/octoprintServices");
+  pause,
+  resume,
+  cancel,
+} = require("../controllers/printControlController");
 
-// POST /api/print/start
-router.post("/start", auth, startPrintJob);
+const PrintJob = require("../models/PrintJob");
+const { notifyUser } = require("../services/emailManager");
+const { logEvent } = require("../services/analyticsService");
 
-// POST /api/print/pause
-router.post("/pause", auth, async (req, res) => {
-  const printer = req.body.printer || "EnderDirect";
-  try {
-    await pausePrint(printer);
-    res.status(200).json({ message: "Print paused" });
-  } catch (err) {
-    console.error("❌ Pause error:", err.message);
-    res.status(500).json({ message: "Failed to pause print" });
-  }
-});
-
-// POST /api/print/resume
-router.post("/resume", auth, async (req, res) => {
-  const printer = req.body.printer || "EnderDirect";
-  try {
-    await resumePrint(printer);
-    res.status(200).json({ message: "Print resumed" });
-  } catch (err) {
-    console.error("❌ Resume error:", err.message);
-    res.status(500).json({ message: "Failed to resume print" });
-  }
-});
-
-// POST /api/print/cancel
-router.post("/cancel", auth, async (req, res) => {
-  const printer = req.body.printer || "EnderDirect";
-  try {
-    await cancelPrint(printer);
-    res.status(200).json({ message: "Print cancelled" });
-  } catch (err) {
-    console.error("❌ Cancel error:", err.message);
-    res.status(500).json({ message: "Failed to cancel print" });
-  }
-});
+// === ✅ Admin Print Controls ===
+router.post("/pause", auth, adminOnly, pause);
+router.post("/resume", auth, adminOnly, resume);
+router.post("/cancel", auth, adminOnly, cancel);
 
 module.exports = router;
+
+// === 🔒 DEV ONLY: MOCK COMPLETED ===
+// router.post("/mock-complete/:id", auth, adminOnly, async (req, res) => {
+//   try {
+//     const job = await PrintJob.findById(req.params.id).populate("userId");
+//     if (!job || job.status !== "printing") {
+//       return res
+//         .status(400)
+//         .json({ message: "Job not found or not currently printing" });
+//     }
+
+//     job.status = "completed";
+//     job.completedAt = new Date();
+//     await job.save();
+
+//     await logEvent(job.userId._id, "print_completed", {
+//       printer: job.printer,
+//       filename: job.filename,
+//       jobId: job._id,
+//     });
+
+//     await notifyUser("completed", job.userId, {
+//       filename: job.filename,
+//       printer: job.printer,
+//     });
+
+//     res.json({
+//       message: "✅ Print marked as completed and user notified",
+//       job,
+//     });
+//   } catch (err) {
+//     console.error("❌ Mock complete error:", err.message);
+//     res.status(500).json({ message: "Failed to mark print as completed." });
+//   }
+// });
+
+// === 🔒 DEV ONLY: MOCK SHIPPED ===
+// router.post("/mock-ship/:id", auth, adminOnly, async (req, res) => {
+//   try {
+//     const job = await PrintJob.findById(req.params.id).populate("userId");
+//     if (!job || job.status !== "completed") {
+//       return res
+//         .status(400)
+//         .json({ message: "Job not found or not marked as completed" });
+//     }
+
+//     job.status = "shipped";
+//     job.shippedAt = new Date();
+//     await job.save();
+
+//     await logEvent(job.userId._id, "print_shipped", {
+//       printer: job.printer,
+//       filename: job.filename,
+//       jobId: job._id,
+//     });
+
+//     await notifyUser("shipped", job.userId, {
+//       filename: job.filename,
+//       printer: job.printer,
+//     });
+
+//     res.json({
+//       message: "📦 Print marked as shipped and user notified",
+//       job,
+//     });
+//   } catch (err) {
+//     console.error("❌ Mock shipped error:", err.message);
+//     res.status(500).json({ message: "Failed to mark print as shipped." });
+//   }
+// });

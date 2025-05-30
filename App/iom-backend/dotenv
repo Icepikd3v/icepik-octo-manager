@@ -1,0 +1,25 @@
+# === Server Configuration ===
+PORT=3001
+
+# === MongoDB ===
+MONGO_URI=mongodb://localhost:27017/iom
+
+# === JWT Authentication ===
+JWT_SECRET=your_jwt_secret_here
+
+# === OctoPrint Configuration ===
+OCTOPRINT_BASE_URL=http://192.168.1.37
+OCTOPRINT_API_KEY=your_octoprint_api_key_here
+OCTOPRINT_MULTICOLOR_PATH=/EnderMultiColor
+OCTOPRINT_DIRECT_PATH=/EnderDirect
+WEBCAM_DIRECT=http://192.168.1.37/webcam/?action=stream
+WEBCAM_MULTICOLOR=http://192.168.1.37/webcam/?action=stream
+
+# === Email Configuration (SMTP) ===
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your_email_here@gmail.com
+SMTP_PASS=your_smtp_app_password_here
+
+# === Frontend App URL ===
+BASE_WEB_URL=http://localhost:3000

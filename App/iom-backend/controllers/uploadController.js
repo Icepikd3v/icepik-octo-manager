@@ -2,7 +2,7 @@
 
 const path = require("path");
 const ModelFile = require("../models/ModelFile");
-const { uploadToOctoPrint } = require("../services/octoprintServices");
+const { uploadToOctoPrint } = require("../services/octoprintManager");
 const { logEvent } = require("../services/analyticsService"); // Import logEvent
 
 /**
@@ -16,6 +16,7 @@ const handleModelUpload = async (req, res) => {
 
     const printer = req.body.printer || "EnderDirect";
     let status = "queued";
+    let finalFilename = req.file.filename; // Default to uploaded name
 
     // Push .gcode files directly to OctoPrint
     const ext = path.extname(req.file.filename).toLowerCase();
@@ -24,20 +25,21 @@ const handleModelUpload = async (req, res) => {
         req.file.filename,
         printer,
       );
+
+      // ✅ If Arc Welder renamed it, capture that new filename
+      finalFilename =
+        octoPrintResponse?.files?.local?.name || req.file.filename;
       status = octoPrintResponse ? "sent" : "ready";
     }
 
     // Save metadata in MongoDB
     const newFile = await ModelFile.create({
       name: req.file.originalname,
-      filename: req.file.filename,
+      filename: finalFilename, // ✅ Correct filename saved
       userId: req.user.id,
       printer,
       status,
     });
-
-    // Debug log to confirm import
-    console.log("🟡 typeof logEvent:", typeof logEvent);
 
     // Log analytics event
     await logEvent(req.user.id, "file_upload", {

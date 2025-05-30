@@ -1,3 +1,4 @@
+// models/Users.js
 const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
@@ -7,11 +8,13 @@ const userSchema = new mongoose.Schema(
     password: { type: String, required: true },
     subscriptionTier: {
       type: String,
-      enum: ["basic", "pro", "elite"],
+      enum: ["basic", "bronze", "silver", "gold"],
       default: "basic",
       required: true,
     },
-    isAdmin: { type: Boolean, default: false }, // ✅ Added for admin-only access
+    isAdmin: { type: Boolean, default: false },
+    isVerified: { type: Boolean, default: false },
+    verificationToken: { type: String },
   },
   {
     timestamps: true,

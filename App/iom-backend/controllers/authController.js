@@ -2,41 +2,47 @@
 const User = require("../models/Users.js");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
+const { sendEmail } = require("../services/emailService");
 
 const register = async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
-    // Check if user already exists
     const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    // Hash password and create user
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
+    const verificationToken = crypto.randomBytes(32).toString("hex");
 
     const newUser = await User.create({
       username,
       email,
       password: hashedPassword,
+      verificationToken,
+      isVerified: process.env.NODE_ENV === "test" ? true : false, // ✅ Auto-verify in test mode
     });
 
-    // Issue JWT
-    const payload = { id: newUser._id };
-    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
       expiresIn: "7d",
     });
 
-    // Return token and user info
+    if (process.env.NODE_ENV !== "test") {
+      const verificationLink = `${process.env.BASE_WEB_URL}/verify/${verificationToken}`;
+      await sendEmail(
+        email,
+        "Verify Your Email",
+        `Click to verify: ${verificationLink}`,
+      );
+    }
+
     return res.status(201).json({
-      token,
-      user: {
-        id: newUser._id,
-        username: newUser.username,
-        email: newUser.email,
-      },
+      message: "User created.",
+      user: { id: newUser._id, username, email },
+      ...(process.env.NODE_ENV === "test" && { token }), // ✅ Include token only in test
     });
   } catch (err) {
     console.error("Register error:", err);
@@ -44,30 +50,43 @@ const register = async (req, res) => {
   }
 };
 
+const verify = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const user = await User.findOne({ verificationToken: token });
+
+    if (!user)
+      return res.status(400).json({ message: "Invalid or expired token." });
+
+    user.isVerified = true;
+    user.verificationToken = undefined;
+    await user.save();
+
+    res.json({ message: "Email verified successfully." });
+  } catch (err) {
+    console.error("Verification error:", err);
+    res.status(500).json({ message: "Verification failed." });
+  }
+};
+
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Find user
     const user = await User.findOne({ email });
-    if (!user) {
+    if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    // Check password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: "Invalid credentials" });
+    if (!user.isVerified) {
+      return res.status(403).json({ message: "Email not verified." });
     }
 
-    // Issue JWT
-    const payload = { id: user._id };
-    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "7d",
     });
 
-    // Return token and user info
-    return res.json({
+    res.json({
       token,
       user: {
         id: user._id,
@@ -81,4 +100,4 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { register, login };
+module.exports = { register, login, verify };
