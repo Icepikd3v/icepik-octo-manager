@@ -4,7 +4,7 @@ const auth = require("../middleware/authMiddleware");
 const {
   getWebcamStreamUrl,
   getPrinterFiles,
-} = require("../services/octoprintServices");
+} = require("../services/octoprintManager");
 
 // GET /api/printers/:name/webcam - Return webcam stream URL for a printer
 router.get("/:name/webcam", auth, (req, res) => {

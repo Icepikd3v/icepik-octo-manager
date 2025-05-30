@@ -21,14 +21,18 @@ function queued({ username, filename }) {
   };
 }
 
-function started({ username, filename, printer }) {
+function started({ username, filename, printer, webcamUrl }) {
   return {
     subject: `🚀 Your print has started`,
     html: `
       <div style="font-family: sans-serif; max-width:600px; margin:auto;">
         <h2 style="color:#50E3C2;">Hello ${username},</h2>
         <p>Great news! Your job <strong>${filename}</strong> is now printing on <em>${printer}</em>.</p>
-        <p>🔗 <a href="${process.env.BASE_WEB_URL}/streams/${printer}" style="color:#4A90E2;">Watch live</a> as your creation comes to life.</p>
+        ${
+          webcamUrl
+            ? `<p>🔗 <a href="${webcamUrl}" style="color:#4A90E2;">Watch it live</a> as your creation comes to life.</p>`
+            : `<p>🎥 Live stream is currently unavailable for this printer.</p>`
+        }
         <p>Thank you for inspiring innovation with us!</p>
         <footer style="margin-top:20px; font-size:12px; color:#888;">
           Icepik’s Octo Manager &bull; Where imagination meets reality
@@ -89,4 +93,10 @@ function shipped({ username, filename, trackingUrl }) {
   };
 }
 
-module.exports = { queued, started, completed, canceled, shipped };
+module.exports = {
+  queued,
+  started,
+  completed,
+  canceled,
+  shipped,
+};
