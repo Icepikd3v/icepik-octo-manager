@@ -1,12 +1,13 @@
 // routes/users.js
 const express = require("express");
 const authMiddleware = require("../middleware/authMiddleware");
+const adminOnly = require("../middleware/adminMiddleware");
 const User = require("../models/Users");
 
 const router = express.Router();
 
-// GET /api/users — return all users (dev-only)
-router.get("/", authMiddleware, async (req, res) => {
+// ✅ Admin-only: GET all users
+router.get("/", authMiddleware, adminOnly, async (req, res) => {
   try {
     const users = await User.find({}, "-password -__v").lean();
     res.json(users);
@@ -15,7 +16,7 @@ router.get("/", authMiddleware, async (req, res) => {
   }
 });
 
-// PATCH /api/users/subscription — update subscription tier
+// PATCH subscription (unchanged)
 router.patch("/subscription", authMiddleware, async (req, res) => {
   try {
     const { tier } = req.body;

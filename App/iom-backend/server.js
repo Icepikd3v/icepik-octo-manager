@@ -16,7 +16,7 @@ app.use(express.json());
 // Routes
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/models", require("./routes/uploads"));
-app.use("/api/print-jobs", require("./routes/PrintJobs"));
+app.use("/api/print-jobs", require("./routes/printJobs"));
 app.use("/api/printers", require("./routes/printers"));
 app.use("/api/print", require("./routes/print"));
 app.use("/api/analytics", require("./routes/analytics"));

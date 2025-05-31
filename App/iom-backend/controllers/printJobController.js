@@ -1,6 +1,6 @@
-// controllers/printJobController.js
 const PrintJob = require("../models/PrintJob");
 const User = require("../models/Users");
+const Printer = require("../models/Printer"); // ✅ Added for maintenance check
 const { canStartPrintNow } = require("../utils/subscriptionAccess");
 const { logEvent } = require("../services/analyticsService");
 const { notifyUser } = require("../services/emailManager");
@@ -8,10 +8,22 @@ const octo = require("../services/octoprintManager");
 
 const createPrintJob = async (req, res) => {
   console.log("Incoming print job request:", req.body);
+
   try {
     const { printer, filename, modelFileId } = req.body;
     if (!printer || !filename || !modelFileId) {
       return res.status(400).json({ message: "Missing required fields." });
+    }
+
+    // ✅ Check maintenance status early
+    const printerDoc = await Printer.findOne({ name: printer });
+    if (!printerDoc) {
+      return res.status(400).json({ message: "Invalid printer." });
+    }
+    if (printerDoc.isUnderMaintenance) {
+      return res.status(503).json({
+        message: `${printer} is under maintenance. Please try again later.`,
+      });
     }
 
     const user = await User.findById(req.user.id);
@@ -48,7 +60,7 @@ const createPrintJob = async (req, res) => {
       printer,
     });
 
-    // 🧪 Skip triggering actual OctoPrint job in test
+    // 🧪 Skip actual print job during test
     if (process.env.NODE_ENV === "test") {
       console.log("🧪 Test mode: skipping OctoPrint trigger");
       return res.status(201).json({
@@ -62,6 +74,7 @@ const createPrintJob = async (req, res) => {
         printer,
         filename: toPrintFilename,
       });
+
       if (result.error) {
         newJob.status = "failed";
         await newJob.save();
