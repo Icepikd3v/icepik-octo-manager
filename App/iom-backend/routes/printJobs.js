@@ -4,22 +4,13 @@ const router = express.Router();
 
 const auth = require("../middleware/authMiddleware");
 const adminOnly = require("../middleware/adminMiddleware");
-const upload = require("../middleware/uploadMiddleware");
-const { handleModelUpload } = require("../controllers/uploadController");
 
 const PrintJob = require("../models/PrintJob");
-const User = require("../models/Users");
-
 const { createPrintJob } = require("../controllers/printJobController");
 const { logEvent } = require("../services/analyticsService");
-const { notifyUser } = require("../services/emailManager");
-const octo = require("../services/octoprintManager");
 
-// === Create a new print job
+// === Create a new print job (optional — separate from upload)
 router.post("/", auth, createPrintJob);
-
-// === Handle file uploads (GCODE/STL)
-router.post("/upload", auth, upload.single("file"), handleModelUpload);
 
 // === User's print history
 router.get("/history", auth, async (req, res) => {
@@ -65,7 +56,7 @@ router.get("/:id", auth, async (req, res) => {
   }
 });
 
-// === Admin list of all jobs with filters
+// === Admin: all print jobs with filters
 router.get("/", auth, adminOnly, async (req, res) => {
   try {
     const { status, printer, userId, page = 1, limit = 20 } = req.query;
@@ -89,13 +80,11 @@ router.get("/", auth, adminOnly, async (req, res) => {
   }
 });
 
-// === 🗑️ DELETE print job (admin only)
+// === Admin: delete print job
 router.delete("/:id", auth, adminOnly, async (req, res) => {
   try {
     const job = await PrintJob.findById(req.params.id);
-    if (!job) {
-      return res.status(404).json({ message: "Print job not found" });
-    }
+    if (!job) return res.status(404).json({ message: "Print job not found" });
 
     await PrintJob.deleteOne({ _id: req.params.id });
 

@@ -99,6 +99,16 @@ const getPrintStatus = async (printer) => {
   return res.data;
 };
 
+const getPrinterStatus = async (printer) => {
+  try {
+    const job = await getPrintStatus(printer);
+    return job?.state?.toLowerCase() || "unknown";
+  } catch (err) {
+    console.error("❌ Failed to get printer status:", err.message);
+    return "unknown";
+  }
+};
+
 const deleteOctoPrintFile = async (filename, printer) => {
   try {
     const url = getFullUrl(
@@ -134,6 +144,7 @@ module.exports = {
   resumePrint,
   cancelPrint,
   getPrintStatus,
+  getPrinterStatus, // ✅ Now included in export
   deleteOctoPrintFile,
   getPrinterFiles,
   getWebcamStreamUrl,
