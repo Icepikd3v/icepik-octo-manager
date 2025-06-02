@@ -193,12 +193,51 @@ One challenge was encountering a Git push rejection due to my local `dev` branch
 
 ---
 
-### Week 3 - Milestone 3
+### Week 3 – Milestone 3
 
-Coming soon...
+⚙️ **Overview:**  
+This week I focused on securing the backend and preparing the app for user-facing compliance. I implemented middleware to enforce admin-only access where appropriate and added analytics logging for key user actions like uploads and print triggers. These steps lay the foundation for responsible user tracking and tier-based enforcement.
+
+🌵 **Challenges:**  
+Some challenges included structuring analytics logging in a way that wouldn’t clutter controller logic. I also had to balance route security without blocking legitimate access for verified users. Planning out scalable compliance features without overcomplicating the existing flow required careful consideration.
+
+🏆 **Accomplishments:**
+
+- Added admin-only middleware for sensitive routes
+- Created `analyticsService.js` to log user activity
+- Set up print compliance logic for subscription enforcement
+- Cleaned up and documented backend routes
+- Finalized all updates into `dev` with no merge issues
+
+🔮 **Next Steps:**
+
+- Implement webhook event handling from OctoPrint
+- Begin frontend-side integration of new backend data
+- Add admin dashboard elements to surface analytics
+- Prepare Beta milestone and frontend polish for Week 4
 
 ---
 
-### Week 4 - Milestone 4
+### Week 4 – Milestone 4
 
-Final stand-up...
+⚙️ **Overview:**  
+This week marked the Beta release of the project. I finalized backend development by adding maintenance mode for printers, an admin-only user list route, and webhook support for OctoPrint print events. I also cleaned up test data, removed large `.gcode` files, and ensured Swagger documentation and route protections were complete and accurate.
+
+🌵 **Challenges:**  
+Managing large file deletions and ensuring Git history remained intact was tricky. I also had to debug webhook triggers and ensure the correct response flow for maintenance mode logic. Balancing frontend tasks alongside backend polish added time pressure.
+
+🏆 **Accomplishments:**
+
+- Implemented printer maintenance mode logic
+- Added admin-only route to list all users
+- Integrated OctoPrint webhook event handling (initial version)
+- Finalized Swagger docs and secured all routes
+- Cleaned up repo and removed unnecessary upload artifacts
+- Created Milestone 4 pull request and all supporting issues
+
+🔮 **Next Steps:**
+
+- Polish frontend UI and dashboard integration
+- Test full upload-to-print-to-complete flow with webcam
+- Record demo screencast for Showcase submission
+- Submit final postmortem reflection and prepare for final week
