@@ -1,9 +1,12 @@
 // routes/auth.js
 const express = require("express");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
+const bcrypt = require("bcryptjs");
 const { register, login } = require("../controllers/authController");
 const authMiddleware = require("../middleware/authMiddleware");
 const User = require("../models/Users");
+const { sendPasswordResetEmail } = require("../services/emailManager");
 
 const router = express.Router();
 
@@ -44,6 +47,58 @@ router.post("/verify", async (req, res) => {
     return res
       .status(500)
       .json({ message: "Server error during verification" });
+  }
+});
+
+// ✅ Forgot Password
+router.post("/forgot-password", async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+    if (!user)
+      return res
+        .status(200)
+        .json({ message: "If user exists, reset email sent." });
+
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const resetTokenExpiry = Date.now() + 1000 * 60 * 30; // 30 min
+
+    user.resetToken = resetToken;
+    user.resetTokenExpiry = resetTokenExpiry;
+    await user.save();
+
+    await sendPasswordResetEmail(email, resetToken);
+
+    res.json({ message: "Password reset email sent." });
+  } catch (err) {
+    console.error("❌ Forgot-password error:", err.message);
+    res.status(500).json({ message: "Error sending reset email" });
+  }
+});
+
+// ✅ Reset Password
+router.post("/reset-password/:token", async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    const user = await User.findOne({
+      resetToken: token,
+      resetTokenExpiry: { $gt: Date.now() },
+    });
+
+    if (!user)
+      return res.status(400).json({ message: "Invalid or expired token" });
+
+    user.password = await bcrypt.hash(password, 10);
+    user.resetToken = undefined;
+    user.resetTokenExpiry = undefined;
+    await user.save();
+
+    res.json({ message: "Password reset successful" });
+  } catch (err) {
+    console.error("❌ Reset-password error:", err.message);
+    res.status(500).json({ message: "Reset failed" });
   }
 });
 

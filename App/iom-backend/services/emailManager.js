@@ -3,12 +3,6 @@ const { sendEmail } = require("./emailService");
 const templates = require("./emailTemplates");
 const { getWebcamStreamUrl } = require("./octoprintManager");
 
-/**
- * Notify a user based on the print job status or OctoPrint event.
- * @param {string} status - Status like 'started', 'print_done', 'print_failed', etc.
- * @param {Object|String} user - User object or user ID
- * @param {Object} payload - { printer, filename, trackingUrl, etc. }
- */
 async function notifyUser(status, user, payload = {}) {
   const templateMap = {
     queued: templates.queued,
@@ -38,4 +32,21 @@ async function notifyUser(status, user, payload = {}) {
   await sendEmail(user.email, tpl.subject, tpl.html);
 }
 
-module.exports = { notifyUser };
+// ✅ Send password reset email
+async function sendPasswordResetEmail(to, resetToken) {
+  const resetLink = `http://localhost:3001/api/auth/reset-password/${resetToken}`;
+  console.log(`🔑 Password reset link: ${resetLink}`);
+
+  await sendEmail(
+    to,
+    "🔑 Reset Your IOM Password",
+    `<p>You requested a password reset. Click below:</p>
+     <p><a href="${resetLink}">${resetLink}</a></p>
+     <p>This link will expire in 30 minutes.</p>`,
+  );
+}
+
+module.exports = {
+  notifyUser,
+  sendPasswordResetEmail,
+};

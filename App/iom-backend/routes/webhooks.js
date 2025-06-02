@@ -14,15 +14,16 @@ const normalizeFilename = (name) => {
 
 router.post("/octoprint", async (req, res) => {
   try {
-    const secret = req.body.apiSecret;
-    const expected = process.env.WEBHOOK_SECRET;
+    // Validate header token from OctoPrint
+    const headerToken = req.headers["x-webhook-token"];
+    const expectedToken = process.env.OCTOPRINT_WEBHOOK_TOKEN;
 
-    console.log("🕵️ Incoming webhook token:", secret);
-    console.log("🔐 Expected secret:", expected);
-    console.log("📥 Incoming webhook body:", req.body);
+    console.log("🕵️ Incoming X-Webhook-Token:", headerToken);
+    console.log("🔐 Expected token:", expectedToken);
+    console.log("📥 Webhook body:", req.body);
 
-    if (secret !== expected) {
-      console.warn("🔐 Invalid webhook secret");
+    if (headerToken !== expectedToken) {
+      console.warn("❌ Invalid X-Webhook-Token");
       return res.status(403).json({ message: "Forbidden" });
     }
 
@@ -38,13 +39,12 @@ router.post("/octoprint", async (req, res) => {
       return res.status(200).json({ message: "No matching print job" });
     }
 
-    // Map webhook topic to job status
+    // Determine new status from topic
     let newStatus = null;
     const lowerTopic = topic.toLowerCase();
 
     if (lowerTopic.includes("started")) newStatus = "printing";
-    else if (lowerTopic.includes("done"))
-      newStatus = "completed"; // ✅ match schema
+    else if (lowerTopic.includes("done")) newStatus = "completed";
     else if (lowerTopic.includes("failed")) newStatus = "failed";
     else if (
       lowerTopic.includes("cancelled") ||
@@ -62,7 +62,6 @@ router.post("/octoprint", async (req, res) => {
         jobId: job._id,
       });
 
-      // Send email for specific events
       if (newStatus === "completed") {
         await notifyUser(
           job.userId,
@@ -70,7 +69,6 @@ router.post("/octoprint", async (req, res) => {
           `Your file ${filename} has successfully finished printing.`,
         );
 
-        // 🔁 Automatically start next print in queue
         await processNextPrintInQueue(printer);
       }
 
