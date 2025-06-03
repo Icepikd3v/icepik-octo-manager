@@ -1,7 +1,9 @@
 // server.js
+
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
+const path = require("path");
 const dotenv = require("dotenv");
 dotenv.config();
 
@@ -16,6 +18,18 @@ app.use(helmet());
 // 🔧 Middleware
 app.use(cors());
 app.use(express.json());
+
+// ✅ Serve uploaded avatar images with CORS and static path config
+const avatarPath = path.join(__dirname, "uploads", "avatars");
+app.use(
+  "/uploads/avatars",
+  express.static(avatarPath, {
+    setHeaders: (res) => {
+      res.setHeader("Access-Control-Allow-Origin", "*");
+      res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+    },
+  }),
+);
 
 // 📘 Swagger Docs
 const swaggerUi = require("swagger-ui-express");
@@ -32,20 +46,21 @@ app.use("/api/analytics", require("./routes/analytics"));
 app.use("/api/users", require("./routes/users"));
 app.use("/api/test-email", require("./routes/testEmail"));
 app.use("/api/webhooks", require("./routes/webhooks")); // OctoPrint webhooks
+app.use("/api/stream", require("./routes/streamProxy"));
 
-// 🩺 Health check
+// 🩺 Health Check
 app.get("/api/status", (req, res) => {
   res.json({ success: true, message: "API is running" });
 });
 
-// 🧪 Manual testing route
+// 🧪 Manual Test Route
 app.post("/api/debug/echo", (req, res) => {
   res.json({ route: "echo", body: req.body });
 });
 
 module.exports = app;
 
-// 🚀 Start server only if not in test mode
+// 🚀 Start Server
 if (process.env.NODE_ENV !== "test") {
   const PORT = process.env.PORT || 3001;
   connectDB().then(() => {

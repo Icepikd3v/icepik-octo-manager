@@ -6,7 +6,7 @@ const User = require("../models/Users");
 
 const router = express.Router();
 
-// ✅ Admin-only: GET all users
+/* ------------------- Admin: List All Users ------------------- */
 router.get("/", authMiddleware, adminOnly, async (req, res) => {
   try {
     const users = await User.find({}, "-password -__v").lean();
@@ -16,7 +16,31 @@ router.get("/", authMiddleware, adminOnly, async (req, res) => {
   }
 });
 
-// PATCH subscription (unchanged)
+/* ------------------- Update Avatar ------------------- */
+router.patch("/avatar", authMiddleware, async (req, res) => {
+  try {
+    const { avatar } = req.body;
+    if (!avatar) {
+      return res.status(400).json({ message: "Avatar URL required" });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { avatar },
+      { new: true },
+    ).select("username email avatar");
+
+    res.json({
+      message: "Avatar updated",
+      user,
+    });
+  } catch (err) {
+    console.error("❌ Avatar update error:", err.message);
+    res.status(500).json({ message: "Failed to update avatar" });
+  }
+});
+
+/* ------------------- Update Subscription Tier ------------------- */
 router.patch("/subscription", authMiddleware, async (req, res) => {
   try {
     const { tier } = req.body;

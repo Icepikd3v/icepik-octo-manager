@@ -1,101 +1,116 @@
 // services/octoprintManager.js
 const axios = require("axios");
 const fs = require("fs");
+const path = require("path");
 const FormData = require("form-data");
 require("dotenv").config();
 
-const BASE_URL = process.env.OCTOPRINT_BASE_URL;
-const API_KEY = process.env.OCTOPRINT_API_KEY;
-
-const PATHS = {
-  EnderDirect: process.env.OCTOPRINT_DIRECT_PATH,
-  EnderMultiColor: process.env.OCTOPRINT_MULTICOLOR_PATH,
+// Map printer names to full OctoPrint URL + API Key
+const PRINTERS = {
+  EnderMultiColor: {
+    url: process.env.OCTOPRINT_URL_MULTI,
+    apiKey: process.env.OCTOPRINT_API_KEY_MULTI,
+  },
+  EnderDirect: {
+    url: process.env.OCTOPRINT_URL_DIRECT,
+    apiKey: process.env.OCTOPRINT_API_KEY_DIRECT,
+  },
 };
 
-const API_KEYS = {
-  EnderDirect: process.env.OCTOPRINT_DIRECT_API_KEY || API_KEY,
-  EnderMultiColor: process.env.OCTOPRINT_MULTICOLOR_API_KEY || API_KEY,
+// ✅ Helper to validate printer and return config
+const getConfig = (printer) => {
+  const config = PRINTERS[printer];
+  if (!config) throw new Error("Invalid printer type");
+  return config;
 };
 
-const getFullUrl = (printer, endpoint = "") => {
-  const path = PATHS[printer];
-  if (!path) throw new Error("Invalid printer type");
-  return `${BASE_URL}${path}${endpoint}`;
-};
-
-// Upload a file to OctoPrint
-const uploadToOctoPrint = async (filename, printer = "EnderDirect") => {
+// === Upload GCODE file ===
+const uploadToOctoPrint = async (filename, printer) => {
   try {
-    const url = getFullUrl(printer, "/api/files/local");
+    const { url, apiKey } = getConfig(printer);
+    const filePath = path.join(__dirname, "..", "uploads", filename);
+
     const form = new FormData();
-    form.append("file", fs.createReadStream(`uploads/${filename}`));
+    form.append("file", fs.createReadStream(filePath));
 
     const headers = {
-      "X-Api-Key": API_KEYS[printer],
       ...form.getHeaders(),
+      "X-Api-Key": apiKey,
     };
 
-    const response = await axios.post(url, form, { headers });
-    return response.data;
+    const res = await axios.post(`${url}/api/files/local`, form, {
+      headers,
+      maxContentLength: Infinity,
+      maxBodyLength: Infinity,
+    });
+
+    return res.data;
   } catch (err) {
     console.error("❌ Upload failed:", err.message);
     return null;
   }
 };
 
-// Start a print job
+// === Start print job ===
 const startPrintJob = async ({ printer, filename }) => {
   try {
-    const url = getFullUrl(printer, `/api/files/local/${filename}`);
-    const headers = {
-      "X-Api-Key": API_KEYS[printer],
-      "Content-Type": "application/json",
-    };
-
-    const response = await axios.post(
-      url,
+    const { url, apiKey } = getConfig(printer);
+    const res = await axios.post(
+      `${url}/api/files/local/${filename}`,
       { command: "select", print: true },
-      { headers },
+      {
+        headers: {
+          "X-Api-Key": apiKey,
+          "Content-Type": "application/json",
+        },
+      },
     );
-    return response.data;
+    return res.data;
   } catch (err) {
     console.error("❌ Start job error:", err.message);
     return { error: err.message };
   }
 };
 
-// Pause, Resume, Cancel, Status
+// === Print control ===
 const pausePrint = async (printer) => {
-  const url = getFullUrl(printer, "/api/job");
-  const headers = {
-    "X-Api-Key": API_KEYS[printer],
-    "Content-Type": "application/json",
-  };
-  await axios.post(url, { command: "pause", action: "pause" }, { headers });
+  const { url, apiKey } = getConfig(printer);
+  await axios.post(
+    `${url}/api/job`,
+    { command: "pause", action: "pause" },
+    {
+      headers: { "X-Api-Key": apiKey },
+    },
+  );
 };
 
 const resumePrint = async (printer) => {
-  const url = getFullUrl(printer, "/api/job");
-  const headers = {
-    "X-Api-Key": API_KEYS[printer],
-    "Content-Type": "application/json",
-  };
-  await axios.post(url, { command: "pause", action: "resume" }, { headers });
+  const { url, apiKey } = getConfig(printer);
+  await axios.post(
+    `${url}/api/job`,
+    { command: "pause", action: "resume" },
+    {
+      headers: { "X-Api-Key": apiKey },
+    },
+  );
 };
 
 const cancelPrint = async (printer) => {
-  const url = getFullUrl(printer, "/api/job");
-  const headers = {
-    "X-Api-Key": API_KEYS[printer],
-    "Content-Type": "application/json",
-  };
-  await axios.post(url, { command: "cancel" }, { headers });
+  const { url, apiKey } = getConfig(printer);
+  await axios.post(
+    `${url}/api/job`,
+    { command: "cancel" },
+    {
+      headers: { "X-Api-Key": apiKey },
+    },
+  );
 };
 
 const getPrintStatus = async (printer) => {
-  const url = getFullUrl(printer, "/api/job");
-  const headers = { "X-Api-Key": API_KEYS[printer] };
-  const res = await axios.get(url, { headers });
+  const { url, apiKey } = getConfig(printer);
+  const res = await axios.get(`${url}/api/job`, {
+    headers: { "X-Api-Key": apiKey },
+  });
   return res.data;
 };
 
@@ -110,13 +125,14 @@ const getPrinterStatus = async (printer) => {
 };
 
 const deleteOctoPrintFile = async (filename, printer) => {
+  const { url, apiKey } = getConfig(printer);
   try {
-    const url = getFullUrl(
-      printer,
-      `/api/files/local/${encodeURIComponent(filename)}`,
+    const res = await axios.delete(
+      `${url}/api/files/local/${encodeURIComponent(filename)}`,
+      {
+        headers: { "X-Api-Key": apiKey },
+      },
     );
-    const headers = { "X-Api-Key": API_KEYS[printer] };
-    const res = await axios.delete(url, { headers });
     return { success: true, response: res.data };
   } catch (err) {
     console.error("❌ OctoPrint delete error:", err.message);
@@ -125,16 +141,17 @@ const deleteOctoPrintFile = async (filename, printer) => {
 };
 
 const getPrinterFiles = async (printer) => {
-  const url = getFullUrl(printer, "/api/files");
-  const headers = { "X-Api-Key": API_KEYS[printer] };
-  const res = await axios.get(url, { headers });
+  const { url, apiKey } = getConfig(printer);
+  const res = await axios.get(`${url}/api/files`, {
+    headers: { "X-Api-Key": apiKey },
+  });
   return res.data.files || [];
 };
 
 const getWebcamStreamUrl = (printer) => {
   return printer === "EnderMultiColor"
-    ? process.env.WEBCAM_MULTICOLOR
-    : process.env.WEBCAM_DIRECT;
+    ? process.env.STREAM_URL_MULTI
+    : process.env.STREAM_URL_DIRECT;
 };
 
 module.exports = {
@@ -144,7 +161,7 @@ module.exports = {
   resumePrint,
   cancelPrint,
   getPrintStatus,
-  getPrinterStatus, // ✅ Now included in export
+  getPrinterStatus,
   deleteOctoPrintFile,
   getPrinterFiles,
   getWebcamStreamUrl,

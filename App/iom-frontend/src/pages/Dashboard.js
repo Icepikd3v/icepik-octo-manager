@@ -1,6 +1,14 @@
-import React, { useState } from "react";
+// src/pages/Dashboard.js
+import React, { useState, useEffect } from "react";
 import { FaEdit, FaSave } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import api from "../utils/api";
+
+const normalizeAvatar = (avatar) => {
+  if (!avatar) return "https://via.placeholder.com/150";
+  if (avatar.startsWith("/uploads")) return `http://localhost:3001${avatar}`;
+  return avatar;
+};
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -14,28 +22,72 @@ const Dashboard = () => {
 
   const [userInfo, setUserInfo] = useState({
     avatar: "https://via.placeholder.com/150",
-    name: "John Doe",
-    email: "john.doe@example.com",
-    bio: "Web Developer at Icepik Studios",
-    subscriptionPlan: "Premium Plan",
-    startDate: "2024-01-01",
-    endDate: "2025-01-01",
+    name: "",
+    email: "",
+    bio: "",
+    subscriptionPlan: "",
+    startDate: "",
+    endDate: "",
   });
 
+  useEffect(() => {
+    const rawUser = localStorage.getItem("user");
+    if (rawUser) {
+      try {
+        const user = JSON.parse(rawUser);
+        const normalized = {
+          name: user.username || user.name || "",
+          email: user.email || "",
+          avatar: normalizeAvatar(user.avatar),
+          bio: user.bio || "",
+          subscriptionPlan: user.subscriptionTier || "",
+          startDate: user.subscriptionStartDate || "",
+          endDate: user.subscriptionEndDate || "",
+        };
+        setUserInfo(normalized);
+      } catch (e) {
+        console.warn("Failed to parse user from localStorage:", e);
+      }
+    }
+  }, []);
+
   const handleEditToggle = (field) => {
-    setIsEditing((prevState) => ({ ...prevState, [field]: !prevState[field] }));
+    setIsEditing((prev) => ({ ...prev, [field]: !prev[field] }));
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setUserInfo((prevState) => ({ ...prevState, [name]: value }));
+    setUserInfo((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleAvatarChange = (e) => {
+  const handleAvatarChange = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setUserInfo((prevState) => ({ ...prevState, avatar: imageUrl }));
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("avatar", file);
+
+    try {
+      const token = localStorage.getItem("token");
+      const res = await api.post("/auth/upload-avatar", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      const newAvatarPath = `/uploads/avatars/${res.data.avatarUrl.split("/").pop()}`;
+      const newAvatarFull = normalizeAvatar(newAvatarPath);
+
+      setUserInfo((prev) => ({ ...prev, avatar: newAvatarFull }));
+
+      const storedUser = JSON.parse(localStorage.getItem("user"));
+      const updatedUser = { ...storedUser, avatar: newAvatarPath };
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+
+      window.location.reload(); // Ensure both header and dashboard match
+    } catch (err) {
+      console.error("Avatar upload error:", err);
     }
   };
 
@@ -45,10 +97,9 @@ const Dashboard = () => {
 
   return (
     <div className="p-6 flex flex-col md:flex-row gap-6">
-      {/* User Information Card */}
+      {/* User Profile */}
       <div className="bg-gray-300 shadow-md rounded-md p-6 w-full md:w-1/2">
         <h2 className="text-2xl font-heading mb-4">User Profile</h2>
-        {/* Avatar Section */}
         <div className="flex items-center gap-4 mb-6">
           <img
             src={userInfo.avatar}
@@ -80,9 +131,7 @@ const Dashboard = () => {
           )}
         </div>
 
-        {/* User Details Section */}
         <div className="space-y-4">
-          {/* Name */}
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-subheading">Name:</h3>
@@ -106,7 +155,6 @@ const Dashboard = () => {
             </button>
           </div>
 
-          {/* Email */}
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-subheading">Email:</h3>
@@ -130,7 +178,6 @@ const Dashboard = () => {
             </button>
           </div>
 
-          {/* Bio */}
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-subheading">Bio:</h3>

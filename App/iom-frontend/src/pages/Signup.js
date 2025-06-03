@@ -1,15 +1,17 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
+import api from "../utils/api";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
-    name: "",
+    username: "",
     email: "",
     password: "",
   });
 
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -18,44 +20,54 @@ const Signup = () => {
     setError("");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    const { username, email, password } = formData;
 
-    const { name, email, password } = formData;
-
-    if (!name || !email || !password) {
+    if (!username || !email || !password) {
       setError("All fields are required!");
       return;
     }
 
-    // Mock Signup (Replace with backend integration later)
-    localStorage.setItem("token", "mock-demo-token");
-    localStorage.setItem("user", JSON.stringify({ name, email }));
-    navigate("/dashboard");
+    try {
+      setLoading(true);
+      const res = await api.post("/auth/register", {
+        username,
+        email,
+        password,
+      });
+
+      // Save token + user to localStorage
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+
+      navigate("/dashboard");
+    } catch (err) {
+      console.error("Signup error:", err.response?.data?.message);
+      setError(err.response?.data?.message || "Signup failed. Try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="flex flex-col items-center justify-center text-fontBlack">
-      {/* Signup Box */}
       <div className="bg-gray-300 shadow-lg rounded-lg p-6 w-80 text-center">
-        {/* Logo */}
         <div className="flex justify-center mb-4">
           <img src={logo} alt="Logo" className="h-12 w-12 object-contain" />
         </div>
 
-        {/* Title */}
         <h1 className="text-xl font-heading mb-2">Create an Account</h1>
         <p className="text-sm font-paragraph text-gray-600 mb-4">
           Sign up to start managing your 3D prints.
         </p>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <input
             type="text"
-            name="name"
-            placeholder="Full Name"
-            value={formData.name}
+            name="username"
+            placeholder="Username"
+            value={formData.username}
             onChange={handleChange}
             className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primaryTeal"
           />
@@ -76,21 +88,19 @@ const Signup = () => {
             className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primaryTeal"
           />
 
-          {/* Error Message */}
           {error && (
             <p className="text-sm text-red-500 font-paragraph">{error}</p>
           )}
 
-          {/* Signup Button */}
           <button
             type="submit"
+            disabled={loading}
             className="bg-primaryTeal text-black px-4 py-1.5 rounded-md font-subheading hover:bg-blue-300 transition"
           >
-            Signup
+            {loading ? "Creating..." : "Signup"}
           </button>
         </form>
 
-        {/* Navigation Link */}
         <p className="text-sm mt-4 font-paragraph">
           Already have an account?{" "}
           <a

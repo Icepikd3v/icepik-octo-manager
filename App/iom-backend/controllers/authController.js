@@ -1,14 +1,13 @@
-// controllers/authController.js
+// ✅ controllers/authController.js
 const User = require("../models/Users.js");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
-const { sendEmail } = require("../services/emailService");
+const { sendVerificationEmail } = require("../services/emailManager");
 
 const register = async (req, res) => {
   try {
     const { username, email, password } = req.body;
-
     const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({ message: "User already exists" });
@@ -23,7 +22,7 @@ const register = async (req, res) => {
       email,
       password: hashedPassword,
       verificationToken,
-      isVerified: process.env.NODE_ENV === "test" ? true : false, // ✅ Auto-verify in test mode
+      isVerified: process.env.NODE_ENV === "test" ? true : false,
     });
 
     const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
@@ -31,18 +30,13 @@ const register = async (req, res) => {
     });
 
     if (process.env.NODE_ENV !== "test") {
-      const verificationLink = `${process.env.BASE_WEB_URL}/verify/${verificationToken}`;
-      await sendEmail(
-        email,
-        "Verify Your Email",
-        `Click to verify: ${verificationLink}`,
-      );
+      await sendVerificationEmail(email, verificationToken);
     }
 
     return res.status(201).json({
       message: "User created.",
       user: { id: newUser._id, username, email },
-      ...(process.env.NODE_ENV === "test" && { token }), // ✅ Include token only in test
+      ...(process.env.NODE_ENV === "test" && { token }),
     });
   } catch (err) {
     console.error("Register error:", err);
@@ -55,8 +49,9 @@ const verify = async (req, res) => {
     const { token } = req.params;
     const user = await User.findOne({ verificationToken: token });
 
-    if (!user)
+    if (!user) {
       return res.status(400).json({ message: "Invalid or expired token." });
+    }
 
     user.isVerified = true;
     user.verificationToken = undefined;
@@ -72,7 +67,6 @@ const verify = async (req, res) => {
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-
     const user = await User.findOne({ email });
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(400).json({ message: "Invalid credentials" });
@@ -92,6 +86,11 @@ const login = async (req, res) => {
         id: user._id,
         username: user.username,
         email: user.email,
+        avatar: user.avatar || null,
+        subscriptionTier: user.subscriptionTier || null,
+        subscriptionStartDate: user.subscriptionStartDate || null,
+        subscriptionEndDate: user.subscriptionEndDate || null,
+        bio: user.bio || "",
       },
     });
   } catch (err) {
@@ -100,4 +99,19 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { register, login, verify };
+const me = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select(
+      "username email avatar subscriptionTier subscriptionStartDate subscriptionEndDate bio",
+    );
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    res.json({ user });
+  } catch (err) {
+    console.error("❌ /me error:", err.message);
+    res.status(500).json({ message: "Failed to fetch user" });
+  }
+};
+
+module.exports = { register, login, verify, me };

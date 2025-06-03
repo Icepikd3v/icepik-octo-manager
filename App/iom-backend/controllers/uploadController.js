@@ -21,7 +21,16 @@ const handleModelUpload = async (req, res) => {
       return res.status(400).json({ error: "No file uploaded." });
     }
 
-    const printer = req.body.printer || "EnderDirect";
+    // Validate printer
+    const rawPrinter = req.body.printer;
+    const printer = rawPrinter?.trim(); // normalize
+    const allowedPrinters = ["EnderMultiColor", "EnderDirect"];
+
+    if (!printer || !allowedPrinters.includes(printer)) {
+      console.error("❌ Invalid printer input:", printer);
+      return res.status(400).json({ error: "Invalid printer type" });
+    }
+
     let status = "queued";
     let finalFilename = req.file.filename;
 
@@ -38,6 +47,7 @@ const handleModelUpload = async (req, res) => {
       status = octoPrintResponse ? "sent" : "ready";
     }
 
+    // Create the file record
     const newFile = await ModelFile.create({
       name: req.file.originalname,
       filename: finalFilename,
@@ -46,7 +56,7 @@ const handleModelUpload = async (req, res) => {
       status,
     });
 
-    // Log upload
+    // Log analytics
     await logEvent(req.user.id, "file_upload", {
       filename: newFile.filename,
       status: newFile.status,
@@ -54,7 +64,7 @@ const handleModelUpload = async (req, res) => {
       size: req.file.size,
     });
 
-    // Create print job in DB
+    // Create associated print job
     const newJob = await PrintJob.create({
       userId: req.user.id,
       printer,
@@ -62,7 +72,7 @@ const handleModelUpload = async (req, res) => {
       modelFile: newFile._id,
     });
 
-    // Check printer status
+    // Determine if printer is available
     const statusData = await getPrintStatus(printer);
     const isPrinting =
       statusData.state && statusData.state.toLowerCase().includes("print");
@@ -83,7 +93,7 @@ const handleModelUpload = async (req, res) => {
           filename: newFile.filename,
         });
       } else {
-        console.warn("❌ Could not notify user, email not found:", req.user.id);
+        console.warn("⚠️ No email found for user:", req.user.id);
       }
 
       console.log(`🕒 Printer ${printer} is busy. Job queued.`);

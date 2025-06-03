@@ -1,8 +1,10 @@
 import React, { useState } from "react";
+import api from "../utils/api";
 
 const Upload = () => {
   const [file, setFile] = useState(null);
-  const [uploadStatus, setUploadStatus] = useState(""); // Uploading, Completed, Error
+  const [printer, setPrinter] = useState("EnderMultiColor");
+  const [uploadStatus, setUploadStatus] = useState("");
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -11,24 +13,36 @@ const Upload = () => {
       setUploadStatus("");
     } else {
       setFile(null);
-      setUploadStatus("Error: Only .gcode files are allowed.");
+      setUploadStatus("❌ Only .gcode files are allowed.");
     }
   };
 
-  const handleUpload = () => {
-    if (file) {
-      setUploadStatus("Uploading...");
-      setTimeout(() => {
-        setUploadStatus("Completed");
-        setFile(null);
-      }, 2000); // Simulating upload time
+  const handleUpload = async () => {
+    if (!file) return;
+
+    try {
+      setUploadStatus("⏳ Uploading...");
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("printer", printer);
+
+      const token = localStorage.getItem("token");
+      await api.post("/models/upload", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setUploadStatus("✅ Upload complete!");
+      setFile(null);
+    } catch (err) {
+      console.error("Upload error:", err.response?.data);
+      setUploadStatus("❌ Upload failed. Try again.");
     }
   };
 
-  const handleDragOver = (e) => {
-    e.preventDefault();
-  };
-
+  const handleDragOver = (e) => e.preventDefault();
   const handleDrop = (e) => {
     e.preventDefault();
     const droppedFile = e.dataTransfer.files[0];
@@ -37,7 +51,7 @@ const Upload = () => {
       setUploadStatus("");
     } else {
       setFile(null);
-      setUploadStatus("Error: Only .gcode files are allowed.");
+      setUploadStatus("❌ Only .gcode files are allowed.");
     }
   };
 
@@ -47,10 +61,10 @@ const Upload = () => {
         Upload Your .gcode File
       </h1>
       <p className="text-center text-fontBlack mb-4">
-        Drag and drop your `.gcode` file below or click to browse manually.
+        Drag & drop your `.gcode` file below or click to browse manually.
       </p>
 
-      {/* Drag-and-Drop Box */}
+      {/* Drag & Drop Upload Box */}
       <div
         onDragOver={handleDragOver}
         onDrop={handleDrop}
@@ -80,10 +94,25 @@ const Upload = () => {
         </label>
       </div>
 
+      {/* Printer Selection */}
+      <div className="text-center mb-4">
+        <label className="block mb-2 font-subheading">Choose Printer:</label>
+        <select
+          value={printer}
+          onChange={(e) => setPrinter(e.target.value)}
+          className="border border-gray-300 p-2 rounded-md"
+        >
+          <option value="EnderMultiColor">EnderMultiColor</option>
+          <option value="EnderDirect">EnderDirect</option>
+        </select>
+      </div>
+
       {/* Upload Status */}
       {uploadStatus && (
         <div
-          className={`text-center mb-4 font-paragraph ${uploadStatus === "Error: Only .gcode files are allowed." ? "text-red-500" : "text-green-500"}`}
+          className={`text-center mb-4 font-paragraph ${
+            uploadStatus.includes("❌") ? "text-red-500" : "text-green-600"
+          }`}
         >
           {uploadStatus}
         </div>
@@ -100,7 +129,7 @@ const Upload = () => {
               : "bg-gray-400 text-gray-700 cursor-not-allowed"
           }`}
         >
-          {uploadStatus === "Uploading..." ? "Uploading..." : "Upload File"}
+          {uploadStatus === "⏳ Uploading..." ? "Uploading..." : "Upload File"}
         </button>
       </div>
     </div>

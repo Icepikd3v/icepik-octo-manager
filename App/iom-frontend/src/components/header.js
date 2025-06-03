@@ -1,24 +1,46 @@
-import React from "react";
+// src/components/Header.js
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
 
 const Header = () => {
   const navigate = useNavigate();
+  const [user, setUser] = useState({
+    name: "Guest",
+    avatar: "https://via.placeholder.com/40",
+  });
+
   const isAuthenticated = localStorage.getItem("token") !== null;
-  const user = JSON.parse(localStorage.getItem("user")) || { name: "Guest" };
+
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    if (storedUser) {
+      const avatar = storedUser.avatar?.startsWith("http")
+        ? storedUser.avatar
+        : `http://localhost:3001${storedUser.avatar}`;
+
+      setUser({
+        name: storedUser.username || storedUser.name || "User",
+        avatar: avatar,
+      });
+    }
+  }, []);
 
   const handleAuth = () => {
     if (isAuthenticated) {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
+      navigate("/");
     } else {
+      const demoUser = {
+        name: "Demo User",
+        email: "demo@user.com",
+        avatar: "https://via.placeholder.com/40",
+      };
       localStorage.setItem("token", "mock-demo-token");
-      localStorage.setItem(
-        "user",
-        JSON.stringify({ name: "Demo User", email: "demo@user.com" }),
-      );
+      localStorage.setItem("user", JSON.stringify(demoUser));
+      setUser(demoUser);
     }
-    navigate("/");
   };
 
   return (
@@ -44,9 +66,9 @@ const Header = () => {
             </button>
           </div>
           <img
-            src="https://via.placeholder.com/40"
+            src={user.avatar}
             alt="User Avatar"
-            className="h-10 w-10 rounded-full border border-gray-400"
+            className="h-10 w-10 rounded-full border border-gray-400 object-cover"
           />
         </div>
       ) : (

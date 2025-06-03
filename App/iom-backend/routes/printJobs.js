@@ -8,9 +8,51 @@ const adminOnly = require("../middleware/adminMiddleware");
 const PrintJob = require("../models/PrintJob");
 const { createPrintJob } = require("../controllers/printJobController");
 const { logEvent } = require("../services/analyticsService");
+const { getPrinterStatus } = require("../services/octoprintManager");
 
 // === Create a new print job (optional — separate from upload)
 router.post("/", auth, createPrintJob);
+
+// === Live printer data (real-time print status)
+router.get("/live", auth, async (req, res) => {
+  try {
+    const printers = ["EnderMultiColor", "EnderDirect"];
+    const results = [];
+
+    for (const printer of printers) {
+      const data = await getPrinterStatus(printer);
+
+      let currentPrint = null;
+      if (data?.job?.file?.name) {
+        const filename = data.job.file.name;
+        try {
+          const printJob = await PrintJob.findOne({ filename });
+          currentPrint = {
+            filename,
+            progress: data.progress?.completion || 0,
+          };
+        } catch (err) {
+          console.warn(`⚠️ Failed to look up print job for ${filename}`);
+        }
+      }
+
+      results.push({
+        printer,
+        status: data?.state?.text || "unknown",
+        streamUrl:
+          printer === "EnderMultiColor"
+            ? process.env.WEBCAM_MULTICOLOR
+            : process.env.WEBCAM_DIRECT,
+        currentPrint,
+      });
+    }
+
+    res.json(results);
+  } catch (err) {
+    console.error("❌ Error in /live route:", err.message);
+    res.status(500).json({ message: "Failed to fetch job details." });
+  }
+});
 
 // === User's print history
 router.get("/history", auth, async (req, res) => {
