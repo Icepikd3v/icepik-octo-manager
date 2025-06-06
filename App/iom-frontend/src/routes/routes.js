@@ -15,7 +15,8 @@ import BackendStatus from "../pages/BackendStatus";
 import VerifyEmail from "../pages/VerifyEmail";
 import ForgotPassword from "../pages/ForgotPassword"; // ✅ New
 import ResetPassword from "../pages/ResetPassword"; // ✅ New
-
+import SubscriptionSuccess from "../pages/SubscriptionSuccess"; // ✅ Add this
+import SubscriptionCancel from "../pages/SubscriptionCancel"; // ✅ Add this
 const AppRoutes = () => (
   <Routes>
     {/* Public Routes */}
@@ -25,6 +26,8 @@ const AppRoutes = () => (
     <Route path="/forgot-password" element={<ForgotPassword />} /> {/* ✅ */}
     <Route path="/reset-password/:token" element={<ResetPassword />} />{" "}
     {/* ✅ */}
+    <Route path="/subscription-success" element={<SubscriptionSuccess />} />
+    <Route path="/subscription-cancel" element={<SubscriptionCancel />} />
     <Route path="/backend-status" element={<BackendStatus />} />
     {/* Protected Routes */}
     <Route

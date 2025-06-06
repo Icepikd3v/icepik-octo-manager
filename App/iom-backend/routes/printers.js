@@ -1,3 +1,4 @@
+// routes/printers.js
 const express = require("express");
 const router = express.Router();
 const auth = require("../middleware/authMiddleware");
@@ -6,7 +7,39 @@ const Printer = require("../models/Printer");
 const {
   getWebcamStreamUrl,
   getPrinterFiles,
+  getPrinterStatus,
 } = require("../services/octoprintManager");
+
+// === 🖨️ Public Printer Status for Upload Page
+router.get("/status/all", async (req, res) => {
+  try {
+    const printers = await Printer.find();
+
+    const statusList = await Promise.all(
+      printers.map(async ({ name, isUnderMaintenance }) => {
+        let status = "offline";
+
+        if (isUnderMaintenance) {
+          status = "maintenance";
+        } else {
+          try {
+            const rawStatus = await getPrinterStatus(name); // e.g. "Operational", "Printing"
+            status = rawStatus?.toLowerCase() || "unknown";
+          } catch {
+            status = "offline";
+          }
+        }
+
+        return { name, status };
+      }),
+    );
+
+    res.json({ printers: statusList });
+  } catch (err) {
+    console.error("❌ Error fetching printer statuses:", err.message);
+    res.status(500).json({ message: "Failed to fetch printer statuses." });
+  }
+});
 
 // === 🎥 Webcam Stream URL
 router.get("/:name/webcam", auth, (req, res) => {
@@ -34,7 +67,7 @@ router.get("/:name/files", auth, async (req, res) => {
   }
 });
 
-// === 🔐 Admin: List All Printers
+// === 🔐 Admin: List All Printers (MongoDB config)
 router.get("/", auth, adminOnly, async (req, res) => {
   try {
     const printers = await Printer.find();

@@ -5,10 +5,7 @@ import logo from "../assets/logo.png";
 
 const Header = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState({
-    name: "Guest",
-    avatar: "https://via.placeholder.com/40",
-  });
+  const [user, setUser] = useState({ username: "", avatar: "" });
 
   const isAuthenticated = localStorage.getItem("token") !== null;
 
@@ -20,27 +17,16 @@ const Header = () => {
         : `http://localhost:3001${storedUser.avatar}`;
 
       setUser({
-        name: storedUser.username || storedUser.name || "User",
-        avatar: avatar,
+        username: storedUser.username || "User",
+        avatar: avatar || "https://via.placeholder.com/40",
       });
     }
   }, []);
 
-  const handleAuth = () => {
-    if (isAuthenticated) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      navigate("/");
-    } else {
-      const demoUser = {
-        name: "Demo User",
-        email: "demo@user.com",
-        avatar: "https://via.placeholder.com/40",
-      };
-      localStorage.setItem("token", "mock-demo-token");
-      localStorage.setItem("user", JSON.stringify(demoUser));
-      setUser(demoUser);
-    }
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/");
   };
 
   return (
@@ -57,9 +43,9 @@ const Header = () => {
       {isAuthenticated ? (
         <div className="flex items-center gap-4">
           <div className="text-right">
-            <p className="font-subheading">{user.name}</p>
+            <p className="font-subheading">{user.username}</p>
             <button
-              onClick={handleAuth}
+              onClick={handleLogout}
               className="text-sm text-red-600 hover:text-red-800"
             >
               Logout
@@ -72,12 +58,12 @@ const Header = () => {
           />
         </div>
       ) : (
-        <button
-          onClick={handleAuth}
+        <Link
+          to="/"
           className="bg-primaryTeal text-black px-4 py-1.5 rounded-md font-subheading hover:bg-blue-300 transition"
         >
           Login
-        </button>
+        </Link>
       )}
     </header>
   );

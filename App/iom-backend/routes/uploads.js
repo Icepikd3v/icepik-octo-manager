@@ -6,6 +6,7 @@ const path = require("path");
 
 const upload = require("../middleware/uploadMiddleware");
 const auth = require("../middleware/authMiddleware");
+const subscriptionCheck = require("../middleware/subscriptionMiddleware");
 
 const ModelFile = require("../models/ModelFile");
 const {
@@ -17,10 +18,11 @@ const { handleModelUpload } = require("../controllers/uploadController");
 
 const router = express.Router();
 
-// ✅ POST /api/models/upload — Upload model file
+// ✅ POST /api/models/upload — Upload model file (subscription required)
 router.post(
   "/upload",
   auth,
+  subscriptionCheck,
   (req, res, next) => {
     upload.single("file")(req, res, function (err) {
       if (err) {

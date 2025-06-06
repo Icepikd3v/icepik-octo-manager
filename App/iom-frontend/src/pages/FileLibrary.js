@@ -4,7 +4,9 @@ import React, { useEffect, useState } from "react";
 import api from "../utils/api";
 
 const FileLibrary = () => {
-  const [files, setFiles] = useState([]);
+  const [allFiles, setAllFiles] = useState([]);
+  const [filteredFiles, setFilteredFiles] = useState([]);
+  const [filter, setFilter] = useState("All");
   const [message, setMessage] = useState("");
 
   useEffect(() => {
@@ -14,7 +16,8 @@ const FileLibrary = () => {
         const res = await api.get("/models", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setFiles(res.data);
+        setAllFiles(res.data);
+        setFilteredFiles(res.data);
       } catch (err) {
         console.error("Failed to fetch files:", err);
         setMessage("⚠️ Error loading files.");
@@ -23,6 +26,29 @@ const FileLibrary = () => {
 
     fetchFiles();
   }, []);
+
+  useEffect(() => {
+    const now = new Date();
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay());
+
+    const filtered = allFiles.filter((file) => {
+      const createdAt = new Date(file.createdAt);
+      if (filter === "Today") {
+        return createdAt.toDateString() === now.toDateString();
+      } else if (filter === "This Week") {
+        return createdAt >= startOfWeek;
+      } else if (filter === "This Month") {
+        return (
+          createdAt.getMonth() === now.getMonth() &&
+          createdAt.getFullYear() === now.getFullYear()
+        );
+      }
+      return true; // All
+    });
+
+    setFilteredFiles(filtered);
+  }, [filter, allFiles]);
 
   const handlePrint = async (file) => {
     try {
@@ -50,7 +76,8 @@ const FileLibrary = () => {
       await api.delete(`/models/${fileId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setFiles(files.filter((file) => file._id !== fileId));
+      const updated = allFiles.filter((file) => file._id !== fileId);
+      setAllFiles(updated);
       setMessage("🗑️ File deleted.");
     } catch (err) {
       console.error("Delete failed:", err.response?.data || err.message);
@@ -59,15 +86,32 @@ const FileLibrary = () => {
   };
 
   return (
-    <div>
+    <div className="p-6">
       <h2 className="text-2xl font-heading mb-4">📁 My Uploaded Files</h2>
       {message && <div className="mb-4 text-sm text-blue-700">{message}</div>}
 
+      <div className="mb-4">
+        <label htmlFor="filter" className="mr-2 font-subheading">
+          Filter:
+        </label>
+        <select
+          id="filter"
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          className="border border-gray-300 p-2 rounded"
+        >
+          <option value="All">All Time</option>
+          <option value="Today">Today</option>
+          <option value="This Week">This Week</option>
+          <option value="This Month">This Month</option>
+        </select>
+      </div>
+
       <div className="space-y-4">
-        {files.length === 0 ? (
-          <p>No files uploaded yet.</p>
+        {filteredFiles.length === 0 ? (
+          <p>No files match the selected filter.</p>
         ) : (
-          files.map((file) => (
+          filteredFiles.map((file) => (
             <div
               key={file._id}
               className="border rounded p-4 flex justify-between items-center bg-white shadow"
@@ -78,15 +122,15 @@ const FileLibrary = () => {
                   Printer: {file.printer} | Status: {file.status}
                 </p>
               </div>
-              <div className="flex items-center">
+              <div className="flex gap-2">
                 <button
                   className="px-3 py-1 bg-teal-600 text-white rounded hover:bg-teal-700"
                   onClick={() => handlePrint(file)}
                 >
-                  Print
+                  Reprint
                 </button>
                 <button
-                  className="px-3 py-1 ml-4 bg-red-500 text-white rounded hover:bg-red-600"
+                  className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
                   onClick={() => handleDelete(file._id)}
                 >
                   Delete

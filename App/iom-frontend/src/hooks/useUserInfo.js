@@ -13,8 +13,11 @@ const useUserInfo = () => {
   });
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (user) {
+    try {
+      const storedUser = localStorage.getItem("user");
+      if (!storedUser) return;
+
+      const user = JSON.parse(storedUser);
       const avatarPath = user.avatar?.startsWith("/uploads")
         ? `http://localhost:3001${user.avatar}`
         : user.avatar || "https://via.placeholder.com/150";
@@ -28,6 +31,9 @@ const useUserInfo = () => {
         startDate: user.subscriptionStartDate || "",
         endDate: user.subscriptionEndDate || "",
       });
+    } catch (err) {
+      console.error("Failed to parse user info from localStorage:", err);
+      localStorage.removeItem("user");
     }
   }, []);
 

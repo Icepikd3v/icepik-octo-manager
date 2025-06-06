@@ -4,14 +4,15 @@ const router = express.Router();
 
 const auth = require("../middleware/authMiddleware");
 const adminOnly = require("../middleware/adminMiddleware");
+const subscriptionCheck = require("../middleware/subscriptionMiddleware");
 
 const PrintJob = require("../models/PrintJob");
 const { createPrintJob } = require("../controllers/printJobController");
 const { logEvent } = require("../services/analyticsService");
 const { getPrinterStatus } = require("../services/octoprintManager");
 
-// === Create a new print job (optional — separate from upload)
-router.post("/", auth, createPrintJob);
+// === Create a new print job (requires subscription)
+router.post("/", auth, subscriptionCheck, createPrintJob);
 
 // === Live printer data (real-time print status)
 router.get("/live", auth, async (req, res) => {

@@ -47,7 +47,7 @@ app.use("/api/users", require("./routes/users"));
 app.use("/api/test-email", require("./routes/testEmail"));
 app.use("/api/webhooks", require("./routes/webhooks")); // OctoPrint webhooks
 app.use("/api/stream", require("./routes/streamProxy"));
-
+app.use("/api/payment", require("./routes/payment"));
 // 🩺 Health Check
 app.get("/api/status", (req, res) => {
   res.json({ success: true, message: "API is running" });
