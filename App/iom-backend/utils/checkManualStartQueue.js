@@ -1,81 +1,57 @@
 // utils/checkManualStartQueue.js
-
 const PrintJob = require("../models/PrintJob");
-const User = require("../models/Users");
-const { notifyUser } = require("../services/emailManager");
 const { logEvent } = require("../services/analyticsService");
-const { startPrintJob } = require("../services/octoprintManager");
 
-const tierPriority = {
-  gold: 1,
-  silver: 2,
-  bronze: 3,
-  basic: 4,
-};
-
-async function checkManualStartQueue(printer) {
+const checkManualStartQueue = async (printer) => {
   try {
-    const jobs = await PrintJob.find({ printer, status: "queued" })
-      .populate("userId")
-      .sort({ createdAt: 1 });
-
-    if (!jobs.length) return;
-
     const now = new Date();
 
-    // Find job eligible to start
-    for (let i = 0; i < jobs.length; i++) {
-      const job = jobs[i];
+    // Find jobs that missed their 24h start window
+    const expiredJobs = await PrintJob.find({
+      printer,
+      status: "pending_user_start",
+      startBy: { $lt: now },
+    });
 
-      // Case 1: User was notified but missed the 24h deadline
-      if (job.manualStartDeadline && job.manualStartDeadline < now) {
-        // Reset notified fields and move to back
-        job.notifiedAt = null;
-        job.manualStartDeadline = null;
-        await job.save();
+    for (const job of expiredJobs) {
+      const userId = job.userId?.toString?.();
+      const filename = job.filename;
 
-        await logEvent(job.userId._id, "missed_start_window", {
-          filename: job.filename,
+      // If user has already been passed over 3 times, delete the job
+      if (job.timesDeferred >= 3) {
+        await PrintJob.deleteOne({ _id: job._id });
+
+        await logEvent(userId, "job_removed_expired_3x", {
+          printer,
+          filename,
           jobId: job._id,
+          reason: "Exceeded 3 deferrals",
         });
 
-        await notifyUser("missed_window", job.userId, {
-          printer: job.printer,
-          filename: job.filename,
-        });
-
-        console.log(`⏰ Job ${job._id} bumped to back of queue.`);
+        console.log(`❌ Removed job (${filename}) after 3 missed chances.`);
         continue;
       }
 
-      // Case 2: Not yet notified, notify and set 24h window
-      if (!job.notifiedAt) {
-        const now = new Date();
-        job.notifiedAt = now;
-        job.manualStartDeadline = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24h
-        await job.save();
+      // Otherwise, send it back to queue and give another chance
+      job.status = "queued";
+      job.startBy = null;
+      job.timesDeferred += 1;
+      await job.save();
 
-        await logEvent(job.userId._id, "notified_to_start", {
-          printer: job.printer,
-          filename: job.filename,
-          jobId: job._id,
-        });
+      await logEvent(userId, "job_deferred_back_to_queue", {
+        printer,
+        filename,
+        jobId: job._id,
+        newTimesDeferred: job.timesDeferred,
+      });
 
-        await notifyUser("your_turn", job.userId, {
-          printer: job.printer,
-          filename: job.filename,
-          deadline: job.manualStartDeadline,
-        });
-
-        console.log(
-          `📬 Notified user ${job.userId.email} to start job ${job._id}`,
-        );
-        break; // notify only one user at a time
-      }
+      console.log(
+        `🔄 Job ${filename} deferred. Total deferrals: ${job.timesDeferred}`,
+      );
     }
   } catch (err) {
-    console.error("❌ Manual start queue check failed:", err);
+    console.error("❌ checkManualStartQueue error:", err.message);
   }
-}
+};
 
-module.exports = { checkManualStartQueue };
+module.exports = checkManualStartQueue;

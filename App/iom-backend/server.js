@@ -7,6 +7,7 @@ const path = require("path");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
 const { runAllChecks } = require("./utils/startupCheck");
+const { startQueueMonitor } = require("./utils/scheduler"); // ✅ NEW
 
 dotenv.config();
 const app = express();
@@ -74,6 +75,9 @@ if (process.env.NODE_ENV !== "test") {
     app.listen(PORT, async () => {
       console.log(`🚀 Server running on port ${PORT}`);
       await runAllChecks();
+
+      // ✅ Start automated print queue monitor
+      startQueueMonitor(); // 🔁 Every 15 mins
     });
   });
 }

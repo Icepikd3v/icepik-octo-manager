@@ -1,4 +1,5 @@
 // utils/queueProcessor.js
+
 const PrintJob = require("../models/PrintJob");
 const User = require("../models/Users");
 const Printer = require("../models/Printer");
@@ -19,7 +20,7 @@ const tierPriority = {
 
 const HOURS_TO_START = 24;
 
-async function processPrintQueue(printerName) {
+async function processNextPrintInQueue(printerName) {
   try {
     const printer = await Printer.findOne({ name: printerName });
     if (!printer || printer.isUnderMaintenance) return;
@@ -33,7 +34,7 @@ async function processPrintQueue(printerName) {
 
     if (!jobs.length) return;
 
-    // Sort by tier first, then createdAt
+    // Sort by subscription tier priority first, then by submission time
     jobs.sort((a, b) => {
       const tierA = a.userId.subscriptionTier || "basic";
       const tierB = b.userId.subscriptionTier || "basic";
@@ -51,7 +52,7 @@ async function processPrintQueue(printerName) {
       deadline.setHours(deadline.getHours() + HOURS_TO_START);
 
       if (now > deadline) {
-        // Deadline missed — move to back and notify
+        // Deadline missed — move to back of queue and notify
         await logEvent(job.userId._id, "deadline_missed", {
           jobId: job._id,
           filename: job.filename,
@@ -63,16 +64,18 @@ async function processPrintQueue(printerName) {
           printer: job.printer,
         });
 
-        job.createdAt = new Date();
+        job.createdAt = new Date(); // bump to back of queue
         await job.save();
         continue;
       }
 
-      // Within 24 hours — notify user to start manually
+      // Valid job found — notify user to start manually
       nextJob = job;
+
       await notifyUser("start_now", job.userId, {
         filename: job.filename,
         printer: job.printer,
+        jobId: job._id.toString(), // ✅ Pass jobId for email link
       });
 
       await logEvent(job.userId._id, "start_window_open", {
@@ -89,4 +92,4 @@ async function processPrintQueue(printerName) {
   }
 }
 
-module.exports = { processPrintQueue };
+module.exports = { processNextPrintInQueue };

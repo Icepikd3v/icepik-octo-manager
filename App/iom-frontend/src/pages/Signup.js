@@ -1,3 +1,5 @@
+// src/pages/Signup.js
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
@@ -37,9 +39,11 @@ const Signup = () => {
         password,
       });
 
-      // Save token + user to localStorage
+      // ✅ Ensure token is saved inside user object
+      const fullUser = { ...res.data.user, token: res.data.token };
       localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
+      localStorage.setItem("user", JSON.stringify(fullUser));
+      window.dispatchEvent(new Event("userChanged"));
 
       navigate("/dashboard");
     } catch (err) {

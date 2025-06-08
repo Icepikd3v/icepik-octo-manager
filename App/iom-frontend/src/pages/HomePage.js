@@ -8,7 +8,6 @@ import YouTubeSidebar from "../components/YouTubeSidebar";
 
 const HomePage = () => {
   const navigate = useNavigate();
-
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -32,8 +31,11 @@ const HomePage = () => {
       setLoading(true);
       const res = await api.post("/auth/login", { email, password });
 
+      // ✅ Ensure token is saved inside user object
+      const fullUser = { ...res.data.user, token: res.data.token };
       localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
+      localStorage.setItem("user", JSON.stringify(fullUser));
+      window.dispatchEvent(new Event("userChanged"));
 
       navigate("/dashboard");
     } catch (err) {
@@ -46,15 +48,11 @@ const HomePage = () => {
 
   return (
     <div className="flex flex-col md:flex-row items-center justify-center gap-6 p-4 text-fontBlack">
-      {/* YouTube Sidebar (replaces old mock news) */}
       <YouTubeSidebar />
-
-      {/* Login Form */}
       <div className="bg-gray-300 shadow-lg rounded-lg p-6 w-80 text-center">
         <div className="flex justify-center mb-4">
           <img src={logo} alt="Logo" className="h-12 w-12 object-contain" />
         </div>
-
         <h1 className="text-xl font-heading mb-2">
           Welcome to Icepik's Octo Manager
         </h1>
@@ -108,7 +106,6 @@ const HomePage = () => {
         </form>
       </div>
 
-      {/* Site Updates */}
       <section className="bg-gray-300 shadow-md rounded-md p-4 w-full md:w-1/4">
         <h2 className="text-xl font-subheading mb-2 border-b pb-2">
           📢 Site Updates

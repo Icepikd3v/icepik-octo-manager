@@ -9,7 +9,10 @@ const subscriptionCheck = require("../middleware/subscriptionMiddleware");
 const PrintJob = require("../models/PrintJob");
 const { createPrintJob } = require("../controllers/printJobController");
 const { logEvent } = require("../services/analyticsService");
-const { getPrinterStatus } = require("../services/octoprintManager");
+const {
+  getPrinterStatus,
+  startPrintJob,
+} = require("../services/octoprintManager");
 
 // === Create a new print job (requires subscription)
 router.post("/", auth, subscriptionCheck, createPrintJob);
@@ -96,10 +99,15 @@ router.get("/:id", auth, async (req, res) => {
     const job = await PrintJob.findById(req.params.id)
       .populate("modelFile")
       .populate("userId", "username email");
-    if (!job) return res.status(404).json({ message: "Print job not found" });
 
-    const isOwner = job.userId._id.toString() === req.user.id;
-    const isAdmin = req.user.subscriptionTier === "admin" || req.user.isAdmin;
+    if (!job) {
+      return res.status(404).json({ message: "Print job not found" });
+    }
+
+    const jobUserId = job.userId?._id?.toString() || job.userId?.toString();
+    const currentUserId = req.user.id.toString();
+    const isOwner = jobUserId === currentUserId;
+    const isAdmin = req.user.isAdmin === true;
 
     if (!isOwner && !isAdmin) {
       return res.status(403).json({ message: "Unauthorized" });
@@ -107,8 +115,57 @@ router.get("/:id", auth, async (req, res) => {
 
     res.json(job);
   } catch (err) {
-    console.error(err);
+    console.error("❌ Error fetching job:", err.message);
     res.status(500).json({ message: "Failed to fetch job details." });
+  }
+});
+
+// === Start print job (manual trigger by owner)
+router.post("/:id/start", auth, async (req, res) => {
+  try {
+    const job = await PrintJob.findById(req.params.id);
+
+    if (!job) {
+      return res.status(404).json({ message: "Print job not found" });
+    }
+
+    const isOwner = job.userId.toString() === req.user.id.toString();
+    if (!isOwner) {
+      return res
+        .status(403)
+        .json({ message: "Not authorized to start this print" });
+    }
+
+    if (job.status !== "queued") {
+      return res
+        .status(400)
+        .json({ message: "Print job is not in a queued state" });
+    }
+
+    const result = await startPrintJob({
+      printer: job.printer,
+      filename: job.filename,
+    });
+
+    if (result?.error) {
+      return res
+        .status(500)
+        .json({ message: `OctoPrint error: ${result.error}` });
+    }
+
+    job.status = "printing";
+    job.startedAt = new Date();
+    await job.save();
+
+    await logEvent(req.user.id, "user_started_print_job", {
+      jobId: job._id,
+      filename: job.filename,
+    });
+
+    res.json({ message: "Print job started!" });
+  } catch (err) {
+    console.error("❌ Failed to start print job:", err.message);
+    res.status(500).json({ message: "Failed to start print job." });
   }
 });
 
