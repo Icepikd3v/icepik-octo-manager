@@ -52,8 +52,19 @@ router.delete("/:id", auth, async (req, res) => {
     const file = await ModelFile.findById(req.params.id);
     if (!file) return res.status(404).json({ message: "File not found" });
 
-    // Only allow owner to delete
-    if (file.userId.toString() !== req.user.id) {
+    const fileOwner =
+      typeof file.userId === "object" && file.userId?._id
+        ? file.userId._id.toString()
+        : file.userId.toString();
+    const currentUser = req.user.id.toString();
+
+    // ✅ Allow owner or admin
+    if (fileOwner !== currentUser && !req.user?.isAdmin) {
+      console.warn("🚫 Unauthorized delete attempt:", {
+        fileOwner,
+        currentUser,
+        isAdmin: req.user?.isAdmin,
+      });
       return res.status(403).json({ message: "Unauthorized" });
     }
 

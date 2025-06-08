@@ -1,5 +1,3 @@
-// src/pages/FileLibrary.js
-
 import React, { useEffect, useState } from "react";
 import api from "../utils/api";
 
@@ -9,13 +7,11 @@ const FileLibrary = () => {
   const [filter, setFilter] = useState("All");
   const [message, setMessage] = useState("");
 
+  // ✅ Fetch uploaded files
   useEffect(() => {
     const fetchFiles = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const res = await api.get("/models", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await api.get("/models");
         setAllFiles(res.data);
         setFilteredFiles(res.data);
       } catch (err) {
@@ -27,6 +23,7 @@ const FileLibrary = () => {
     fetchFiles();
   }, []);
 
+  // ✅ Filter logic
   useEffect(() => {
     const now = new Date();
     const startOfWeek = new Date(now);
@@ -44,26 +41,20 @@ const FileLibrary = () => {
           createdAt.getFullYear() === now.getFullYear()
         );
       }
-      return true; // All Time
+      return true;
     });
 
     setFilteredFiles(filtered);
   }, [filter, allFiles]);
 
+  // ✅ Start reprint
   const handlePrint = async (file) => {
     try {
-      const token = localStorage.getItem("token");
-      await api.post(
-        "/print-jobs",
-        {
-          filename: file.name,
-          printer: file.printer,
-          modelFileId: file._id, // ✅ Critical: added modelFileId to match backend expectations
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
+      await api.post("/print-jobs", {
+        filename: file.name,
+        printer: file.printer,
+        modelFileId: file._id,
+      });
       setMessage(`🖨️ Print started: ${file.name}`);
     } catch (err) {
       console.error("Print failed:", err.response?.data || err.message);
@@ -71,12 +62,10 @@ const FileLibrary = () => {
     }
   };
 
+  // ✅ Delete file
   const handleDelete = async (fileId) => {
     try {
-      const token = localStorage.getItem("token");
-      await api.delete(`/models/${fileId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.delete(`/models/${fileId}`);
       const updated = allFiles.filter((file) => file._id !== fileId);
       setAllFiles(updated);
       setMessage("🗑️ File deleted.");
@@ -89,7 +78,15 @@ const FileLibrary = () => {
   return (
     <div className="p-6">
       <h2 className="text-2xl font-heading mb-4">📁 My Uploaded Files</h2>
-      {message && <div className="mb-4 text-sm text-blue-700">{message}</div>}
+      {message && (
+        <div
+          className={`mb-4 text-sm ${
+            message.startsWith("❌") ? "text-red-600" : "text-blue-700"
+          }`}
+        >
+          {message}
+        </div>
+      )}
 
       <div className="mb-4">
         <label htmlFor="filter" className="mr-2 font-subheading">

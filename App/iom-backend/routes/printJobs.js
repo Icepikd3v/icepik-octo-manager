@@ -9,10 +9,7 @@ const subscriptionCheck = require("../middleware/subscriptionMiddleware");
 const PrintJob = require("../models/PrintJob");
 const { createPrintJob } = require("../controllers/printJobController");
 const { logEvent } = require("../services/analyticsService");
-const {
-  getPrinterStatus,
-  startPrintJob,
-} = require("../services/octoprintManager");
+const { getPrinterStatus } = require("../services/octoprintManager");
 
 // === Create a new print job (requires subscription)
 router.post("/", auth, subscriptionCheck, createPrintJob);
@@ -64,7 +61,14 @@ router.get("/queue", auth, async (req, res) => {
     const jobs = await PrintJob.find({ status: "queued" })
       .sort({ createdAt: 1 })
       .populate("userId", "username email");
-    res.json(jobs);
+
+    // ✅ Filter to only include proper .gcode files, not .aw.gcode
+    const filteredQueue = jobs.filter(
+      (job) =>
+        job.filename.endsWith(".gcode") && !job.filename.endsWith(".aw.gcode"),
+    );
+
+    res.json(filteredQueue);
   } catch (err) {
     console.error("❌ Queue fetch failed:", err.message);
     res.status(500).json({ message: "Failed to fetch print queue." });
@@ -117,55 +121,6 @@ router.get("/:id", auth, async (req, res) => {
   } catch (err) {
     console.error("❌ Error fetching job:", err.message);
     res.status(500).json({ message: "Failed to fetch job details." });
-  }
-});
-
-// === Start print job (manual trigger by owner)
-router.post("/:id/start", auth, async (req, res) => {
-  try {
-    const job = await PrintJob.findById(req.params.id);
-
-    if (!job) {
-      return res.status(404).json({ message: "Print job not found" });
-    }
-
-    const isOwner = job.userId.toString() === req.user.id.toString();
-    if (!isOwner) {
-      return res
-        .status(403)
-        .json({ message: "Not authorized to start this print" });
-    }
-
-    if (job.status !== "queued") {
-      return res
-        .status(400)
-        .json({ message: "Print job is not in a queued state" });
-    }
-
-    const result = await startPrintJob({
-      printer: job.printer,
-      filename: job.filename,
-    });
-
-    if (result?.error) {
-      return res
-        .status(500)
-        .json({ message: `OctoPrint error: ${result.error}` });
-    }
-
-    job.status = "printing";
-    job.startedAt = new Date();
-    await job.save();
-
-    await logEvent(req.user.id, "user_started_print_job", {
-      jobId: job._id,
-      filename: job.filename,
-    });
-
-    res.json({ message: "Print job started!" });
-  } catch (err) {
-    console.error("❌ Failed to start print job:", err.message);
-    res.status(500).json({ message: "Failed to start print job." });
   }
 });
 
