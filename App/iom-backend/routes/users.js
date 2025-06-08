@@ -40,6 +40,30 @@ router.patch("/avatar", authMiddleware, async (req, res) => {
   }
 });
 
+/* ------------------- Update Bio ------------------- */
+router.patch("/bio", authMiddleware, async (req, res) => {
+  try {
+    const { bio } = req.body;
+    if (!bio || typeof bio !== "string") {
+      return res.status(400).json({ message: "Bio must be a string" });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { bio },
+      { new: true },
+    ).select("username email bio");
+
+    res.json({
+      message: "Bio updated successfully",
+      user,
+    });
+  } catch (err) {
+    console.error("❌ Bio update error:", err.message);
+    res.status(500).json({ message: "Failed to update bio" });
+  }
+});
+
 /* ------------------- Update Subscription Tier ------------------- */
 router.patch("/subscription", authMiddleware, async (req, res) => {
   try {
@@ -62,6 +86,20 @@ router.patch("/subscription", authMiddleware, async (req, res) => {
   } catch (err) {
     console.error("❌ Subscription update error:", err.message);
     res.status(500).json({ message: "Failed to update subscription" });
+  }
+});
+
+/* ------------------- Get Current User Info ------------------- */
+router.get("/me", authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(user);
+  } catch (err) {
+    console.error("❌ Failed to fetch current user:", err.message);
+    res.status(500).json({ message: "Failed to fetch user" });
   }
 });
 

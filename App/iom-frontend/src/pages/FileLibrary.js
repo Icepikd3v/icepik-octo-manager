@@ -44,7 +44,7 @@ const FileLibrary = () => {
           createdAt.getFullYear() === now.getFullYear()
         );
       }
-      return true; // All
+      return true; // All Time
     });
 
     setFilteredFiles(filtered);
@@ -56,8 +56,9 @@ const FileLibrary = () => {
       await api.post(
         "/print-jobs",
         {
-          filename: file.filename,
+          filename: file.name,
           printer: file.printer,
+          modelFileId: file._id, // ✅ Critical: added modelFileId to match backend expectations
         },
         {
           headers: { Authorization: `Bearer ${token}` },

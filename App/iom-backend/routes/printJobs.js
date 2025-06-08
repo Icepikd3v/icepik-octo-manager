@@ -55,6 +55,19 @@ router.get("/live", auth, async (req, res) => {
   }
 });
 
+// === View queue of upcoming print jobs
+router.get("/queue", auth, async (req, res) => {
+  try {
+    const jobs = await PrintJob.find({ status: "queued" })
+      .sort({ createdAt: 1 })
+      .populate("userId", "username email");
+    res.json(jobs);
+  } catch (err) {
+    console.error("❌ Queue fetch failed:", err.message);
+    res.status(500).json({ message: "Failed to fetch print queue." });
+  }
+});
+
 // === User's print history
 router.get("/history", auth, async (req, res) => {
   try {

@@ -1,3 +1,4 @@
+// src/pages/Live.js
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
@@ -30,6 +31,10 @@ const Live = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const getStreamUrl = (printer) => {
+    return `http://localhost:3001/api/stream/${printer}`;
+  };
+
   return (
     <div className="px-4 py-6">
       <h1 className="text-2xl font-bold mb-4 text-center">
@@ -45,7 +50,7 @@ const Live = () => {
         {currentPrint ? (
           <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
             <img
-              src={currentPrint.streamUrl}
+              src={getStreamUrl(currentPrint.printer)}
               alt="Current Print Stream"
               className="w-full md:w-1/3 rounded shadow"
               onError={(e) => {
@@ -88,7 +93,7 @@ const Live = () => {
         {printJobs.map((job) => (
           <div key={job.printer} className="bg-white rounded shadow p-4">
             <img
-              src={job.streamUrl}
+              src={getStreamUrl(job.printer)}
               alt={`Stream for ${job.printer}`}
               className="w-full h-40 object-cover mb-3 rounded"
               onError={(e) => {

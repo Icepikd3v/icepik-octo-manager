@@ -114,9 +114,16 @@ const HomePage = () => {
           📢 Site Updates
         </h2>
         <ul className="text-sm font-paragraph space-y-2 list-disc list-inside">
-          <li>🌟 New dashboard features added.</li>
-          <li>🔒 Improved account security.</li>
-          <li>🛠 Maintenance scheduled next Monday.</li>
+          <li>🚧 Staging application ready</li>
+          <li>🔑 Forgot Password feature implemented</li>
+          <li>🔓 Login/Signup flows live</li>
+          <li>📺 YouTubeSidebar integration working</li>
+          <li>👤 Header now shows username & avatar</li>
+          <li>📊 Dashboard profile & subscription info done</li>
+          <li>💳 Stripe checkout wired up</li>
+          <li>📡 Live page fetching printer status</li>
+          <li>📤 Upload page tier-based auto-start logic</li>
+          <li>📁 File Library filters & reprint button</li>
         </ul>
       </section>
     </div>

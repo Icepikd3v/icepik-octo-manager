@@ -17,6 +17,8 @@ async function notifyUser(status, user, payload = {}) {
     print_failed: templates.canceled,
     shipped: templates.shipped,
     print_progress: templates.progress,
+    start_now: templates.manualStartPrompt, // 🆕 User must manually start
+    missed_deadline: templates.missedDeadline, // 🆕 Missed 24h deadline
   };
 
   const tplFn = templateMap[status];

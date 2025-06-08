@@ -85,6 +85,34 @@ function progress({ username, filename, estimated_print_time }) {
   };
 }
 
+function manualStartPrompt({ username, filename, jobId }) {
+  const startLink = `${process.env.BASE_WEB_URL || "http://localhost:3000"}/print/start/${jobId}`;
+  return {
+    subject: `🕒 It's your turn to print: ${filename}`,
+    html: `
+      <div style="font-family:sans-serif; max-width:600px; margin:auto;">
+        <h2>Hello ${username},</h2>
+        <p>Your print job <strong>${filename}</strong> is now first in the queue.</p>
+        <p>Please <a href="${startLink}">click here to start your print job</a> within 24 hours.</p>
+        <p>If you don’t take action, your job will be moved to the back of the queue.</p>
+      </div>
+    `,
+  };
+}
+
+function missedDeadline({ username, filename }) {
+  return {
+    subject: `⏳ You missed your print window: ${filename}`,
+    html: `
+      <div style="font-family:sans-serif; max-width:600px; margin:auto;">
+        <h2>Hi ${username},</h2>
+        <p>Your print job <strong>${filename}</strong> was not started within the 24-hour window.</p>
+        <p>It has been moved to the back of the queue. We'll notify you again when it's your turn.</p>
+      </div>
+    `,
+  };
+}
+
 module.exports = {
   queued,
   started,
@@ -92,4 +120,6 @@ module.exports = {
   canceled,
   shipped,
   progress,
+  manualStartPrompt,
+  missedDeadline,
 };

@@ -1,62 +1,60 @@
+// src/components/Footer.js
 import React from "react";
-import { FaFacebook, FaInstagram, FaLinkedin, FaGithub } from "react-icons/fa";
+import { FaFacebook, FaYoutube, FaLinkedin, FaGithub } from "react-icons/fa";
 
 const Footer = () => {
   return (
-    <footer className="bg-primaryTeal text-fontBlack font-subheading text-center py-4 px-4 flex flex-col md:flex-row items-center justify-between gap-4">
-      {/* Spacer for Alignment */}
-      <div className="hidden md:flex md:w-1/4"></div>
+    <footer className="bg-primaryTeal text-black py-6">
+      <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between text-center md:text-left">
+        {/* Left spacer for even balance */}
+        <div className="w-full md:w-1/3 hidden md:block" />
 
-      {/* Contact Information (Centered) */}
-      <div className="text-center md:w-1/2">
-        <h3 className="text-lg font-heading mb-2">Contact Us:</h3>
-        <p>
-          📧{" "}
+        {/* Centered Contact Info */}
+        <div className="w-full md:w-1/3 mb-4 md:mb-0 text-center">
+          <p className="font-heading text-lg mb-1">Contact Us:</p>
+          <p className="text-sm font-paragraph">
+            📧 sfarmer1@student.fullsail.edu
+          </p>
+          <p className="text-sm font-paragraph">📧 sam.d3v.35@gmail.com</p>
+          <p className="text-sm font-paragraph">📞 (555)-555-5555</p>
+          <p className="text-sm font-paragraph">📍 USA, WV</p>
+        </div>
+
+        {/* Right-Aligned Social Icons */}
+        <div className="w-full md:w-1/3 flex justify-center md:justify-end gap-4 text-2xl">
           <a
-            href="mailto:sfarmer1@student.fullsail.edu"
-            className="hover:underline"
+            href="https://facebook.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-blue-600"
           >
-            sfarmer1@student.fullsail.edu
+            <FaFacebook />
           </a>
-        </p>
-        <p>📞 (555)-555-5555</p>
-        <p>📍 USA, WV</p>
-      </div>
-
-      {/* Social Media Icons (Right-Aligned) */}
-      <div className="flex justify-end gap-4 md:w-1/4">
-        <a
-          href="https://facebook.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="hover:text-gray-700"
-        >
-          <FaFacebook size={28} />
-        </a>
-        <a
-          href="https://instagram.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="hover:text-gray-700"
-        >
-          <FaInstagram size={28} />
-        </a>
-        <a
-          href="https://linkedin.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="hover:text-gray-700"
-        >
-          <FaLinkedin size={28} />
-        </a>
-        <a
-          href="https://github.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="hover:text-gray-700"
-        >
-          <FaGithub size={28} />
-        </a>
+          <a
+            href="https://www.youtube.com/@icepikcrxsi"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-red-600"
+          >
+            <FaYoutube />
+          </a>
+          <a
+            href="https://www.linkedin.com/in/samdev35/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-blue-700"
+          >
+            <FaLinkedin />
+          </a>
+          <a
+            href="https://github.com/ePortfolios/wdv349-o-FarmerSamuel-FS"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-gray-700"
+          >
+            <FaGithub />
+          </a>
+        </div>
       </div>
     </footer>
   );

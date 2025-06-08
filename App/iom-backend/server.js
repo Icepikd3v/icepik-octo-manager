@@ -5,21 +5,24 @@ const cors = require("cors");
 const helmet = require("helmet");
 const path = require("path");
 const dotenv = require("dotenv");
-dotenv.config();
-
 const connectDB = require("./config/db");
 const { runAllChecks } = require("./utils/startupCheck");
 
+dotenv.config();
 const app = express();
 
-// 🔒 Security
+// 🔒 Security Headers
 app.use(helmet());
 
-// 🔧 Middleware
+// ✅ Stripe Webhooks require raw body parsing
+const bodyParser = require("body-parser");
+app.use("/api/payment/webhook", bodyParser.raw({ type: "application/json" }));
+
+// 🔧 General Middleware
 app.use(cors());
 app.use(express.json());
 
-// ✅ Serve uploaded avatar images with CORS and static path config
+// ✅ Serve Avatars with CORS
 const avatarPath = path.join(__dirname, "uploads", "avatars");
 app.use(
   "/uploads/avatars",
@@ -31,7 +34,7 @@ app.use(
   }),
 );
 
-// 📘 Swagger Docs
+// 📘 Swagger API Docs
 const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = require("./docs/swagger.json");
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
@@ -45,22 +48,26 @@ app.use("/api/print", require("./routes/print"));
 app.use("/api/analytics", require("./routes/analytics"));
 app.use("/api/users", require("./routes/users"));
 app.use("/api/test-email", require("./routes/testEmail"));
-app.use("/api/webhooks", require("./routes/webhooks")); // OctoPrint webhooks
-app.use("/api/stream", require("./routes/streamProxy"));
-app.use("/api/payment", require("./routes/payment"));
-// 🩺 Health Check
+app.use("/api/stream", require("./routes/streamProxy")); // ✅ Stream proxy route
+app.use("/api/payment", require("./routes/payment")); // ✅ Payment routes
+
+// ✅ Stripe Webhook Route (must come after raw parser)
+const webhookHandler = require("./controllers/webhookController");
+app.post("/api/payment/webhook", webhookHandler);
+
+// 🩺 Health Check Endpoint
 app.get("/api/status", (req, res) => {
   res.json({ success: true, message: "API is running" });
 });
 
-// 🧪 Manual Test Route
+// 🧪 Echo Testing Endpoint
 app.post("/api/debug/echo", (req, res) => {
   res.json({ route: "echo", body: req.body });
 });
 
 module.exports = app;
 
-// 🚀 Start Server
+// 🚀 Boot Server
 if (process.env.NODE_ENV !== "test") {
   const PORT = process.env.PORT || 3001;
   connectDB().then(() => {

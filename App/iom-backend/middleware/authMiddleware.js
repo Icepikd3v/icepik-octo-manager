@@ -1,7 +1,8 @@
 // middleware/authMiddleware.js
 const jwt = require("jsonwebtoken");
+const User = require("../models/Users");
 
-const authMiddleware = (req, res, next) => {
+const authMiddleware = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -12,12 +13,27 @@ const authMiddleware = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id).select(
+      "username email subscriptionTier isAdmin avatar bio",
+    );
 
-    // ✅ Ensure req.user.id is always present
-    req.user = { id: decoded.id, ...decoded };
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    req.user = {
+      id: user._id,
+      username: user.username,
+      email: user.email,
+      subscriptionTier: user.subscriptionTier,
+      isAdmin: user.isAdmin,
+      avatar: user.avatar,
+      bio: user.bio,
+    };
 
     next();
   } catch (err) {
+    console.error("authMiddleware error:", err.message);
     return res.status(401).json({ message: "Unauthorized: Invalid token" });
   }
 };

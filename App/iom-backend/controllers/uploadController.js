@@ -4,13 +4,15 @@ const path = require("path");
 const ModelFile = require("../models/ModelFile");
 const PrintJob = require("../models/PrintJob");
 const User = require("../models/Users");
+
 const {
   uploadToOctoPrint,
   getPrintStatus,
 } = require("../services/octoprintManager");
+
 const { logEvent } = require("../services/analyticsService");
 const { notifyUser } = require("../services/emailManager");
-const { processNextPrintInQueue } = require("../utils/queueManager");
+const { processNextPrintInQueue } = require("../utils/queueProcessor"); // ✅ NEW
 
 /**
  * Handle a user uploading a model file.
@@ -21,11 +23,10 @@ const handleModelUpload = async (req, res) => {
       return res.status(400).json({ error: "No file uploaded." });
     }
 
-    // Validate printer
+    // ✅ Normalize & validate printer
     const rawPrinter = req.body.printer;
-    const printer = rawPrinter?.trim(); // normalize
+    const printer = rawPrinter?.trim();
     const allowedPrinters = ["EnderMultiColor", "EnderDirect"];
-
     if (!printer || !allowedPrinters.includes(printer)) {
       console.error("❌ Invalid printer input:", printer);
       return res.status(400).json({ error: "Invalid printer type" });
@@ -34,7 +35,7 @@ const handleModelUpload = async (req, res) => {
     let status = "queued";
     let finalFilename = req.file.filename;
 
-    // Push .gcode files directly to OctoPrint
+    // ✅ Push .gcode files to OctoPrint
     const ext = path.extname(req.file.filename).toLowerCase();
     if (ext === ".gcode") {
       const octoPrintResponse = await uploadToOctoPrint(
@@ -47,7 +48,7 @@ const handleModelUpload = async (req, res) => {
       status = octoPrintResponse ? "sent" : "ready";
     }
 
-    // Create the file record
+    // ✅ Save uploaded model file in DB
     const newFile = await ModelFile.create({
       name: req.file.originalname,
       filename: finalFilename,
@@ -56,7 +57,6 @@ const handleModelUpload = async (req, res) => {
       status,
     });
 
-    // Log analytics
     await logEvent(req.user.id, "file_upload", {
       filename: newFile.filename,
       status: newFile.status,
@@ -64,7 +64,7 @@ const handleModelUpload = async (req, res) => {
       size: req.file.size,
     });
 
-    // Create associated print job
+    // ✅ Create associated print job
     const newJob = await PrintJob.create({
       userId: req.user.id,
       printer,
@@ -72,14 +72,15 @@ const handleModelUpload = async (req, res) => {
       modelFile: newFile._id,
     });
 
-    // Determine if printer is available
     const statusData = await getPrintStatus(printer);
     const isPrinting =
       statusData.state && statusData.state.toLowerCase().includes("print");
 
     if (!isPrinting) {
+      // ✅ Try to auto-start this job now
       await processNextPrintInQueue(printer);
     } else {
+      // ✅ Log and notify if printer is busy
       await logEvent(req.user.id, "print_queued", {
         filename: newFile.filename,
         printer,
@@ -92,8 +93,6 @@ const handleModelUpload = async (req, res) => {
           printer,
           filename: newFile.filename,
         });
-      } else {
-        console.warn("⚠️ No email found for user:", req.user.id);
       }
 
       console.log(`🕒 Printer ${printer} is busy. Job queued.`);

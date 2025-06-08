@@ -1,10 +1,10 @@
 // src/pages/Subscription.js
+
 import React, { useState, useEffect } from "react";
-import { loadStripe } from "@stripe/stripe-js";
+import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
 
-const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
-
+// Subscription plan definitions
 const plans = [
   {
     id: "basic",
@@ -38,10 +38,14 @@ const plans = [
 
 const Subscription = () => {
   const [currentTier, setCurrentTier] = useState("");
-  const [message, setMessage] = useState("");
   const [username, setUsername] = useState("");
+  const [message, setMessage] = useState("");
   const [loadingPlan, setLoadingPlan] = useState(null);
+  const [canceling, setCanceling] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const navigate = useNavigate();
 
+  // load user info on mount
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
     if (storedUser) {
@@ -50,36 +54,86 @@ const Subscription = () => {
     }
   }, []);
 
+  // Create Checkout session
   const handleSelect = async (planId) => {
     if (planId === currentTier) return;
     setLoadingPlan(planId);
-
     try {
       const token = localStorage.getItem("token");
-      const stripe = await stripePromise;
-
       const res = await api.post(
         "/payment/create-checkout-session",
         { planId },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
+        { headers: { Authorization: `Bearer ${token}` } },
       );
-
-      if (!res.data.url) throw new Error("Stripe session ID not returned");
       window.location.href = res.data.url;
     } catch (err) {
-      console.error("❌ Checkout error:", err);
+      console.error("Checkout error:", err);
       setMessage("Failed to redirect to Stripe. Please try again.");
     } finally {
       setLoadingPlan(null);
     }
   };
 
+  // Cancel subscription
+  const performCancel = async () => {
+    setShowConfirm(false);
+    setCanceling(true);
+    setMessage("");
+    try {
+      const token = localStorage.getItem("token");
+      await api.delete("/payment/cancel-subscription", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      // downgrade locally
+      setCurrentTier("basic");
+      const u = JSON.parse(localStorage.getItem("user"));
+      u.subscriptionTier = "basic";
+      localStorage.setItem("user", JSON.stringify(u));
+
+      setMessage("Subscription cancelled.");
+      // redirect in 2s
+      setTimeout(() => navigate("/dashboard"), 2000);
+    } catch (err) {
+      console.error("Cancel error:", err);
+      setMessage("Failed to cancel. Please try again.");
+    } finally {
+      setCanceling(false);
+    }
+  };
+
+  // determine message color
+  const isError = message.toLowerCase().includes("failed");
+
   return (
-    <div className="flex-grow p-8 text-center bg-secondaryGray text-fontBlack font-paragraph">
+    <div className="relative flex-grow p-8 text-center bg-secondaryGray text-fontBlack font-paragraph">
+      {/* Confirmation Modal */}
+      {showConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-80 text-center shadow-xl">
+            <h2 className="text-xl font-heading mb-4">Confirm Cancellation</h2>
+            <p className="mb-6">Are you sure you want to cancel?</p>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                disabled={canceling}
+              >
+                No, keep it
+              </button>
+              <button
+                onClick={performCancel}
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50"
+                disabled={canceling}
+              >
+                {canceling ? "Cancelling..." : "Yes, cancel"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Main UI */}
       <h1 className="text-4xl font-heading mb-4">Subscription Plans</h1>
       {username && (
         <p className="text-lg font-medium mb-2">Logged in as: {username}</p>
@@ -93,9 +147,12 @@ const Subscription = () => {
         Choose a plan that fits your needs and take full advantage of Icepik's
         Octo Manager.
       </p>
-
       {message && (
-        <div className="mb-6 text-sm font-paragraph text-red-600">
+        <div
+          className={`mb-6 text-sm font-paragraph ${
+            isError ? "text-red-600" : "text-green-600"
+          }`}
+        >
           {message}
         </div>
       )}
@@ -103,12 +160,13 @@ const Subscription = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {plans.map((plan) => {
           const isCurrent = plan.id === currentTier;
-
           return (
             <div
               key={plan.id}
               className={`p-6 border rounded-md shadow-md transition relative ${
-                isCurrent ? "bg-primaryTeal text-black" : "bg-white"
+                isCurrent
+                  ? "bg-primaryTeal text-black border-4 border-primaryBlue"
+                  : "bg-white"
               }`}
             >
               <h2 className="text-2xl font-subheading mb-2 font-bold">
@@ -123,9 +181,18 @@ const Subscription = () => {
               <p className="font-semibold mb-4">{plan.prints}</p>
 
               {isCurrent ? (
-                <p className="text-sm font-bold text-green-800">
-                  ✔ Current Plan
-                </p>
+                <>
+                  <p className="text-sm font-bold text-green-800 mb-2">
+                    ✔ Current Plan
+                  </p>
+                  <button
+                    onClick={() => setShowConfirm(true)}
+                    className="mt-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition disabled:opacity-50"
+                    disabled={canceling}
+                  >
+                    Cancel Subscription
+                  </button>
+                </>
               ) : (
                 <button
                   onClick={() => handleSelect(plan.id)}

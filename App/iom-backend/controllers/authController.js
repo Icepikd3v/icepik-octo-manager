@@ -1,4 +1,4 @@
-// ✅ controllers/authController.js
+// controllers/authController.js
 const User = require("../models/Users.js");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -80,13 +80,17 @@ const login = async (req, res) => {
       expiresIn: "7d",
     });
 
+    const avatarUrl = user.avatar?.startsWith("/uploads")
+      ? `http://localhost:3001${user.avatar}`
+      : user.avatar || null;
+
     res.json({
       token,
       user: {
         id: user._id,
         username: user.username,
         email: user.email,
-        avatar: user.avatar || null,
+        avatar: avatarUrl,
         subscriptionTier: user.subscriptionTier || null,
         subscriptionStartDate: user.subscriptionStartDate || null,
         subscriptionEndDate: user.subscriptionEndDate || null,
@@ -107,7 +111,21 @@ const me = async (req, res) => {
 
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    res.json({ user });
+    const avatarUrl = user.avatar?.startsWith("/uploads")
+      ? `http://localhost:3001${user.avatar}`
+      : user.avatar || null;
+
+    res.json({
+      user: {
+        username: user.username,
+        email: user.email,
+        avatar: avatarUrl,
+        subscriptionTier: user.subscriptionTier || null,
+        subscriptionStartDate: user.subscriptionStartDate || null,
+        subscriptionEndDate: user.subscriptionEndDate || null,
+        bio: user.bio || "",
+      },
+    });
   } catch (err) {
     console.error("❌ /me error:", err.message);
     res.status(500).json({ message: "Failed to fetch user" });
