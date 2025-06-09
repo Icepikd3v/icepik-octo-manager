@@ -4,7 +4,6 @@ const fs = require("fs");
 const FormData = require("form-data");
 require("dotenv").config();
 
-// Use standardized environment structure
 const BASE_URL = process.env.OCTOPRINT_BASE_URL;
 
 const PATHS = {

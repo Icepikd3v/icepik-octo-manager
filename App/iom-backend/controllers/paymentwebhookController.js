@@ -23,7 +23,6 @@ module.exports = async (req, res) => {
     const customerId = session.customer;
 
     try {
-      // Expand full session to access price ID for plan mapping
       const fullSession = await stripe.checkout.sessions.retrieve(session.id, {
         expand: ["line_items"],
       });
@@ -37,10 +36,8 @@ module.exports = async (req, res) => {
       };
       const subscriptionTier = tierMap[priceId] || "basic";
 
-      // 🔍 Try to find user by stripeCustomerId
       let user = await User.findOne({ stripeCustomerId: customerId });
 
-      // 🔁 Fallback: fetch customer from Stripe and match by email
       if (!user) {
         const customer = await stripe.customers.retrieve(customerId);
         const customerEmail = customer.email;
@@ -55,6 +52,8 @@ module.exports = async (req, res) => {
       user.subscriptionTier = subscriptionTier;
       user.stripeSubscriptionId = subscriptionId;
       user.stripeCustomerId = customerId;
+      user.subscriptionStartDate = new Date();
+      user.subscriptionEndDate = null;
       await user.save();
 
       console.log(`✅ ${user.email} upgraded to ${subscriptionTier}`);

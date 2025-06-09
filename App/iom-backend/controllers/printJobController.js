@@ -1,132 +1,93 @@
+// controllers/printJobController.js
+
 const PrintJob = require("../models/PrintJob");
+const ModelFile = require("../models/ModelFile");
 const User = require("../models/Users");
 const Printer = require("../models/Printer");
-const { canStartPrintNow } = require("../utils/subscriptionAccess");
+
+const {
+  uploadToOctoPrint,
+  startPrintJob,
+  getPrintStatus,
+} = require("../services/octoprintManager");
+
 const { logEvent } = require("../services/analyticsService");
 const { notifyUser } = require("../services/emailManager");
-const octo = require("../services/octoprintManager");
+const { canStartPrintNow } = require("../utils/subscriptionAccess");
+const { processNextPrintInQueue } = require("../utils/queueProcessor");
 
-const createPrintJob = async (req, res) => {
-  console.log("📥 Incoming print job request:", req.body);
-
+exports.createPrintJob = async (req, res) => {
   try {
-    const { printer, filename, modelFileId } = req.body;
-    if (!printer || !filename || !modelFileId) {
+    const { filename, printer, modelFileId } = req.body;
+    const user = req.user;
+
+    if (!user || !user._id) {
+      return res.status(401).json({ message: "User authentication failed." });
+    }
+
+    if (!filename || !printer || !modelFileId) {
       return res.status(400).json({ message: "Missing required fields." });
     }
 
-    // ✅ Fetch printer by case-insensitive name
-    const printerDoc = await Printer.findOne({
-      name: new RegExp(`^${printer}$`, "i"),
-    });
-    console.log("🔧 Printer document:", printerDoc);
-
-    if (!printerDoc) {
-      return res.status(400).json({ message: "Invalid printer." });
+    const modelFile = await ModelFile.findById(modelFileId);
+    if (!modelFile) {
+      return res.status(404).json({ message: "Model file not found." });
     }
 
-    const user = await User.findById(req.user.id);
-    if (!user) return res.status(404).json({ message: "User not found." });
-
-    // ✅ Handle maintenance mode early
-    if (printerDoc.isUnderMaintenance) {
-      const files = await octo.getPrinterFiles(printer);
-      const base = filename.replace(/\.gcode$/i, "");
-      const awName = files.find(
-        (f) =>
-          f.name.toLowerCase().startsWith(base.toLowerCase()) &&
-          f.name.toLowerCase().endsWith(".aw.gcode"),
-      );
-      const toPrintFilename = awName ? awName.name : filename;
-
-      const newJob = await PrintJob.create({
-        userId: user._id,
-        printer,
-        filename: toPrintFilename,
-        modelFile: modelFileId,
-        status: "queued",
-        startedAt: null,
-      });
-
-      await logEvent(user._id, "maintenance_queue", {
-        printer,
-        filename: toPrintFilename,
-        jobId: newJob._id,
-      });
-
-      await notifyUser("queued", user, {
-        filename: toPrintFilename,
-        printer,
-      });
-
-      return res.status(202).json({
-        message: `${printer} is under maintenance. Your job is placed in the queue.`,
-        printJob: newJob,
-      });
+    const printerDoc = await Printer.findOne({ name: printer });
+    if (!printerDoc || printerDoc.isUnderMaintenance) {
+      return res
+        .status(400)
+        .json({ message: "Selected printer is under maintenance." });
     }
 
-    // ✅ Otherwise, proceed with normal print logic
-    const shouldStart = await canStartPrintNow(user, printer);
-    const files = await octo.getPrinterFiles(printer);
-    const base = filename.replace(/\.gcode$/i, "");
-    const awName = files.find(
-      (f) =>
-        f.name.toLowerCase().startsWith(base.toLowerCase()) &&
-        f.name.toLowerCase().endsWith(".aw.gcode"),
-    );
-    const toPrintFilename = awName ? awName.name : filename;
-
+    // ✅ Create the job first regardless of print state
     const newJob = await PrintJob.create({
       userId: user._id,
       printer,
-      filename: toPrintFilename,
+      filename,
       modelFile: modelFileId,
-      status: shouldStart ? "printing" : "queued",
-      startedAt: shouldStart ? new Date() : null,
     });
 
-    await logEvent(user._id, shouldStart ? "print_started" : "print_queued", {
-      printer,
-      filename: toPrintFilename,
-      jobId: newJob._id,
-    });
+    // ✅ Check printer status and user's eligibility
+    const octoStatus = await getPrintStatus(printer);
+    const isIdle = octoStatus?.state?.toLowerCase() === "operational";
+    const canStart = await canStartPrintNow(user, printer);
 
-    await notifyUser(shouldStart ? "started" : "queued", user, {
-      filename: toPrintFilename,
-      printer,
-    });
+    if (isIdle && canStart) {
+      await startPrintJob(printer, filename);
 
-    if (process.env.NODE_ENV === "test") {
-      console.log("🧪 Test mode: skipping OctoPrint trigger");
-      return res.status(201).json({
-        message: "Test mode - print job created.",
-        printJob: newJob,
+      await PrintJob.findByIdAndUpdate(newJob._id, {
+        status: "printing",
+        startedAt: new Date(),
       });
-    }
 
-    if (shouldStart) {
-      const result = await octo.startPrintJob({
+      await logEvent(user._id, "print_started", {
         printer,
-        filename: toPrintFilename,
+        filename,
+        jobId: newJob._id,
       });
 
-      if (result.error) {
-        newJob.status = "failed";
-        await newJob.save();
-        return res.status(500).json({ message: result.error });
-      }
-    }
+      res
+        .status(200)
+        .json({ message: "Print job started.", jobId: newJob._id });
+    } else {
+      await logEvent(user._id, "print_queued", {
+        printer,
+        filename,
+        jobId: newJob._id,
+      });
 
-    return res.status(201).json({
-      message: shouldStart
-        ? "Print started and logged."
-        : "Printer busy—your job is queued.",
-      printJob: newJob,
-    });
+      if (user?.email) {
+        await notifyUser("queued", user, { printer, filename });
+      }
+
+      res
+        .status(202)
+        .json({ message: "Printer busy — job queued.", jobId: newJob._id });
+    }
   } catch (err) {
-    console.error("❌ Controller Error:", err);
-    res.status(500).json({ message: "Failed to process print job." });
+    console.error("❌ Failed to create print job:", err.message);
+    res.status(500).json({ message: "Server error." });
   }
 };
-
-module.exports = { createPrintJob };

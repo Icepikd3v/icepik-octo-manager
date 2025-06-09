@@ -11,6 +11,13 @@ router.post("/create-checkout-session", authMiddleware, async (req, res) => {
   try {
     const { planId } = req.body;
 
+    // ✅ Block unverified users
+    if (!req.user.isVerified) {
+      return res
+        .status(403)
+        .json({ message: "Please verify your email before upgrading." });
+    }
+
     const priceLookup = {
       basic: process.env.STRIPE_PRICE_BRONZE,
       bronze: process.env.STRIPE_PRICE_BRONZE,
@@ -19,14 +26,15 @@ router.post("/create-checkout-session", authMiddleware, async (req, res) => {
     };
 
     const price = priceLookup[planId];
-    if (!price)
+    if (!price) {
       return res.status(400).json({ message: "Invalid plan selected." });
+    }
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: [{ price, quantity: 1 }],
       mode: "subscription",
-      customer_email: req.user.email, // used for creating the Stripe customer
+      customer_email: req.user.email,
       success_url: `${process.env.CLIENT_URL}/subscription-success`,
       cancel_url: `${process.env.CLIENT_URL}/subscription-cancel`,
       metadata: {
@@ -40,7 +48,6 @@ router.post("/create-checkout-session", authMiddleware, async (req, res) => {
     res.status(500).json({ message: "Failed to create checkout session." });
   }
 });
-
 // ❌ Cancel Subscription
 router.delete("/cancel-subscription", authMiddleware, async (req, res) => {
   try {

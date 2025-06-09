@@ -1,5 +1,6 @@
 // utils/subscriptionAccess.js
 const PrintJob = require("../models/PrintJob");
+const { getPrinterStatus } = require("../services/octoprintManager");
 
 const limits = {
   basic: 0,
@@ -33,13 +34,17 @@ async function canStartPrintNow(user, printer) {
 
   if (monthlyPrints >= limit) return false;
 
-  // Only allow if printer is not already in use
-  const activeCount = await PrintJob.countDocuments({
-    printer,
-    status: "printing",
-  });
+  // ✅ New logic: Check real-time OctoPrint status
+  try {
+    const statusData = await getPrinterStatus(printer);
+    const printerState = statusData?.state?.toLowerCase() || "unknown";
 
-  return activeCount === 0;
+    // Allow print if printer is idle or operational
+    return printerState === "operational" || printerState === "idle";
+  } catch (err) {
+    console.error("❌ Failed to fetch printer status:", err.message);
+    return false;
+  }
 }
 
 module.exports = { canStartPrintNow };

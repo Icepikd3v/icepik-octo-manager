@@ -9,13 +9,18 @@ const Live = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await api.get("/print-jobs/live");
-        setPrinterData(res.data);
+        const [liveRes, queueRes] = await Promise.all([
+          api.get("/print-jobs/live"),
+          api.get("/print-jobs/queue"),
+        ]);
 
-        const queueRes = await api.get("/print-jobs/queue");
+        setPrinterData(liveRes.data || []);
         setQueue(queueRes.data);
-      } catch (error) {
-        console.error("Failed to load live data:", error);
+      } catch (err) {
+        console.error(
+          "❌ Failed to fetch live printer/queue data:",
+          err.message,
+        );
       }
     };
 
@@ -23,14 +28,6 @@ const Live = () => {
     const interval = setInterval(fetchData, 10000);
     return () => clearInterval(interval);
   }, []);
-
-  const getStreamUrl = (printer) => {
-    return `http://localhost:3001/api/stream/${printer}`;
-  };
-
-  const currentPrint = printerData.find(
-    (p) => p.currentPrint && p.status.toLowerCase() === "printing",
-  );
 
   return (
     <div className="px-4 py-6">
@@ -41,78 +38,61 @@ const Live = () => {
         Monitor your prints in real-time and check printer statuses below.
       </p>
 
-      {/* Current Print */}
-      <div className="bg-gray-100 p-4 rounded-lg shadow mb-6">
-        <h2 className="text-lg font-semibold mb-2">Your Current Print</h2>
-        {currentPrint ? (
-          <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
-            <img
-              src={getStreamUrl(currentPrint.printer)}
-              alt="Current Print Stream"
-              className="w-full md:w-1/3 rounded shadow"
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = "/fallback.jpg";
-              }}
-            />
-            <div className="flex-1">
-              <p>
-                <strong>Printer:</strong> {currentPrint.printer}
-              </p>
-              <p>
-                <strong>Status:</strong> {currentPrint.status}
-              </p>
-              <p>
-                <strong>File:</strong>{" "}
-                {currentPrint.currentPrint.filename || "N/A"}
-              </p>
-              <p>
-                <strong>Progress:</strong>
-              </p>
-              <div className="w-full bg-gray-300 rounded h-3 mt-1">
-                <div
-                  className="bg-green-500 h-3 rounded"
-                  style={{
-                    width: `${currentPrint.currentPrint.progress || 0}%`,
-                  }}
-                ></div>
-              </div>
+      {/* 🔴 Active Printers Section */}
+      <h2 className="text-xl font-semibold mb-3">Active Printers</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        {printerData.map((printer) => (
+          <div key={printer.printer} className="bg-white rounded shadow p-4">
+            <div className="w-full h-96 mb-3 overflow-hidden rounded relative">
+              <img
+                src={printer.streamUrl || "/fallback.jpg"}
+                alt={`${printer.printer} Stream`}
+                className="object-cover w-full h-full"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = "/fallback.jpg";
+                }}
+              />
             </div>
-          </div>
-        ) : (
-          <p>No print currently in progress.</p>
-        )}
-      </div>
-
-      {/* Active Printers */}
-      <h2 className="text-xl font-bold mb-3">Active Printers</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        {printerData.map((job) => (
-          <div key={job.printer} className="bg-white rounded shadow p-4">
-            <img
-              src={getStreamUrl(job.printer)}
-              alt={`Stream for ${job.printer}`}
-              className="w-full h-40 object-cover mb-3 rounded"
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = "/fallback.jpg";
-              }}
-            />
-            <h3 className="text-lg font-semibold">{job.printer}</h3>
-            <p>Status: {job.status}</p>
-            <p>File: {job.currentPrint?.filename || "N/A"}</p>
-            <p>Progress:</p>
-            <div className="w-full bg-gray-200 h-2 rounded mt-1">
+            <h3 className="text-lg font-bold mb-1">{printer.printer}</h3>
+            <p className="text-sm mb-1">
+              <strong>Status:</strong>{" "}
+              {printer.status === "operational"
+                ? "Idle"
+                : printer.status === "printing"
+                  ? "Printing"
+                  : printer.status === "maintenance"
+                    ? "Maintenance"
+                    : "Unknown"}
+            </p>
+            <p className="text-sm mb-1">
+              <strong>File:</strong>{" "}
+              {printer.currentPrint?.filename
+                ? printer.currentPrint.filename.replace(
+                    /\.aw\.gcode$/,
+                    ".gcode",
+                  )
+                : "None"}
+            </p>
+            <p className="text-sm mb-1">
+              <strong>Progress:</strong>{" "}
+              {printer.currentPrint?.progress
+                ? `${printer.currentPrint.progress.toFixed(1)}%`
+                : "0%"}
+            </p>
+            <div className="w-full bg-gray-300 h-2 rounded">
               <div
-                className="bg-blue-600 h-2 rounded"
-                style={{ width: `${job.currentPrint?.progress || 0}%` }}
+                className="bg-green-600 h-2 rounded"
+                style={{
+                  width: `${printer.currentPrint?.progress || 0}%`,
+                }}
               ></div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Print Queue */}
+      {/* 📋 Print Queue Section */}
       <h2 className="text-xl font-bold mb-3">📋 Print Queue</h2>
       <div className="overflow-x-auto bg-white p-4 rounded shadow">
         <table className="min-w-full text-sm text-left">
@@ -126,17 +106,25 @@ const Live = () => {
             </tr>
           </thead>
           <tbody>
-            {queue.map((job, index) => (
-              <tr key={job._id} className="border-b">
-                <td className="py-2 px-3">{index + 1}</td>
-                <td className="py-2 px-3">{job.filename}</td>
-                <td className="py-2 px-3">{job.printer}</td>
-                <td className="py-2 px-3">{job.userId?.email || "Unknown"}</td>
-                <td className="py-2 px-3 text-orange-600 font-semibold">
-                  {job.status}
+            {queue.length === 0 ? (
+              <tr>
+                <td colSpan="5" className="py-3 text-center text-gray-500">
+                  No jobs in the queue.
                 </td>
               </tr>
-            ))}
+            ) : (
+              queue.map((job, index) => (
+                <tr key={job._id} className="border-b">
+                  <td className="py-2 px-3">{index + 1}</td>
+                  <td className="py-2 px-3">{job.filename}</td>
+                  <td className="py-2 px-3">{job.printer}</td>
+                  <td className="py-2 px-3">{job.userId?.email || "N/A"}</td>
+                  <td className="py-2 px-3 text-orange-600 font-semibold">
+                    {job.status}
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

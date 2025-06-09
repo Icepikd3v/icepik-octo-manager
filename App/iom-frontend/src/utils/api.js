@@ -8,13 +8,17 @@ const api = axios.create({
   },
 });
 
-// ✅ Interceptor to always attach token from localStorage or sessionStorage
+// ✅ Interceptor to always attach token if valid
 api.interceptors.request.use((config) => {
-  const token =
-    localStorage.getItem("token") || sessionStorage.getItem("token");
+  let token = localStorage.getItem("token") || sessionStorage.getItem("token");
 
-  if (token) {
+  // 🛡️ Validate JWT format before attaching
+  if (token && typeof token === "string" && token.split(".").length === 3) {
     config.headers.Authorization = `Bearer ${token}`;
+  } else {
+    // Remove invalid token if present
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
   }
 
   return config;

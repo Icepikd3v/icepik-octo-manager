@@ -1,7 +1,6 @@
 // src/pages/Signup.js
 
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
 import api from "../utils/api";
 
@@ -13,13 +12,14 @@ const Signup = () => {
   });
 
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     setError("");
+    setMessage("");
   };
 
   const handleSubmit = async (e) => {
@@ -39,13 +39,15 @@ const Signup = () => {
         password,
       });
 
-      // ✅ Ensure token is saved inside user object
+      // Store token temporarily but don't navigate yet
       const fullUser = { ...res.data.user, token: res.data.token };
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(fullUser));
       window.dispatchEvent(new Event("userChanged"));
 
-      navigate("/dashboard");
+      setMessage(
+        "✅ Signup successful! Check your email to verify before logging in.",
+      );
     } catch (err) {
       console.error("Signup error:", err.response?.data?.message);
       setError(err.response?.data?.message || "Signup failed. Try again.");
@@ -94,6 +96,9 @@ const Signup = () => {
 
           {error && (
             <p className="text-sm text-red-500 font-paragraph">{error}</p>
+          )}
+          {message && (
+            <p className="text-sm text-green-600 font-paragraph">{message}</p>
           )}
 
           <button

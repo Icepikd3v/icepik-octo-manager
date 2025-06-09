@@ -52,7 +52,9 @@ const Upload = () => {
         },
       });
 
-      setUploadStatus("✅ Upload complete!");
+      setUploadStatus(
+        "✅ Upload complete! Your job has been queued or printed.",
+      );
       setFile(null);
       setSelectedPrinter(null);
     } catch (err) {
@@ -74,10 +76,8 @@ const Upload = () => {
     }
   };
 
-  const isPrinterSelectable = (status) => status === "operational";
+  const isPrinterSelectable = (status) => status !== "maintenance";
   const canUpload = file && selectedPrinter;
-
-  // ⛔️ Block Basic plan users from uploading
   const isRestricted = user?.subscriptionTier === "basic";
 
   return (
@@ -96,7 +96,6 @@ const Upload = () => {
             Drag & drop your `.gcode` file below or click to browse manually.
           </p>
 
-          {/* Upload Box */}
           <div
             onDragOver={handleDragOver}
             onDrop={handleDrop}
@@ -126,7 +125,6 @@ const Upload = () => {
             </label>
           </div>
 
-          {/* Printer Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             {printers.map((p) => {
               const isDisabled = !isPrinterSelectable(p.status);
@@ -144,13 +142,13 @@ const Upload = () => {
                   <p className="font-heading text-lg">{p.name}</p>
                   <p className="text-sm font-paragraph text-gray-700">
                     Status: {p.status || "unknown"}
+                    {p.status === "printing" && " (Busy – will queue)"}
                   </p>
                 </div>
               );
             })}
           </div>
 
-          {/* Upload Status */}
           {uploadStatus && (
             <div
               className={`text-center mb-4 font-paragraph ${
@@ -161,7 +159,6 @@ const Upload = () => {
             </div>
           )}
 
-          {/* Upload Button */}
           <div className="text-center">
             <button
               onClick={handleUpload}

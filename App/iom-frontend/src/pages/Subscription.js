@@ -1,10 +1,8 @@
-// src/pages/Subscription.js
-
+// ✅ Subscription.js (Full Updated)
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
 
-// Subscription plan definitions
 const plans = [
   {
     id: "basic",
@@ -45,7 +43,6 @@ const Subscription = () => {
   const [showConfirm, setShowConfirm] = useState(false);
   const navigate = useNavigate();
 
-  // load user info on mount
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
     if (storedUser) {
@@ -54,17 +51,13 @@ const Subscription = () => {
     }
   }, []);
 
-  // Create Checkout session
   const handleSelect = async (planId) => {
     if (planId === currentTier) return;
     setLoadingPlan(planId);
     try {
-      const token = localStorage.getItem("token");
-      const res = await api.post(
-        "/payment/create-checkout-session",
-        { planId },
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
+      const res = await api.post("/payment/create-checkout-session", {
+        planId,
+      });
       window.location.href = res.data.url;
     } catch (err) {
       console.error("Checkout error:", err);
@@ -74,25 +67,17 @@ const Subscription = () => {
     }
   };
 
-  // Cancel subscription
   const performCancel = async () => {
     setShowConfirm(false);
     setCanceling(true);
     setMessage("");
     try {
-      const token = localStorage.getItem("token");
-      await api.delete("/payment/cancel-subscription", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      // downgrade locally
+      await api.delete("/payment/cancel-subscription");
       setCurrentTier("basic");
       const u = JSON.parse(localStorage.getItem("user"));
       u.subscriptionTier = "basic";
       localStorage.setItem("user", JSON.stringify(u));
-
       setMessage("Subscription cancelled.");
-      // redirect in 2s
       setTimeout(() => navigate("/dashboard"), 2000);
     } catch (err) {
       console.error("Cancel error:", err);
@@ -102,12 +87,10 @@ const Subscription = () => {
     }
   };
 
-  // determine message color
   const isError = message.toLowerCase().includes("failed");
 
   return (
     <div className="relative flex-grow p-8 text-center bg-secondaryGray text-fontBlack font-paragraph">
-      {/* Confirmation Modal */}
       {showConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-80 text-center shadow-xl">
@@ -133,7 +116,6 @@ const Subscription = () => {
         </div>
       )}
 
-      {/* Main UI */}
       <h1 className="text-4xl font-heading mb-4">Subscription Plans</h1>
       {username && (
         <p className="text-lg font-medium mb-2">Logged in as: {username}</p>
@@ -149,9 +131,7 @@ const Subscription = () => {
       </p>
       {message && (
         <div
-          className={`mb-6 text-sm font-paragraph ${
-            isError ? "text-red-600" : "text-green-600"
-          }`}
+          className={`mb-6 text-sm ${isError ? "text-red-600" : "text-green-600"}`}
         >
           {message}
         </div>

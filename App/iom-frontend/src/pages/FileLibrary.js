@@ -1,53 +1,36 @@
+// src/pages/FileLibrary.js
 import React, { useEffect, useState } from "react";
 import api from "../utils/api";
 
 const FileLibrary = () => {
-  const [allFiles, setAllFiles] = useState([]);
-  const [filteredFiles, setFilteredFiles] = useState([]);
+  const [files, setFiles] = useState([]);
   const [filter, setFilter] = useState("All");
   const [message, setMessage] = useState("");
 
-  // ✅ Fetch uploaded files
   useEffect(() => {
     const fetchFiles = async () => {
       try {
         const res = await api.get("/models");
-        setAllFiles(res.data);
-        setFilteredFiles(res.data);
+        setFiles(res.data);
       } catch (err) {
-        console.error("Failed to fetch files:", err);
-        setMessage("⚠️ Error loading files.");
+        console.error("❌ Failed to fetch files:", err.message);
+        setMessage("Failed to load file list.");
       }
     };
-
     fetchFiles();
   }, []);
 
-  // ✅ Filter logic
-  useEffect(() => {
-    const now = new Date();
-    const startOfWeek = new Date(now);
-    startOfWeek.setDate(now.getDate() - now.getDay());
+  const handleDelete = async (fileId) => {
+    try {
+      await api.delete(`/models/${fileId}`);
+      setFiles((prev) => prev.filter((f) => f._id !== fileId));
+      setMessage("🗑️ File deleted.");
+    } catch (err) {
+      console.error("❌ Delete error:", err.message);
+      setMessage("❌ Failed to delete file.");
+    }
+  };
 
-    const filtered = allFiles.filter((file) => {
-      const createdAt = new Date(file.createdAt);
-      if (filter === "Today") {
-        return createdAt.toDateString() === now.toDateString();
-      } else if (filter === "This Week") {
-        return createdAt >= startOfWeek;
-      } else if (filter === "This Month") {
-        return (
-          createdAt.getMonth() === now.getMonth() &&
-          createdAt.getFullYear() === now.getFullYear()
-        );
-      }
-      return true;
-    });
-
-    setFilteredFiles(filtered);
-  }, [filter, allFiles]);
-
-  // ✅ Start reprint
   const handlePrint = async (file) => {
     try {
       await api.post("/print-jobs", {
@@ -57,87 +40,90 @@ const FileLibrary = () => {
       });
       setMessage(`🖨️ Print started: ${file.name}`);
     } catch (err) {
-      console.error("Print failed:", err.response?.data || err.message);
+      console.error("❌ Print failed:", err.response?.data || err.message);
       setMessage("❌ Print failed.");
     }
   };
 
-  // ✅ Delete file
-  const handleDelete = async (fileId) => {
-    try {
-      await api.delete(`/models/${fileId}`);
-      const updated = allFiles.filter((file) => file._id !== fileId);
-      setAllFiles(updated);
-      setMessage("🗑️ File deleted.");
-    } catch (err) {
-      console.error("Delete failed:", err.response?.data || err.message);
-      setMessage("❌ Failed to delete file.");
-    }
+  const getFilteredFiles = () => {
+    const now = new Date();
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay());
+
+    return files.filter((file) => {
+      const createdAt = new Date(file.createdAt);
+      if (filter === "Today") {
+        return createdAt.toDateString() === now.toDateString();
+      }
+      if (filter === "This Week") {
+        return createdAt >= startOfWeek;
+      }
+      if (filter === "This Month") {
+        return (
+          createdAt.getMonth() === now.getMonth() &&
+          createdAt.getFullYear() === now.getFullYear()
+        );
+      }
+      return true;
+    });
   };
 
   return (
     <div className="p-6">
-      <h2 className="text-2xl font-heading mb-4">📁 My Uploaded Files</h2>
-      {message && (
-        <div
-          className={`mb-4 text-sm ${
-            message.startsWith("❌") ? "text-red-600" : "text-blue-700"
-          }`}
-        >
-          {message}
-        </div>
-      )}
+      <h2 className="text-2xl font-bold mb-4">📁 My Uploaded Files</h2>
+      {message && <div className="mb-4 text-sm text-blue-700">{message}</div>}
 
       <div className="mb-4">
-        <label htmlFor="filter" className="mr-2 font-subheading">
-          Filter:
-        </label>
+        <label className="mr-2 font-medium">Filter:</label>
         <select
-          id="filter"
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          className="border border-gray-300 p-2 rounded"
+          className="border p-2 rounded"
         >
-          <option value="All">All Time</option>
-          <option value="Today">Today</option>
-          <option value="This Week">This Week</option>
-          <option value="This Month">This Month</option>
+          <option>All</option>
+          <option>Today</option>
+          <option>This Week</option>
+          <option>This Month</option>
         </select>
       </div>
 
-      <div className="space-y-4">
-        {filteredFiles.length === 0 ? (
-          <p>No files match the selected filter.</p>
-        ) : (
-          filteredFiles.map((file) => (
-            <div
-              key={file._id}
-              className="border rounded p-4 flex justify-between items-center bg-white shadow"
-            >
-              <div>
-                <p className="font-medium">{file.name}</p>
-                <p className="text-sm text-gray-600">
-                  Printer: {file.printer} | Status: {file.status}
-                </p>
-              </div>
-              <div className="flex gap-2">
+      <table className="w-full text-left border-collapse">
+        <thead>
+          <tr className="border-b bg-gray-100">
+            <th className="py-2 px-4">Name</th>
+            <th className="py-2 px-4">Printer</th>
+            <th className="py-2 px-4">Status</th>
+            <th className="py-2 px-4">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {getFilteredFiles().map((file) => (
+            <tr key={file._id} className="border-b">
+              <td className="py-2 px-4">{file.name}</td>
+              <td className="py-2 px-4">{file.printer}</td>
+              <td className="py-2 px-4 capitalize">{file.status}</td>
+              <td className="py-2 px-4 flex gap-2">
                 <button
-                  className="px-3 py-1 bg-teal-600 text-white rounded hover:bg-teal-700"
                   onClick={() => handlePrint(file)}
+                  className="bg-teal-600 text-white px-3 py-1 rounded hover:bg-teal-700"
                 >
-                  Reprint
+                  Print
                 </button>
                 <button
-                  className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
                   onClick={() => handleDelete(file._id)}
+                  className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
                 >
                   Delete
                 </button>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {getFilteredFiles().length === 0 && (
+        <p className="mt-6 text-gray-500">No files found for this filter.</p>
+      )}
     </div>
   );
 };
