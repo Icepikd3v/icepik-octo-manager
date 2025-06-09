@@ -6,16 +6,8 @@ import api from "../utils/api";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const {
-    name,
-    email,
-    bio,
-    avatar,
-    subscriptionPlan,
-    startDate,
-    endDate,
-    refresh,
-  } = useUserInfo();
+  const { name, email, bio, avatar, subscriptionPlan, startDate, endDate } =
+    useUserInfo();
 
   const [isEditing, setIsEditing] = useState({
     name: false,
