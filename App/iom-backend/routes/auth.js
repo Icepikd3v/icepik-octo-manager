@@ -1,55 +1,110 @@
 // routes/auth.js
 const express = require("express");
-const jwt = require("jsonwebtoken");
-const { register, login } = require("../controllers/authController");
+const crypto = require("crypto");
+const bcrypt = require("bcryptjs");
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
+
+const {
+  register,
+  login,
+  verify,
+  me,
+} = require("../controllers/authController");
 const authMiddleware = require("../middleware/authMiddleware");
 const User = require("../models/Users");
+const { sendPasswordResetEmail } = require("../services/emailManager");
 
 const router = express.Router();
 
-// Public routes
 router.post("/register", register);
 router.post("/login", login);
+router.post("/verify/:token", verify);
 
-// POST /api/auth/verify — confirm email using token
-router.post("/verify", async (req, res) => {
-  const { email, code } = req.body;
-
+// Forgot + Reset Password
+router.post("/forgot-password", async (req, res) => {
   try {
-    const user = await User.findOne({ email, verificationToken: code });
-    if (!user) {
-      return res.status(400).json({ message: "Invalid token or email" });
-    }
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+    if (!user)
+      return res
+        .status(200)
+        .json({ message: "If user exists, reset email sent." });
 
-    user.isVerified = true;
-    user.verificationToken = undefined;
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    user.resetToken = resetToken;
+    user.resetTokenExpiry = Date.now() + 1000 * 60 * 30;
     await user.save();
-
-    const payload = { id: user._id };
-    const token = jwt.sign(payload, process.env.JWT_SECRET, {
-      expiresIn: "7d",
-    });
-
-    return res.json({
-      message: "Account verified",
-      token,
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-      },
-    });
+    await sendPasswordResetEmail(email, resetToken);
+    res.json({ message: "Password reset email sent." });
   } catch (err) {
-    console.error("Verification error:", err.message);
-    return res
-      .status(500)
-      .json({ message: "Server error during verification" });
+    console.error("❌ Forgot-password error:", err.message);
+    res.status(500).json({ message: "Error sending reset email" });
   }
 });
 
-// Protected test route
-router.get("/me", authMiddleware, (req, res) => {
-  res.json({ userId: req.user.id, message: "You are authenticated" });
+router.post("/reset-password/:token", async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    const user = await User.findOne({
+      resetToken: token,
+      resetTokenExpiry: { $gt: Date.now() },
+    });
+    if (!user)
+      return res.status(400).json({ message: "Invalid or expired token" });
+
+    user.password = await bcrypt.hash(password, 10);
+    user.resetToken = undefined;
+    user.resetTokenExpiry = undefined;
+    await user.save();
+    res.json({ message: "Password reset successful" });
+  } catch (err) {
+    console.error("❌ Reset-password error:", err.message);
+    res.status(500).json({ message: "Reset failed" });
+  }
 });
+
+// Authenticated
+router.get("/me", authMiddleware, me);
+
+// Avatar Upload
+const uploadDir = path.join(__dirname, "../uploads/avatars");
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadDir),
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, `${req.user.id}-${Date.now()}${ext}`);
+  },
+});
+const upload = multer({ storage });
+
+router.post(
+  "/upload-avatar",
+  authMiddleware,
+  upload.single("avatar"),
+  async (req, res) => {
+    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
+
+    const avatarUrl = `/uploads/avatars/${req.file.filename}`;
+    try {
+      const user = await User.findByIdAndUpdate(
+        req.user.id,
+        { avatar: avatarUrl },
+        { new: true },
+      ).select("username email avatar");
+
+      res.json({ message: "Avatar uploaded", avatarUrl });
+    } catch (err) {
+      console.error("❌ Avatar upload error:", err.message);
+      res.status(500).json({ message: "Upload failed" });
+    }
+  },
+);
 
 module.exports = router;

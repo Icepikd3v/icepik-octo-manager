@@ -6,6 +6,7 @@ const path = require("path");
 
 const upload = require("../middleware/uploadMiddleware");
 const auth = require("../middleware/authMiddleware");
+const subscriptionCheck = require("../middleware/subscriptionMiddleware");
 
 const ModelFile = require("../models/ModelFile");
 const {
@@ -17,10 +18,11 @@ const { handleModelUpload } = require("../controllers/uploadController");
 
 const router = express.Router();
 
-// ✅ POST /api/models/upload — Upload model file
+// ✅ POST /api/models/upload — Upload model file (subscription required)
 router.post(
   "/upload",
   auth,
+  subscriptionCheck,
   (req, res, next) => {
     upload.single("file")(req, res, function (err) {
       if (err) {
@@ -50,8 +52,19 @@ router.delete("/:id", auth, async (req, res) => {
     const file = await ModelFile.findById(req.params.id);
     if (!file) return res.status(404).json({ message: "File not found" });
 
-    // Only allow owner to delete
-    if (file.userId.toString() !== req.user.id) {
+    const fileOwner =
+      typeof file.userId === "object" && file.userId?._id
+        ? file.userId._id.toString()
+        : file.userId.toString();
+    const currentUser = req.user.id.toString();
+
+    // ✅ Allow owner or admin
+    if (fileOwner !== currentUser && !req.user?.isAdmin) {
+      console.warn("🚫 Unauthorized delete attempt:", {
+        fileOwner,
+        currentUser,
+        isAdmin: req.user?.isAdmin,
+      });
       return res.status(403).json({ message: "Unauthorized" });
     }
 

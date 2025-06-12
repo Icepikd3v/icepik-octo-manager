@@ -1,94 +1,133 @@
-import React from "react";
+// src/pages/Live.js
+import React, { useEffect, useState } from "react";
+import api from "../utils/api";
 
 const Live = () => {
-  // Mock data for active printers
-  const activePrinters = [
-    {
-      id: 1,
-      name: "Printer 1",
-      status: "Printing",
-      progress: 75,
-      streamUrl: "https://via.placeholder.com/300x200",
-    },
-    {
-      id: 2,
-      name: "Printer 2",
-      status: "Idle",
-      progress: 0,
-      streamUrl: "https://via.placeholder.com/300x200",
-    },
-    {
-      id: 3,
-      name: "Printer 3",
-      status: "Completed",
-      progress: 100,
-      streamUrl: "https://via.placeholder.com/300x200",
-    },
-  ];
+  const [printerData, setPrinterData] = useState([]);
+  const [queue, setQueue] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [liveRes, queueRes] = await Promise.all([
+          api.get("/print-jobs/live"),
+          api.get("/print-jobs/queue"),
+        ]);
+
+        setPrinterData(liveRes.data || []);
+        setQueue(queueRes.data);
+      } catch (err) {
+        console.error(
+          "❌ Failed to fetch live printer/queue data:",
+          err.message,
+        );
+      }
+    };
+
+    fetchData();
+    const interval = setInterval(fetchData, 10000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
-    <div className="p-6">
-      {/* Page Title */}
-      <h1 className="text-3xl font-heading mb-4 text-center">
+    <div className="px-4 py-6">
+      <h1 className="text-2xl font-bold mb-4 text-center">
         Live! Printing Dashboard
       </h1>
-      <p className="text-center text-fontBlack mb-6">
+      <p className="text-center text-gray-600 mb-6">
         Monitor your prints in real-time and check printer statuses below.
       </p>
 
-      {/* User Project Highlight */}
-      <section className="bg-secondaryGray p-4 rounded-md shadow-md mb-6">
-        <h2 className="text-xl font-subheading mb-2">Your Current Print</h2>
-        <div className="flex flex-col md:flex-row items-center gap-4">
-          <img
-            src="https://via.placeholder.com/300x200"
-            alt="User Print Stream"
-            className="rounded-md shadow-md w-full md:w-1/2"
-          />
-          <div className="w-full md:w-1/2">
-            <p className="text-sm font-paragraph">
-              Printer: <strong>Printer 1</strong>
+      {/* 🔴 Active Printers Section */}
+      <h2 className="text-xl font-semibold mb-3">Active Printers</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        {printerData.map((printer) => (
+          <div key={printer.printer} className="bg-white rounded shadow p-4">
+            <div className="w-full h-96 mb-3 overflow-hidden rounded relative">
+              <img
+                src={printer.streamUrl || "/fallback.jpg"}
+                alt={`${printer.printer} Stream`}
+                className="object-cover w-full h-full"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = "/fallback.jpg";
+                }}
+              />
+            </div>
+            <h3 className="text-lg font-bold mb-1">{printer.printer}</h3>
+            <p className="text-sm mb-1">
+              <strong>Status:</strong>{" "}
+              {printer.status === "operational"
+                ? "Idle"
+                : printer.status === "printing"
+                  ? "Printing"
+                  : printer.status === "maintenance"
+                    ? "Maintenance"
+                    : "Unknown"}
             </p>
-            <p className="text-sm font-paragraph">
-              Status: <strong>Printing</strong>
+            <p className="text-sm mb-1">
+              <strong>File:</strong>{" "}
+              {printer.currentPrint?.filename
+                ? printer.currentPrint.filename.replace(
+                    /\.aw\.gcode$/,
+                    ".gcode",
+                  )
+                : "None"}
             </p>
-            <p className="text-sm font-paragraph">Progress:</p>
-            <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden mt-1">
+            <p className="text-sm mb-1">
+              <strong>Progress:</strong>{" "}
+              {printer.currentPrint?.progress
+                ? `${printer.currentPrint.progress.toFixed(1)}%`
+                : "0%"}
+            </p>
+            <div className="w-full bg-gray-300 h-2 rounded">
               <div
-                className="bg-primaryTeal h-full"
-                style={{ width: "75%" }}
+                className="bg-green-600 h-2 rounded"
+                style={{
+                  width: `${printer.currentPrint?.progress || 0}%`,
+                }}
               ></div>
             </div>
           </div>
-        </div>
-      </section>
+        ))}
+      </div>
 
-      {/* Live Stream Grid */}
-      <section>
-        <h2 className="text-2xl font-subheading mb-4">Active Printers</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {activePrinters.map((printer) => (
-            <div key={printer.id} className="bg-white rounded-md shadow-md p-4">
-              <img
-                src={printer.streamUrl}
-                alt={`Stream for ${printer.name}`}
-                className="w-full h-40 object-cover rounded-md mb-4"
-              />
-              <h3 className="text-lg font-subheading mb-1">{printer.name}</h3>
-              <p className="text-sm font-paragraph">
-                Status: <strong>{printer.status}</strong>
-              </p>
-              <p className="text-sm font-paragraph">Progress:</p>
-              <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden mt-1">
-                <div
-                  className={`h-full ${printer.status === "Completed" ? "bg-green-400" : "bg-primaryTeal"}`}
-                  style={{ width: `${printer.progress}%` }}
-                ></div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* 📋 Print Queue Section */}
+      <h2 className="text-xl font-bold mb-3">📋 Print Queue</h2>
+      <div className="overflow-x-auto bg-white p-4 rounded shadow">
+        <table className="min-w-full text-sm text-left">
+          <thead>
+            <tr className="text-gray-600 border-b">
+              <th className="py-2 px-3">#</th>
+              <th className="py-2 px-3">Filename</th>
+              <th className="py-2 px-3">Printer</th>
+              <th className="py-2 px-3">User</th>
+              <th className="py-2 px-3">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {queue.length === 0 ? (
+              <tr>
+                <td colSpan="5" className="py-3 text-center text-gray-500">
+                  No jobs in the queue.
+                </td>
+              </tr>
+            ) : (
+              queue.map((job, index) => (
+                <tr key={job._id} className="border-b">
+                  <td className="py-2 px-3">{index + 1}</td>
+                  <td className="py-2 px-3">{job.filename}</td>
+                  <td className="py-2 px-3">{job.printer}</td>
+                  <td className="py-2 px-3">{job.userId?.email || "N/A"}</td>
+                  <td className="py-2 px-3 text-orange-600 font-semibold">
+                    {job.status}
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

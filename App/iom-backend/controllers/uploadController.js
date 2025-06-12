@@ -1,57 +1,99 @@
-// controllers/uploadController.js
-
 const path = require("path");
 const ModelFile = require("../models/ModelFile");
-const { uploadToOctoPrint } = require("../services/octoprintManager");
-const { logEvent } = require("../services/analyticsService"); // Import logEvent
+const PrintJob = require("../models/PrintJob");
+const User = require("../models/Users");
 
-/**
- * Handle a user uploading a model file.
- */
+const {
+  uploadToOctoPrint,
+  getPrintStatus,
+  startPrintJob,
+} = require("../services/octoprintManager");
+
+const { logEvent } = require("../services/analyticsService");
+const { notifyUser } = require("../services/emailManager");
+const { processNextPrintInQueue } = require("../utils/queueProcessor");
+
 const handleModelUpload = async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded." });
     }
 
-    const printer = req.body.printer || "EnderDirect";
-    let status = "queued";
-    let finalFilename = req.file.filename; // Default to uploaded name
+    const printer = req.body.printer?.trim();
+    const allowedPrinters = ["EnderMultiColor", "EnderDirect"];
+    if (!printer || !allowedPrinters.includes(printer)) {
+      return res.status(400).json({ error: "Invalid printer type" });
+    }
 
-    // Push .gcode files directly to OctoPrint
+    let finalFilename = req.file.filename;
     const ext = path.extname(req.file.filename).toLowerCase();
-    if (ext === ".gcode") {
-      const octoPrintResponse = await uploadToOctoPrint(
-        req.file.filename,
-        printer,
-      );
+    let status = "queued";
 
-      // ✅ If Arc Welder renamed it, capture that new filename
+    if (ext === ".gcode") {
+      const octoPrintResponse = await uploadToOctoPrint(finalFilename, printer);
       finalFilename =
         octoPrintResponse?.files?.local?.name || req.file.filename;
       status = octoPrintResponse ? "sent" : "ready";
     }
 
-    // Save metadata in MongoDB
     const newFile = await ModelFile.create({
       name: req.file.originalname,
-      filename: finalFilename, // ✅ Correct filename saved
+      filename: finalFilename,
       userId: req.user.id,
       printer,
       status,
     });
 
-    // Log analytics event
     await logEvent(req.user.id, "file_upload", {
       filename: newFile.filename,
       status: newFile.status,
-      printer: newFile.printer,
+      printer,
       size: req.file.size,
     });
 
-    console.log("📂 Upload controller completed successfully");
+    const newJob = await PrintJob.create({
+      userId: req.user.id,
+      printer,
+      filename: newFile.filename,
+      modelFile: newFile._id,
+    });
 
-    // Return response
+    // ✅ Use improved printer idle detection
+    const statusData = await getPrintStatus(printer);
+    const printerState = statusData?.state?.toLowerCase() || "";
+
+    const isBusy = ["printing", "paused", "starting", "resuming"].includes(
+      printerState,
+    );
+
+    if (!isBusy) {
+      console.log(`🟢 Printer ${printer} is idle — auto-starting job.`);
+      await startPrintJob({
+        printer,
+        filename: newFile.filename,
+      });
+
+      newJob.status = "printing";
+      newJob.startedAt = new Date();
+      await newJob.save();
+    } else {
+      await logEvent(req.user.id, "print_queued", {
+        filename: newFile.filename,
+        printer,
+        jobId: newJob._id,
+      });
+
+      const user = await User.findById(req.user.id);
+      if (user?.email) {
+        await notifyUser("queued", user, {
+          printer,
+          filename: newFile.filename,
+        });
+      }
+
+      console.log(`🕒 Printer ${printer} is busy. Job queued.`);
+    }
+
     res.status(201).json({
       message: "Model uploaded successfully.",
       file: {

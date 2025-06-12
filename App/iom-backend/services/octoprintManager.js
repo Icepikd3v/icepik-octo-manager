@@ -5,7 +5,6 @@ const FormData = require("form-data");
 require("dotenv").config();
 
 const BASE_URL = process.env.OCTOPRINT_BASE_URL;
-const API_KEY = process.env.OCTOPRINT_API_KEY;
 
 const PATHS = {
   EnderDirect: process.env.OCTOPRINT_DIRECT_PATH,
@@ -13,8 +12,8 @@ const PATHS = {
 };
 
 const API_KEYS = {
-  EnderDirect: process.env.OCTOPRINT_DIRECT_API_KEY || API_KEY,
-  EnderMultiColor: process.env.OCTOPRINT_MULTICOLOR_API_KEY || API_KEY,
+  EnderDirect: process.env.OCTOPRINT_DIRECT_API_KEY,
+  EnderMultiColor: process.env.OCTOPRINT_MULTICOLOR_API_KEY,
 };
 
 const getFullUrl = (printer, endpoint = "") => {
@@ -23,7 +22,6 @@ const getFullUrl = (printer, endpoint = "") => {
   return `${BASE_URL}${path}${endpoint}`;
 };
 
-// Upload a file to OctoPrint
 const uploadToOctoPrint = async (filename, printer = "EnderDirect") => {
   try {
     const url = getFullUrl(printer, "/api/files/local");
@@ -43,10 +41,12 @@ const uploadToOctoPrint = async (filename, printer = "EnderDirect") => {
   }
 };
 
-// Start a print job
 const startPrintJob = async ({ printer, filename }) => {
   try {
-    const url = getFullUrl(printer, `/api/files/local/${filename}`);
+    const url = getFullUrl(
+      printer,
+      `/api/files/local/${encodeURIComponent(filename)}`,
+    );
     const headers = {
       "X-Api-Key": API_KEYS[printer],
       "Content-Type": "application/json",
@@ -64,7 +64,6 @@ const startPrintJob = async ({ printer, filename }) => {
   }
 };
 
-// Pause, Resume, Cancel, Status
 const pausePrint = async (printer) => {
   const url = getFullUrl(printer, "/api/job");
   const headers = {
@@ -97,6 +96,16 @@ const getPrintStatus = async (printer) => {
   const headers = { "X-Api-Key": API_KEYS[printer] };
   const res = await axios.get(url, { headers });
   return res.data;
+};
+
+const getPrinterStatus = async (printer) => {
+  try {
+    const job = await getPrintStatus(printer);
+    return job?.state?.toLowerCase() || "unknown";
+  } catch (err) {
+    console.error("❌ Failed to get printer status:", err.message);
+    return "unknown";
+  }
 };
 
 const deleteOctoPrintFile = async (filename, printer) => {
@@ -134,6 +143,7 @@ module.exports = {
   resumePrint,
   cancelPrint,
   getPrintStatus,
+  getPrinterStatus,
   deleteOctoPrintFile,
   getPrinterFiles,
   getWebcamStreamUrl,

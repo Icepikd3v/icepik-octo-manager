@@ -1,5 +1,8 @@
+// src/routes/routes.js
+
 import React from "react";
 import { Routes, Route } from "react-router-dom";
+
 import HomePage from "../pages/HomePage";
 import Dashboard from "../pages/Dashboard";
 import Upload from "../pages/Upload";
@@ -9,17 +12,24 @@ import Subscription from "../pages/Subscription";
 import Signup from "../pages/Signup";
 import NotFound from "../pages/NotFound";
 import ProtectedRoute from "./ProtectedRoutes";
-
-//  New import
 import BackendStatus from "../pages/BackendStatus";
+import VerifyEmail from "../pages/VerifyEmail";
+import ForgotPassword from "../pages/ForgotPassword";
+import ResetPassword from "../pages/ResetPassword";
+import SubscriptionSuccess from "../pages/SubscriptionSuccess";
+import SubscriptionCancel from "../pages/SubscriptionCancel";
+import StartPrintJob from "../pages/StartPrintJob"; // ✅ NEW
 
 const AppRoutes = () => (
   <Routes>
     {/* Public Routes */}
     <Route path="/" element={<HomePage />} />
     <Route path="/signup" element={<Signup />} />
-
-    {/*  Backend Test Route (Temporary) */}
+    <Route path="/verify/:token" element={<VerifyEmail />} />
+    <Route path="/forgot-password" element={<ForgotPassword />} />
+    <Route path="/reset-password/:token" element={<ResetPassword />} />
+    <Route path="/subscription-success" element={<SubscriptionSuccess />} />
+    <Route path="/subscription-cancel" element={<SubscriptionCancel />} />
     <Route path="/backend-status" element={<BackendStatus />} />
 
     {/* Protected Routes */}
@@ -63,8 +73,16 @@ const AppRoutes = () => (
         </ProtectedRoute>
       }
     />
+    <Route
+      path="/print/start/:jobId"
+      element={
+        <ProtectedRoute>
+          <StartPrintJob />
+        </ProtectedRoute>
+      }
+    />
 
-    {/* Catch-All Route */}
+    {/* Catch-all route */}
     <Route path="*" element={<NotFound />} />
   </Routes>
 );

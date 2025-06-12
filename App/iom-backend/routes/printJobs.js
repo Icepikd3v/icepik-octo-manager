@@ -4,22 +4,76 @@ const router = express.Router();
 
 const auth = require("../middleware/authMiddleware");
 const adminOnly = require("../middleware/adminMiddleware");
-const upload = require("../middleware/uploadMiddleware");
-const { handleModelUpload } = require("../controllers/uploadController");
+const subscriptionCheck = require("../middleware/subscriptionMiddleware");
 
 const PrintJob = require("../models/PrintJob");
-const User = require("../models/Users");
-
 const { createPrintJob } = require("../controllers/printJobController");
 const { logEvent } = require("../services/analyticsService");
-const { notifyUser } = require("../services/emailManager");
-const octo = require("../services/octoprintManager");
+const { getPrinterStatus } = require("../services/octoprintManager");
 
-// === Create a new print job
-router.post("/", auth, createPrintJob);
+// === Create a new print job (requires subscription)
+router.post("/", auth, subscriptionCheck, createPrintJob);
 
-// === Handle file uploads (GCODE/STL)
-router.post("/upload", auth, upload.single("file"), handleModelUpload);
+// === Live printer data (real-time print status)
+router.get("/live", auth, async (req, res) => {
+  try {
+    const printers = ["EnderMultiColor", "EnderDirect"];
+    const results = [];
+
+    for (const printer of printers) {
+      const data = await getPrinterStatus(printer);
+
+      let currentPrint = null;
+      if (data?.job?.file?.name) {
+        const filename = data.job.file.name;
+        try {
+          const printJob = await PrintJob.findOne({ filename });
+          currentPrint = {
+            filename,
+            progress: data.progress?.completion || 0,
+          };
+        } catch (err) {
+          console.warn(`⚠️ Failed to look up print job for ${filename}`);
+        }
+      }
+
+      results.push({
+        printer,
+        status: data?.state?.text || "unknown",
+        streamUrl:
+          printer === "EnderMultiColor"
+            ? process.env.WEBCAM_MULTICOLOR
+            : process.env.WEBCAM_DIRECT,
+        currentPrint,
+      });
+    }
+
+    res.json(results);
+  } catch (err) {
+    console.error("❌ Error in /live route:", err.message);
+    res.status(500).json({ message: "Failed to fetch job details." });
+  }
+});
+
+// === View queue of upcoming print jobs
+router.get("/queue", auth, async (req, res) => {
+  try {
+    const jobs = await PrintJob.find({ status: "queued" })
+      .sort({ createdAt: 1 })
+      .populate("userId", "username email");
+
+    // ✅ Filter to only include proper .gcode files, not .aw.gcode
+    const filteredQueue = jobs.filter(
+      (job) =>
+        job.filename.endsWith(".gcode") && !job.filename.endsWith(".aw.gcode"),
+    );
+
+    res.json(filteredQueue);
+  } catch (err) {
+    console.error("❌ Queue fetch failed:", err.message);
+    res.status(500).json({ message: "Failed to fetch print queue." });
+  }
+});
 
 // === User's print history
 router.get("/history", auth, async (req, res) => {
@@ -49,10 +103,15 @@ router.get("/:id", auth, async (req, res) => {
     const job = await PrintJob.findById(req.params.id)
       .populate("modelFile")
       .populate("userId", "username email");
-    if (!job) return res.status(404).json({ message: "Print job not found" });
 
-    const isOwner = job.userId._id.toString() === req.user.id;
-    const isAdmin = req.user.subscriptionTier === "admin" || req.user.isAdmin;
+    if (!job) {
+      return res.status(404).json({ message: "Print job not found" });
+    }
+
+    const jobUserId = job.userId?._id?.toString() || job.userId?.toString();
+    const currentUserId = req.user.id.toString();
+    const isOwner = jobUserId === currentUserId;
+    const isAdmin = req.user.isAdmin === true;
 
     if (!isOwner && !isAdmin) {
       return res.status(403).json({ message: "Unauthorized" });
@@ -60,12 +119,12 @@ router.get("/:id", auth, async (req, res) => {
 
     res.json(job);
   } catch (err) {
-    console.error(err);
+    console.error("❌ Error fetching job:", err.message);
     res.status(500).json({ message: "Failed to fetch job details." });
   }
 });
 
-// === Admin list of all jobs with filters
+// === Admin: all print jobs with filters
 router.get("/", auth, adminOnly, async (req, res) => {
   try {
     const { status, printer, userId, page = 1, limit = 20 } = req.query;
@@ -89,13 +148,11 @@ router.get("/", auth, adminOnly, async (req, res) => {
   }
 });
 
-// === 🗑️ DELETE print job (admin only)
+// === Admin: delete print job
 router.delete("/:id", auth, adminOnly, async (req, res) => {
   try {
     const job = await PrintJob.findById(req.params.id);
-    if (!job) {
-      return res.status(404).json({ message: "Print job not found" });
-    }
+    if (!job) return res.status(404).json({ message: "Print job not found" });
 
     await PrintJob.deleteOne({ _id: req.params.id });
 

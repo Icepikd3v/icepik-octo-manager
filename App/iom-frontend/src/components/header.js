@@ -1,23 +1,19 @@
+// src/components/Header.js
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
+import useUserInfo from "../hooks/useUserInfo";
 
 const Header = () => {
   const navigate = useNavigate();
-  const isAuthenticated = localStorage.getItem("token") !== null;
-  const user = JSON.parse(localStorage.getItem("user")) || { name: "Guest" };
+  const { name: username, avatar } = useUserInfo();
 
-  const handleAuth = () => {
-    if (isAuthenticated) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-    } else {
-      localStorage.setItem("token", "mock-demo-token");
-      localStorage.setItem(
-        "user",
-        JSON.stringify({ name: "Demo User", email: "demo@user.com" }),
-      );
-    }
+  const isAuthenticated = localStorage.getItem("token") !== null;
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.dispatchEvent(new Event("userChanged"));
     navigate("/");
   };
 
@@ -31,31 +27,31 @@ const Header = () => {
         <h1 className="text-2xl">Icepik's Octo Manager</h1>
       </div>
 
-      {/* User Avatar and Auth Button */}
+      {/* User Info */}
       {isAuthenticated ? (
         <div className="flex items-center gap-4">
           <div className="text-right">
-            <p className="font-subheading">{user.name}</p>
+            <p className="font-subheading">{username}</p>
             <button
-              onClick={handleAuth}
+              onClick={handleLogout}
               className="text-sm text-red-600 hover:text-red-800"
             >
               Logout
             </button>
           </div>
           <img
-            src="https://via.placeholder.com/40"
+            src={avatar}
             alt="User Avatar"
-            className="h-10 w-10 rounded-full border border-gray-400"
+            className="h-10 w-10 rounded-full border border-gray-400 object-cover"
           />
         </div>
       ) : (
-        <button
-          onClick={handleAuth}
+        <Link
+          to="/"
           className="bg-primaryTeal text-black px-4 py-1.5 rounded-md font-subheading hover:bg-blue-300 transition"
         >
           Login
-        </button>
+        </Link>
       )}
     </header>
   );

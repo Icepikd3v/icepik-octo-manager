@@ -167,29 +167,49 @@ This week, I worked on:
 
 ---
 
-### ✅ Week 3 Log – Milestone 3
+### Week 3 – Milestone 3
 
-#### ⚙️ Overview – What I worked on this past week
+⚙️ **Overview:**  
+This week I focused on securing the backend and preparing the app for user-facing compliance. I implemented middleware to separate admin routes, added event-based logging with `analyticsService.js`, and refined how subscription limits are enforced server-side.
 
-This week, I focused on **security, compliance, and analytics** improvements across the backend of the IOM project. I implemented admin-only analytics routes (`/api/analytics`) with support for summary data, top users, breakdowns, and CSV export. I also expanded our print job lifecycle to log events like start, pause, cancel, resume, and ship — and integrated email notifications accordingly. In addition, I wrote a [Terms of Service draft](../terms.md) and completed Week 3 research on OWASP security risks and GitHub CodeQL scanning.
+🌵 **Challenges:**  
+Some challenges included structuring analytics logging in a way that wouldn’t clutter controller logic. I also had to balance route security with functionality, especially while testing admin/user separation.
 
-#### 🌵 Challenges – What problems did I have & how I’m addressing them
+🏆 **Accomplishments:**
 
-I ran into some access control issues when testing the admin routes and needed to verify that only admin users could access the analytics endpoints. Debugging that and verifying the role-based middleware was key. Another challenge was refining the analytics event logging to include `jobId` metadata and validating event integrity without creating duplicates. I addressed this by adding logging at each major backend lifecycle point with consistent structure.
+- Added admin-only middleware for sensitive routes
+- Created `analyticsService.js` to log user activity
+- Set up print compliance logic for subscription enforcement
+- Cleaned up and documented backend routes
+- Finalized all updates into `dev` with no merge issues
 
-#### 🏆 Accomplishments – What is something I "leveled up" on this week
+🔮 **Next Steps:**
 
-I leveled up my **full-stack backend engineering** skills by implementing a full analytics reporting system from MongoDB to API to CSV export. This required planning out aggregation pipelines, writing clean and modular services, and ensuring admin-only access control throughout the routes. I also refined GitHub workflows by tracking every task with labeled issues and pushing all changes through structured pull requests.
-
-#### 🔮 Next Steps – What I plan to prioritize and do next
-
-- Begin frontend implementation of the analytics dashboard (read-only for admins)
-- Prepare milestone 4 planning (user dashboards, print job tracking UI)
-- Add user settings page for managing email preferences
-- Finalize and merge dev to stage, and stage to main if stable
+- Implement webhook event handling from OctoPrint
+- Begin frontend-side integration of new backend data
+- Add admin dashboard elements to surface analytics
+- Prepare Beta milestone and frontend polish for Week 4
 
 ---
 
-### Week 4 - Milestone 4
+### Week 4 – Milestone 4
 
-Final stand-up...
+⚙️ **Overview:**  
+This week I finalized the backend for Beta release. I implemented printer maintenance mode, user listing routes for admins, and fully integrated OctoPrint webhooks to trigger live status updates and user email notifications. I also added Swagger documentation and set up `.env.test` for staging.
+
+🌵 **Challenges:**  
+Fine-tuning webhook triggers was tricky, especially verifying OctoPrint behavior without disrupting live prints. I also had to trace several backend conditions for queued print jobs and fix a bug with subscription validation.
+
+🏆 **Accomplishments:**
+
+- Finalized print lifecycle routes (start, cancel, ship)
+- Implemented webhook receiver for OctoPrint events
+- Added Swagger/OpenAPI documentation for backend
+- Cleaned up and merged all remaining backend branches
+- Closed remaining issues and verified all routes with Postman
+
+🔮 **Next Steps:**
+
+- Polish the frontend and live print interface
+- Complete the 4.6 showcase and 4.7 postmortem reflection
+- Prep final presentation and walkthrough video for submission
