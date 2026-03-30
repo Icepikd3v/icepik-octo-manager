@@ -1,8 +1,42 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
+import { DEMO_EMAIL, DEMO_NAME, DEMO_PASSWORD, DEMO_TOKEN } from "../constants/demoAuth";
 
 const HomePage = () => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [error, setError] = useState("");
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (error) setError("");
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    const email = formData.email.trim().toLowerCase();
+    const password = formData.password;
+
+    if (email !== DEMO_EMAIL || password !== DEMO_PASSWORD) {
+      setError("Invalid demo credentials. Use the frontend-only test login listed on the resume showcase.");
+      return;
+    }
+
+    localStorage.setItem("token", DEMO_TOKEN);
+    localStorage.setItem("authMode", "frontend-demo");
+    localStorage.setItem(
+      "user",
+      JSON.stringify({
+        name: DEMO_NAME,
+        email: DEMO_EMAIL,
+      }),
+    );
+    navigate("/dashboard");
+  };
+
   return (
     <div className="flex flex-col md:flex-row items-center justify-center gap-6 p-4 text-fontBlack">
       {/* 3D Printing News/Updates (Left Side) */}
@@ -29,21 +63,31 @@ const HomePage = () => {
           Welcome to Icepik's Octo Manager
         </h1>
         <p className="text-sm font-paragraph text-gray-600 mb-4">
-          Please log in or sign up to continue.
+          Demo mode is frontend-only while printer and OctoPrint services are offline.
         </p>
 
         {/* Input Fields */}
-        <form className="flex flex-col gap-3">
+        <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
           <input
             type="email"
+            name="email"
             placeholder="Email"
+            value={formData.email}
+            onChange={handleChange}
             className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primaryTeal"
           />
           <input
             type="password"
+            name="password"
             placeholder="Password"
+            value={formData.password}
+            onChange={handleChange}
             className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primaryTeal"
           />
+          <p className="text-xs text-left text-gray-700">
+            Demo login: <strong>{DEMO_EMAIL}</strong> / <strong>{DEMO_PASSWORD}</strong>
+          </p>
+          {error ? <p className="text-sm text-red-700 text-left">{error}</p> : null}
 
           {/* Buttons */}
           <div className="flex justify-center gap-4 mt-4">

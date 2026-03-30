@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { FaEdit, FaSave } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import avatarPlaceholder from "../assets/avatar-placeholder.svg";
+import { DEMO_EMAIL } from "../constants/demoAuth";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -13,10 +15,10 @@ const Dashboard = () => {
   });
 
   const [userInfo, setUserInfo] = useState({
-    avatar: "https://via.placeholder.com/150",
-    name: "John Doe",
-    email: "john.doe@example.com",
-    bio: "Web Developer at Icepik Studios",
+    avatar: avatarPlaceholder,
+    name: "Icepik Demo User",
+    email: DEMO_EMAIL,
+    bio: "Frontend demo mode enabled while printer + OctoPrint services are offline.",
     subscriptionPlan: "Premium Plan",
     startDate: "2024-01-01",
     endDate: "2025-01-01",
@@ -54,6 +56,9 @@ const Dashboard = () => {
             src={userInfo.avatar}
             alt="User Avatar"
             className="h-24 w-24 rounded-full border border-gray-400 object-cover"
+            onError={(e) => {
+              e.currentTarget.src = avatarPlaceholder;
+            }}
           />
           {isEditing.avatar ? (
             <div className="flex flex-col gap-2">

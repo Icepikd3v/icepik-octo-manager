@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
+import avatarPlaceholder from "../assets/avatar-placeholder.svg";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -11,14 +12,11 @@ const Header = () => {
     if (isAuthenticated) {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
+      localStorage.removeItem("authMode");
+      navigate("/");
     } else {
-      localStorage.setItem("token", "mock-demo-token");
-      localStorage.setItem(
-        "user",
-        JSON.stringify({ name: "Demo User", email: "demo@user.com" }),
-      );
+      navigate("/");
     }
-    navigate("/");
   };
 
   return (
@@ -36,6 +34,7 @@ const Header = () => {
         <div className="flex items-center gap-4">
           <div className="text-right">
             <p className="font-subheading">{user.name}</p>
+            <p className="text-xs text-gray-700">{user.email}</p>
             <button
               onClick={handleAuth}
               className="text-sm text-red-600 hover:text-red-800"
@@ -44,7 +43,7 @@ const Header = () => {
             </button>
           </div>
           <img
-            src="https://via.placeholder.com/40"
+            src={avatarPlaceholder}
             alt="User Avatar"
             className="h-10 w-10 rounded-full border border-gray-400"
           />

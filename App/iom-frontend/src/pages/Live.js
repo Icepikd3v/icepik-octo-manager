@@ -1,4 +1,5 @@
 import React from "react";
+import streamPlaceholder from "../assets/printer-stream-placeholder.svg";
 
 const Live = () => {
   // Mock data for active printers
@@ -8,21 +9,21 @@ const Live = () => {
       name: "Printer 1",
       status: "Printing",
       progress: 75,
-      streamUrl: "https://via.placeholder.com/300x200",
+      streamUrl: streamPlaceholder,
     },
     {
       id: 2,
       name: "Printer 2",
       status: "Idle",
       progress: 0,
-      streamUrl: "https://via.placeholder.com/300x200",
+      streamUrl: streamPlaceholder,
     },
     {
       id: 3,
       name: "Printer 3",
       status: "Completed",
       progress: 100,
-      streamUrl: "https://via.placeholder.com/300x200",
+      streamUrl: streamPlaceholder,
     },
   ];
 
@@ -35,15 +36,21 @@ const Live = () => {
       <p className="text-center text-fontBlack mb-6">
         Monitor your prints in real-time and check printer statuses below.
       </p>
+      <p className="text-center text-sm text-gray-700 mb-6">
+        Demo mode active: live streams and OctoPrint webhooks are currently shown with placeholders until hardware is back online.
+      </p>
 
       {/* User Project Highlight */}
       <section className="bg-secondaryGray p-4 rounded-md shadow-md mb-6">
         <h2 className="text-xl font-subheading mb-2">Your Current Print</h2>
         <div className="flex flex-col md:flex-row items-center gap-4">
           <img
-            src="https://via.placeholder.com/300x200"
+            src={streamPlaceholder}
             alt="User Print Stream"
             className="rounded-md shadow-md w-full md:w-1/2"
+            onError={(e) => {
+              e.currentTarget.src = streamPlaceholder;
+            }}
           />
           <div className="w-full md:w-1/2">
             <p className="text-sm font-paragraph">
@@ -73,6 +80,9 @@ const Live = () => {
                 src={printer.streamUrl}
                 alt={`Stream for ${printer.name}`}
                 className="w-full h-40 object-cover rounded-md mb-4"
+                onError={(e) => {
+                  e.currentTarget.src = streamPlaceholder;
+                }}
               />
               <h3 className="text-lg font-subheading mb-1">{printer.name}</h3>
               <p className="text-sm font-paragraph">
