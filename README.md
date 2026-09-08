@@ -48,34 +48,45 @@ Keep `HOST=127.0.0.1` when using this workaround, which disables host validation
 Open http://localhost:3000. The prototype API status endpoint is
 http://localhost:3001/api/status. The public company pages do not depend on it.
 
-### Development preview
+### Live print workspace
 
-Open `/dev` and click **Explore demo workspace** to view the development print pages. No
-credentials are required. Demo access and file metadata use session storage in
-this tab; files are never uploaded and no printer commands or emails are sent.
-The demo entry is disabled in production builds. Real account registration and
-login integration remain a later step. The public company website works without
-a login and routes project inquiries to the confirmed Facebook page.
+Open **Print studio** in the website header, or visit `/signup` to create a real
+account. `/login` opens an existing account. The same workspace is available in
+development and production builds; `/dev` redirects into it.
 
-The circuit-root SVG is an initial web interpretation of the supplied IronRoot
-Solutions logo, using forest green, moss, cream, and earth tones.
+The dashboard and `/live` read ED1 and ED2 status, temperatures, and job progress
+every 15 seconds. `/upload` saves STL and G-code files (up to 50 MB) to the backend
+and MongoDB. `/file-library` shows only the signed-in user's saved files. Uploads
+are saved for review; automatic transfer, print execution, payments, and camera
+streams are not enabled in this release. Legacy command and test-email routes
+are not mounted by the workspace API.
 
-Validate the frontend with `npm run build` and
-`CI=true npm test -- --watchAll=false --runInBand --watchman=false` from its directory.
-The Jest module mapping supports React Router's subpath export in the older CRA
-Jest resolver.
+Sessions use an HttpOnly cookie. API requests use `/api` on the website's origin;
+the production preview proxies these requests to the backend on port 3001.
+Both the preview and backend bind to loopback by default. Run both servers to use
+the workspace. No deployment to a public host has occurred.
 
-### Next steps, to confirm before implementation
+Validate the frontend with `npm run build`,
+`CI=true npm test -- --watchAll=false --runInBand --watchman=false`, and
+`npm run test:production` from `App/iom-frontend`.
+Run backend unit checks with `npm test` from `App/iom-backend`.
+`npm run test:integration` uses local MongoDB with an isolated temporary database,
+cleans up its own test records/files, and makes read-only requests to both printers.
 
-1. Review the brand and page direction.
-2. Identify all three printers, firmware, host devices, cameras, and local network
-   addresses; verify each locally.
-3. Implement real authentication and authorized project/print workflows.
-4. Decide deployment architecture using GitHub and Cloudflare, plus a backend
-   and database host if needed. No provider migration or deployment has occurred.
+### Local OctoPrint connections
 
-The backend still uses MongoDB. Actual printer operations require OctoPrint
-settings; email notifications require SMTP settings in the backend `.env`.
+ED1 uses `http://192.168.1.34/ED1` and ED2 uses `http://192.168.1.34/ED2`.
+Set `OCTOPRINT_ED1_URL`, `OCTOPRINT_ED1_API_KEY`, `OCTOPRINT_ED2_URL`, and
+`OCTOPRINT_ED2_API_KEY` in `App/iom-backend/.env`. Keep keys on the backend.
+Restart the backend after changing configuration.
+
+The connection layer accepts ED1 and ED2. Existing stored jobs still use
+`EnderDirect` (mapped to ED1) and `EnderMultiColor` (mapped to ED2), preserving
+compatibility with the current job models. Per-instance settings take priority
+over the legacy shared URL/key settings. The live workspace uses ED1 and ED2 directly for new uploads.
+
+Run the backend connection tests with `node --test test/octoprint.test.js` from
+`App/iom-backend`. These tests mock printer commands and do not operate hardware.
 
 ### Compiled public website
 
@@ -83,3 +94,12 @@ From `App/iom-frontend`, run `npm run build` then `npm run preview`.
 Open http://127.0.0.1:3002 for the compiled production preview.
 
 See [current release scope and remaining commerce work](docs/ironroot-release.md).
+
+### Printing gallery photos
+
+The 3D-printing page and custom-prints project share a gallery with 21 new photos.
+The supplied HEIC/PNG originals remain in `App/iom-frontend/public`; the website
+uses optimized JPEGs and thumbnails from `public/printing`. The three Instagram
+screenshots use exact photo-only crops, without generated or retouched content.
+On macOS, run `node scripts/prepare-printing-photos.cjs` from the frontend to
+recreate these copies. Captions and display order live in `src/data/printingGallery.js`.

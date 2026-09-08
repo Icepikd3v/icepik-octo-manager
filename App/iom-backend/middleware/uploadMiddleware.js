@@ -4,7 +4,7 @@ const fs = require("fs");
 const sanitize = require("sanitize-filename");
 
 // Ensure uploads/ directory exists
-const uploadDir = "uploads/";
+const uploadDir = path.join(__dirname, "..", "uploads");
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
@@ -34,6 +34,6 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-const upload = multer({ storage, fileFilter });
+const upload = multer({ storage, fileFilter, limits: { fileSize: 50 * 1024 * 1024, files: 1, fields: 1 } });
 
 module.exports = upload;

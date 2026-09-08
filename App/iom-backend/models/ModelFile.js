@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 
 const modelFileSchema = new mongoose.Schema({
+  size: { type: Number, default: 0 },
   name: { type: String, required: true },
   filename: { type: String, required: true },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
@@ -12,8 +13,8 @@ const modelFileSchema = new mongoose.Schema({
   },
   printer: {
     type: String,
-    enum: ["EnderMultiColor", "EnderDirect"], // printer destination
-    default: "EnderDirect",
+    enum: ["ED1", "ED2", "EnderMultiColor", "EnderDirect"], // printer destination
+    default: "ED1",
   },
 });
 

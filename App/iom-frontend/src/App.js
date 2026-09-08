@@ -1,10 +1,11 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Header from "./components/header";
 import Navbar from "./components/navbar";
 import Footer from "./components/footer";
 import AppRoutes from "./routes/routes";
-import { getDemoUser, endDemo } from "./constants/demoAuth";
+import useAuth, { AuthProvider } from "./hooks/useAuth";
+import { errorMessage } from "./utils/api";
 const pageTitles = {
   "/": "Web Development, Technology Repair & 3D Printing",
   "/services": "Our Services",
@@ -12,8 +13,13 @@ const pageTitles = {
   "/about": "About",
   "/3d-printing": "Custom 3D Printing",
   "/contact": "Start a Project",
+  "/login": "Sign In",
+  "/signup": "Create Account",
 };
-export default function App() {
+export default function App() { return <AuthProvider><AppShell /></AuthProvider>; }
+function AppShell() {
+  const { user, logout } = useAuth();
+  const [logoutError, setLogoutError] = useState("");
   const location = useLocation();
   const navigate = useNavigate();
   const workspace = [
@@ -24,7 +30,7 @@ export default function App() {
     "/file-library",
   ].includes(location.pathname);
   useEffect(() => {
-    document.title = `${pageTitles[location.pathname] || (workspace ? "Development Workspace" : "Project")} | IronRoot Solutions`;
+    document.title = `${pageTitles[location.pathname] || (workspace ? "Print Workspace" : "Project")} | IronRoot Solutions`;
     if (location.hash) {
       requestAnimationFrame(() =>
         document.getElementById(location.hash.slice(1))?.scrollIntoView(),
@@ -40,23 +46,24 @@ export default function App() {
       </a>
       <Header />
       <Navbar />
-      {process.env.NODE_ENV !== "production" && workspace && getDemoUser() && (
+      {workspace && user && (
         <div className="workspace-toolbar">
-          <span>Development only · Mock access</span>
+          <span>{user.username} · Print studio</span>
           <Link to="/dashboard">Workspace</Link>
           <Link to="/live">Printers</Link>
           <Link to="/upload">New project</Link>
           <Link to="/file-library">File library</Link>
           <button
-            onClick={() => {
-              endDemo();
-              navigate("/dev");
+            onClick={async () => {
+              try { await logout(); setLogoutError(""); navigate("/login"); }
+              catch (err) { setLogoutError(errorMessage(err)); }
             }}
           >
-            Exit demo
+            Sign out
           </button>
         </div>
       )}
+      {logoutError && <p role="alert" className="page form-error">{logoutError}</p>}
       <main id="main" tabIndex={-1}>
         <AppRoutes />
       </main>

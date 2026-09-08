@@ -8,6 +8,7 @@ export default function Header() {
       </Link>
       <div className="header-right">
         <span className="studio-label">WEB. TECH. MADE POSSIBLE.</span>
+        <Link className="text-link studio-entry" to="/dashboard">Print studio</Link>
         <Link className="button small" to="/contact">
           Let’s talk <span>↗</span>
         </Link>

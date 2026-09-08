@@ -1,0 +1,32 @@
+const photo = (id, title, category, alt) => ({
+  id,
+  title,
+  category,
+  alt,
+  src: `/printing/IMG_${id}.jpg`,
+  thumbnail: `/printing/IMG_${id}-small.jpg`,
+});
+
+export const printingPhotos = [
+  photo("7639", "Two finishes. One character.", "Finished pieces", "Two helmeted printed figures in blue and white jackets standing together on the workbench"),
+  photo("7430", "An octagonal display, assembled", "Finished pieces", "Green lattice fence and UFC lettering on a black octagonal printed display base"),
+  photo("8632", "The rocket, lit up", "Finished pieces", "A translucent printed rocket glowing on a wooden side table"),
+  photo("7402", "Starting from the inside", "In progress", "Printer laying a grid of black infill inside an octagonal base"),
+  photo("7624", "Blue jacket, final assembly", "Finished pieces", "Assembled helmeted figure with a blue jacket and boots on a printer bed"),
+  photo("7428", "A home for the collection", "Finished pieces", "Four collectible fighter figures arranged inside a green and black printed octagonal display"),
+  photo("7610", "A little green test boat", "Finished pieces", "Small green printed test boat with cabin and chimney on the build plate"),
+  photo("7621", "Coming together, piece by piece", "In progress", "Blue and black printed figure bodies and legs awaiting final assembly"),
+  photo("8631", "Fresh from the print bed", "Finished pieces", "Tall translucent printed rocket standing on a gold-colored printer bed"),
+  photo("7403", "Building up the base", "In progress", "Print head adding the upper surface of a black octagonal display base over its infill"),
+  photo("7429", "Inside the display", "Finished pieces", "Close view of collectible fighter figures and green lattice walls on a printed display base"),
+  photo("7431", "Details around the edge", "Finished pieces", "Green printed octagonal fence, corner posts, and lettering on a black base"),
+  photo("7480", "A set, ready to display", "Finished pieces", "Three green and black printed octagonal displays holding collectible figures on a wooden cabinet"),
+  photo("7481", "The collection from another angle", "Finished pieces", "Wider view of three completed octagonal displays and their collectible figures"),
+  photo("7568", "A hull takes shape", "In progress", "Black boat-shaped print beneath the print head with upper sections still in progress"),
+  photo("7650", "Three takes on the same build", "Finished pieces", "Three helmeted printed figures with different white, black, and blue color combinations"),
+  photo("7652", "The finished lineup", "Finished pieces", "Three assembled printed figures lined up on the workshop desk"),
+  photo("7640", "Around the workbench", "Workshop", "Printed figures beside a small screen and electronics on the workshop desk"),
+  photo("7574", "Projects beyond the print bed", "Workshop", "Small screen showing a blue animated face, with a webcam and electronics on the desk"),
+  photo("7577", "Checking the setup", "Workshop", "Workshop monitor showing a printer bed-level visualization and a camera view"),
+  photo("8630", "From the workshop archive", "Workshop", "Several 3D printers arranged on shelving under blue workshop lighting"),
+];

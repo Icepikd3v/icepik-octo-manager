@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { projects } from "../data/company";
+import PrintingGallery from "../components/PrintingGallery";
 import ContactCTA from "../components/ContactCTA";
 export default function Printing() {
   return (
@@ -23,14 +24,15 @@ export default function Printing() {
             Projects quoted individually. No membership required.
           </p>
         </div>
-        <div className="photo-window crop-print printing-photo">
+        <div className="photo-window crop-gallery printing-photo">
           <img
             src={projects[0].image}
-            alt="Custom red FDM print and blue octopus model made at IronRoot"
+            alt={projects[0].alt}
             fetchPriority="high"
           />
         </div>
       </section>
+      <div className="company-section"><PrintingGallery /></div>
       <section className="company-section">
         <div className="section-heading">
           <div>

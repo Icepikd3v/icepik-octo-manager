@@ -54,11 +54,13 @@ export const projects = [
     category: "3D printing",
     title: "From useful parts to original creations",
     description:
-      "Custom FDM work, including a red printed part and a blue octopus model, shared from the IronRoot workshop.",
-    image: shot("7.12.45"),
-    alt: "IronRoot Facebook post showing a red part on a Creality print bed and a blue octopus model",
+      "Display pieces, character figures, a glowing rocket, and the work in progress behind the finished prints.",
+    image: "/printing/IMG_7639.jpg",
+    alt: "Two printed helmeted figures in blue and white jackets on the IronRoot workbench",
     date: "August 14, 2025",
-    position: "print",
+    position: "gallery",
+    gallery: true,
+    archiveImage: shot("7.12.45"),
   },
   {
     id: "board-repair",

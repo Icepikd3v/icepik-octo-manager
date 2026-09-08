@@ -2,16 +2,13 @@
 const axios = require("axios");
 require("dotenv").config();
 
-const BASE_URL = process.env.OCTOPRINT_BASE_URL;
-const API_KEY = process.env.OCTOPRINT_API_KEY;
-const PATH_MULTICOLOR = process.env.OCTOPRINT_MULTICOLOR_PATH;
-const PATH_DIRECT = process.env.OCTOPRINT_DIRECT_PATH;
+const { getOctoPrintConfig } = require("../config/octoprint");
 
 /**
  * Start a print job by selecting a file and triggering print on the target printer
  *
  * @param {Object} params
- * @param {string} params.printer     Printer key: "EnderMulticolor" or "EnderDirect"
+ * @param {string} params.printer     Printer key: "EnderMultiColor" or "EnderDirect"
  * @param {string} params.filename    Exact filename in OctoPrint (e.g. "... .aw.gcode")
  */
 async function startPrintJob({ printer, filename }) {
@@ -20,13 +17,8 @@ async function startPrintJob({ printer, filename }) {
       return { error: "Missing printer or filename." };
     }
 
-    // pick the right URL path prefix
-    const printerPath =
-      printer === "EnderMultiColor" ? PATH_MULTICOLOR : PATH_DIRECT;
-    const apiBase = `${BASE_URL}${printerPath}`;
-
-    // build the select & print URL (no encodeURIComponent)
-    const endpoint = `${apiBase}/api/files/local/${filename}`;
+    const { baseUrl, apiKey } = getOctoPrintConfig(printer);
+    const endpoint = `${baseUrl}/api/files/local/${encodeURIComponent(filename)}`;
     console.log(`➡️  Selecting file at: ${endpoint}`);
 
     // Step 1: select & print
@@ -35,7 +27,7 @@ async function startPrintJob({ printer, filename }) {
       { command: "select", print: true },
       {
         headers: {
-          "X-Api-Key": API_KEY,
+          "X-Api-Key": apiKey,
           "Content-Type": "application/json",
         },
       },

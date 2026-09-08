@@ -25,3 +25,6 @@ yarn-error.log*
 # *.png
 # *.zip
 # *.pdf
+# Private workspace uploads
+App/iom-backend/uploads/*
+!App/iom-backend/uploads/.gitkeep

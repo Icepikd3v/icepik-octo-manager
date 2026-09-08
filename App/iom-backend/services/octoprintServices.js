@@ -5,10 +5,7 @@ const path = require("path");
 const FormData = require("form-data");
 require("dotenv").config();
 
-const BASE_URL = process.env.OCTOPRINT_BASE_URL;
-const API_KEY = process.env.OCTOPRINT_API_KEY;
-const PATH_MULTICOLOR = process.env.OCTOPRINT_MULTICOLOR_PATH;
-const PATH_DIRECT = process.env.OCTOPRINT_DIRECT_PATH;
+const { getOctoPrintConfig } = require("../config/octoprint");
 
 /**
  * Uploads a file from your local uploads/ folder to the specified OctoPrint instance.
@@ -17,11 +14,9 @@ const PATH_DIRECT = process.env.OCTOPRINT_DIRECT_PATH;
  */
 const uploadToOctoPrint = async (filename, printer = "EnderDirect") => {
   try {
-    // Corrected to match exact casing:
-    const printerPath =
-      printer === "EnderMultiColor" ? PATH_MULTICOLOR : PATH_DIRECT;
+    const { baseUrl, apiKey } = getOctoPrintConfig(printer);
 
-    const uploadUrl = `${BASE_URL}${printerPath}/api/files/local`;
+    const uploadUrl = `${baseUrl}/api/files/local`;
     console.log(`Uploading ${filename} to OctoPrint at: ${uploadUrl}`);
 
     const filePath = path.join(__dirname, "..", "uploads", filename);
@@ -31,7 +26,7 @@ const uploadToOctoPrint = async (filename, printer = "EnderDirect") => {
     const response = await axios.post(uploadUrl, form, {
       headers: {
         ...form.getHeaders(),
-        "X-Api-Key": API_KEY,
+        "X-Api-Key": apiKey,
       },
       maxContentLength: Infinity,
       maxBodyLength: Infinity,
@@ -49,13 +44,12 @@ const uploadToOctoPrint = async (filename, printer = "EnderDirect") => {
 };
 
 const getPrintStatus = async (printer = "EnderDirect") => {
-  const printerPath =
-    printer === "EnderMultiColor" ? PATH_MULTICOLOR : PATH_DIRECT;
-  const statusUrl = `${BASE_URL}${printerPath}/api/job`;
+  const { baseUrl, apiKey } = getOctoPrintConfig(printer);
+  const statusUrl = `${baseUrl}/api/job`;
 
   try {
     const response = await axios.get(statusUrl, {
-      headers: { "X-Api-Key": API_KEY },
+      headers: { "X-Api-Key": apiKey },
     });
     return response.data;
   } catch (err) {
@@ -65,16 +59,15 @@ const getPrintStatus = async (printer = "EnderDirect") => {
 };
 
 const pausePrint = async (printer = "EnderDirect") => {
-  const printerPath =
-    printer === "EnderMultiColor" ? PATH_MULTICOLOR : PATH_DIRECT;
-  const url = `${BASE_URL}${printerPath}/api/job`;
+  const { baseUrl, apiKey } = getOctoPrintConfig(printer);
+  const url = `${baseUrl}/api/job`;
 
   return axios.post(
     url,
     { command: "pause", action: "pause" },
     {
       headers: {
-        "X-Api-Key": API_KEY,
+        "X-Api-Key": apiKey,
         "Content-Type": "application/json",
       },
     },
@@ -82,16 +75,15 @@ const pausePrint = async (printer = "EnderDirect") => {
 };
 
 const resumePrint = async (printer = "EnderDirect") => {
-  const printerPath =
-    printer === "EnderMultiColor" ? PATH_MULTICOLOR : PATH_DIRECT;
-  const url = `${BASE_URL}${printerPath}/api/job`;
+  const { baseUrl, apiKey } = getOctoPrintConfig(printer);
+  const url = `${baseUrl}/api/job`;
 
   return axios.post(
     url,
     { command: "pause", action: "resume" },
     {
       headers: {
-        "X-Api-Key": API_KEY,
+        "X-Api-Key": apiKey,
         "Content-Type": "application/json",
       },
     },
@@ -99,16 +91,15 @@ const resumePrint = async (printer = "EnderDirect") => {
 };
 
 const cancelPrint = async (printer = "EnderDirect") => {
-  const printerPath =
-    printer === "EnderMultiColor" ? PATH_MULTICOLOR : PATH_DIRECT;
-  const url = `${BASE_URL}${printerPath}/api/job`;
+  const { baseUrl, apiKey } = getOctoPrintConfig(printer);
+  const url = `${baseUrl}/api/job`;
 
   return axios.post(
     url,
     { command: "cancel" },
     {
       headers: {
-        "X-Api-Key": API_KEY,
+        "X-Api-Key": apiKey,
         "Content-Type": "application/json",
       },
     },
@@ -116,19 +107,17 @@ const cancelPrint = async (printer = "EnderDirect") => {
 };
 
 const getWebcamStreamUrl = (printer = "EnderDirect") => {
-  const printerPath =
-    printer === "EnderMultiColor" ? PATH_MULTICOLOR : PATH_DIRECT;
-  return `${BASE_URL}${printerPath}/webcam/?action=stream`;
+  const { baseUrl } = getOctoPrintConfig(printer);
+  return `${baseUrl}/webcam/?action=stream`;
 };
 
 const getPrinterFiles = async (printer = "EnderDirect") => {
-  const printerPath =
-    printer === "EnderMultiColor" ? PATH_MULTICOLOR : PATH_DIRECT;
-  const filesUrl = `${BASE_URL}${printerPath}/api/files`;
+  const { baseUrl, apiKey } = getOctoPrintConfig(printer);
+  const filesUrl = `${baseUrl}/api/files`;
 
   try {
     const response = await axios.get(filesUrl, {
-      headers: { "X-Api-Key": API_KEY },
+      headers: { "X-Api-Key": apiKey },
     });
     const files = response.data.files || [];
     return files
@@ -146,15 +135,14 @@ const getPrinterFiles = async (printer = "EnderDirect") => {
 };
 
 const deleteOctoPrintFile = async (filename, printer = "EnderDirect") => {
-  const printerPath =
-    printer === "EnderMultiColor" ? PATH_MULTICOLOR : PATH_DIRECT;
-  const url = `${BASE_URL}${printerPath}/api/files/local/${encodeURIComponent(
+  const { baseUrl, apiKey } = getOctoPrintConfig(printer);
+  const url = `${baseUrl}/api/files/local/${encodeURIComponent(
     filename,
   )}`;
 
   try {
     await axios.delete(url, {
-      headers: { "X-Api-Key": API_KEY },
+      headers: { "X-Api-Key": apiKey },
     });
     console.log(`🗑️ Deleted ${filename} from ${printer}`);
   } catch (err) {

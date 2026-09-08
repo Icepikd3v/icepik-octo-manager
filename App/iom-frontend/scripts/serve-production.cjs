@@ -1,4 +1,4 @@
-// Serves only the compiled public website. It does not mount the printer API.
+// Serves the compiled website and proxies same-origin workspace requests to the local API.
 const http = require("node:http");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -23,6 +23,13 @@ const pages = new Set([
   "/about",
   "/contact",
   "/3d-printing",
+  "/login",
+  "/signup",
+  "/dashboard",
+  "/live",
+  "/upload",
+  "/file-library",
+  "/dev",
 ]);
 const projects = new Set([
   "custom-prints",
@@ -31,7 +38,7 @@ const projects = new Set([
   "dashcam",
   "five-boards",
 ]);
-function createServer() {
+function createServer({ apiPort = Number(process.env.API_PORT || 3001) } = {}) {
   return http.createServer((req, res) => {
     res.setHeader("X-Content-Type-Options", "nosniff");
     res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
@@ -44,6 +51,25 @@ function createServer() {
       "Content-Security-Policy",
       "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'",
     );
+    if (req.url.startsWith("/api/")) {
+      const upstream = http.request({
+        hostname: "127.0.0.1", port: apiPort, path: req.url,
+        method: req.method, headers: { ...req.headers, host: `127.0.0.1:${apiPort}` },
+      }, response => {
+        res.writeHead(response.statusCode, response.headers);
+        pipeline(response, res, () => {});
+      });
+      upstream.setTimeout(130000, () => upstream.destroy(new Error("API timeout")));
+      upstream.on("error", () => {
+        if (!res.headersSent) {
+          res.writeHead(503, { "Content-Type": "application/json", "Cache-Control": "no-store" });
+          res.end(JSON.stringify({ message: "The workspace service is unavailable. Please try again shortly." }));
+        } else res.destroy();
+      });
+      req.on("aborted", () => upstream.destroy());
+      req.pipe(upstream);
+      return;
+    }
     if (!["GET", "HEAD"].includes(req.method)) {
       res.writeHead(405, { Allow: "GET, HEAD" });
       res.end("Method not allowed");

@@ -1,73 +1,50 @@
-# IronRoot Solutions public website
+# IronRoot Solutions website and live print workspace
 
-## Current scope
+## Current local release
 
-IronRoot Solutions provides web application development and maintenance,
-technology repair and installation, and custom FDM 3D printing. The public site
-presents these services and actual workshop projects supplied from the company's
-Facebook posts. Facebook is the confirmed contact destination until business
-email, service area, and domain details are provided.
+Public company pages remain at `/`, `/services`, `/work`, `/work/:id`, `/about`,
+`/3d-printing`, and `/contact`. Contact prepares a brief for the visitor to send
+through the confirmed Facebook destination.
 
-The contact page prepares a project brief locally for a visitor to copy to
-Facebook. It does not submit the brief, store personal information, or claim a
-request was received. Facebook handles the eventual message.
+The print studio is now included in the production build:
 
-Public routes: `/`, `/services`, `/work`, `/work/:id`, `/about`, `/3d-printing`,
-and `/contact`.
+- `/signup` and `/login`: real accounts and HttpOnly cookie sessions.
+- `/dashboard`: personal greeting, live connection count, and workspace links.
+- `/live`: ED1/ED2 connection states, nozzle/bed readings, file progress, and time
+  remaining. Status refreshes every 15 seconds; failures show unavailable or stale
+  readings instead of fabricated data.
+- `/upload`: STL and G-code uploads, up to 50 MB, saved for review.
+- `/file-library`: database-backed files belonging to the signed-in account.
+- `/dev`: redirects to the authenticated workspace. Mock sign-in was removed.
 
-## Development versus production
+Uploads save real file contents on the backend and metadata in MongoDB. They do
+not transfer to OctoPrint or start prints. The old automatic print, analytics,
+user-listing, and test-email routes are not mounted. Operator execution, quotes,
+payments, fulfillment, and camera feeds remain separate future work.
 
-`npm start` runs the local development app on port 3000. `/dev` provides mock
-access to the existing print workspace. These routes and their lazy-loaded pages
-are excluded from `npm run build`. Production users cannot unlock the workspace
-with a mock token. The public site does not call the legacy printer API.
+## Run locally
 
-From `App/iom-frontend`:
+Start MongoDB and run `npm run dev` in `App/iom-backend`.
+In `App/iom-frontend`, run `npm run build` and `npm run preview`.
+Open `http://127.0.0.1:3002` and choose **Print studio**.
 
-```sh
-npm run build
-npm run preview
-```
+The preview proxies `/api` to the loopback backend on port 3001. `API_PORT` can
+change that port. Keep printer keys in the ignored backend `.env`.
+Backend `JWT_SECRET` must have at least 32 characters. `WEB_ORIGINS` is a
+comma-separated list of allowed website origins for writes. `COOKIE_SECURE=true`
+is required when hosting behind HTTPS. The local HTTP preview leaves it false.
+Authentication attempts are limited per client IP in this single-process setup.
 
-The compiled website is available at `http://127.0.0.1:3002`. The preview server
-serves only `build/`, supplies static-asset caching and browser security headers,
-and returns 404 for unknown routes and API requests. Domain, HTTPS, hosting, and
-provider-specific configuration remain to be selected. It is not deployed.
+## Validation
 
-Checks:
+Frontend: `npm run build`,
+`CI=true npm test -- --watchAll=false --runInBand --watchman=false`, and
+`npm run test:production`.
+Backend: `npm test` and `npm run test:integration`.
+Integration checks create and remove an isolated MongoDB test database and test
+uploads, and read the real printer endpoints without operating hardware.
 
-```sh
-CI=true npm test -- --watchAll=false --runInBand --watchman=false
-npm run test:production
-```
-
-Run the production checks after building. They verify public deep links,
-missing/private routes, response headers, and exclusion of mock workspace text.
-Browser visual verification is still required; the connected Browser tool was
-unavailable during this pass. Facebook screenshots are original, unmodified
-assets; cards frame them in CSS and detail pages show the originals. Smaller
-web-ready source photos would improve image transfer size.
-
-## Print-commerce direction
-
-Customers without printers should be able to request suitable parts at a price
-covering printing, processing, and shipping. Start with individual orders;
-subscriptions, membership pricing, and priority benefits come later.
-
-Before enabling paid online orders:
-
-- Confirm all three printer models, firmware, hosts, cameras, and LAN addresses.
-- Choose the customer model-file workflow and operator-controlled preparation.
-- Define acceptance review, materials, quote calculation, shipping, and fulfillment.
-- Implement customer authentication, order ownership, admin approval, payment
-  confirmation, and print-job state transitions.
-- Connect printer status/video and execution through the backend after local tests.
-
-The existing Express/MongoDB backend is a prototype. Known gaps include an
-unauthenticated test-email route, overly broad user listing, direct uploads to
-OctoPrint, and print submission without the required commercial approval/payment
-workflow. It must not be treated as the production commerce API merely because
-the company site now has a production build.
-
-The old proposal, stack document, and terms are historical materials and do not
-constitute current product scope or launch-ready policies.
+This is a local production build, not a public deployment. Domain, HTTPS,
+production database/storage backups, and hosting configuration remain to be set
+for an internet release. Browser visual QA could not be completed because the
+connected browser was unavailable in this session.

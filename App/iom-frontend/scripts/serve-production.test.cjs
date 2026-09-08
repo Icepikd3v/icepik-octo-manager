@@ -3,7 +3,7 @@ const assert = require("node:assert/strict");
 const { createServer } = require("./serve-production.cjs");
 let server, base;
 before(async () => {
-  server = createServer();
+  server = createServer({ apiPort: 1 });
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
   base = `http://127.0.0.1:${server.address().port}`;
 });
@@ -18,6 +18,12 @@ test("public deep links serve the compiled website with security headers", async
     "/contact",
     "/work/custom-prints",
     "/3d-printing",
+    "/login",
+    "/signup",
+    "/dashboard",
+    "/live",
+    "/upload",
+    "/file-library",
   ]) {
     const res = await fetch(base + route);
     assert.equal(res.status, 200);
@@ -29,17 +35,17 @@ test("public deep links serve the compiled website with security headers", async
     );
   }
 });
-test("private, missing and API paths do not appear to be working public routes", async () => {
+test("missing paths return 404 and API downtime returns JSON", async () => {
   for (const route of [
-    "/dev",
-    "/dashboard",
     "/work/unknown",
     "/static/missing.js",
-    "/api/status",
   ]) {
     const res = await fetch(base + route);
     assert.equal(res.status, 404, route);
   }
+  const offline = await fetch(base + "/api/status");
+  assert.equal(offline.status, 503);
+  assert.match((await offline.json()).message, /unavailable/);
   const res = await fetch(base + "/contact", { method: "POST", body: "test" });
   assert.equal(res.status, 405);
 });
@@ -60,4 +66,36 @@ test("compiled JS excludes mock workspace and assets are cacheable", async () =>
   const icon = await fetch(base + "/ironroot-mark.svg");
   assert.equal(icon.status, 200);
   assert.equal(icon.headers.get("content-type"), "image/svg+xml");
+});
+
+test("same-origin API proxy preserves sessions, request bodies, and status codes", async () => {
+  const http = require("node:http");
+  const upstream = http.createServer((req, res) => {
+    let body = "";
+    req.on("data", chunk => { body += chunk; });
+    req.on("end", () => {
+      res.writeHead(201, { "Content-Type": "application/json", "Set-Cookie": "ironroot_session=test; HttpOnly; Path=/api; SameSite=Strict", "Cache-Control": "no-store" });
+      res.end(JSON.stringify({ method: req.method, path: req.url, cookie: req.headers.cookie, body, contentType: req.headers["content-type"] }));
+    });
+  });
+  await new Promise(resolve => upstream.listen(0, "127.0.0.1", resolve));
+  const proxy = createServer({ apiPort: upstream.address().port });
+  await new Promise(resolve => proxy.listen(0, "127.0.0.1", resolve));
+  try {
+    const form = new FormData();
+    form.append("printer", "ED2");
+    form.append("file", new Blob(["; test file"]), "test.gcode");
+    const response = await fetch(`http://127.0.0.1:${proxy.address().port}/api/models/upload`, { method: "POST", headers: { Cookie: "ironroot_session=test" }, body: form });
+    assert.equal(response.status, 201);
+    assert.match(response.headers.get("set-cookie"), /HttpOnly/);
+    assert.equal(response.headers.get("cache-control"), "no-store");
+    const data = await response.json();
+    assert.equal(data.method, "POST"); assert.equal(data.path, "/api/models/upload");
+    assert.equal(data.cookie, "ironroot_session=test");
+    assert.match(data.contentType, /multipart\/form-data/);
+    assert.match(data.body, /test.gcode/); assert.match(data.body, /; test file/);
+  } finally {
+    proxy.closeAllConnections(); upstream.closeAllConnections();
+    await Promise.all([new Promise(resolve => proxy.close(resolve)), new Promise(resolve => upstream.close(resolve))]);
+  }
 });

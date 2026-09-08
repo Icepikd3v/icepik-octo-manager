@@ -43,9 +43,7 @@ export default function Footer() {
       <div className="footer-bottom">
         <span>© {new Date().getFullYear()} IronRoot Solutions</span>
         <span>DESIGN. REPAIR. CREATE.</span>
-        {process.env.NODE_ENV !== "production" && (
-          <Link to="/dev">Development workspace ↗</Link>
-        )}
+        <Link to="/dashboard">Print studio ↗</Link>
       </div>
     </footer>
   );
