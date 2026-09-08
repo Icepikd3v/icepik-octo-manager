@@ -13,8 +13,7 @@ const Layout = ({ title, children }) => {
 
       {/* Footer */}
       <footer className="bg-primaryTeal text-fontBlack font-subheading text-center py-2">
-        © {new Date().getFullYear()} Icepik's Octo Manager. All Rights
-        Reserved.
+        © {new Date().getFullYear()} IronRoot Solutions. All Rights Reserved.
       </footer>
     </div>
   );

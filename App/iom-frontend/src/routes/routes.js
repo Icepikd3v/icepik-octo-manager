@@ -1,72 +1,60 @@
-import React from "react";
+import { lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 import HomePage from "../pages/HomePage";
-import Dashboard from "../pages/Dashboard";
-import Upload from "../pages/Upload";
-import FileLibrary from "../pages/FileLibrary";
-import Live from "../pages/Live";
-import Subscription from "../pages/Subscription";
-import Signup from "../pages/Signup";
+import Services from "../pages/Services";
+import Work from "../pages/Work";
+import Project from "../pages/Project";
+import About from "../pages/About";
+import Printing from "../pages/Printing";
+import Contact from "../pages/Contact";
 import NotFound from "../pages/NotFound";
 import ProtectedRoute from "./ProtectedRoutes";
-
-//  New import
-import BackendStatus from "../pages/BackendStatus";
-
-const AppRoutes = () => (
-  <Routes>
-    {/* Public Routes */}
-    <Route path="/" element={<HomePage />} />
-    <Route path="/signup" element={<Signup />} />
-
-    {/*  Backend Test Route (Temporary) */}
-    <Route path="/backend-status" element={<BackendStatus />} />
-
-    {/* Protected Routes */}
-    <Route
-      path="/dashboard"
-      element={
-        <ProtectedRoute>
-          <Dashboard />
-        </ProtectedRoute>
+const dev = process.env.NODE_ENV !== "production";
+const Development = dev ? lazy(() => import("../pages/Development")) : null;
+const Dashboard = dev ? lazy(() => import("../pages/Dashboard")) : null;
+const Live = dev ? lazy(() => import("../pages/Live")) : null;
+const Upload = dev ? lazy(() => import("../pages/Upload")) : null;
+const FileLibrary = dev ? lazy(() => import("../pages/FileLibrary")) : null;
+export default function AppRoutes() {
+  return (
+    <Suspense
+      fallback={
+        <div className="page" role="status">
+          Loading workspace…
+        </div>
       }
-    />
-    <Route
-      path="/upload"
-      element={
-        <ProtectedRoute>
-          <Upload />
-        </ProtectedRoute>
-      }
-    />
-    <Route
-      path="/file-library"
-      element={
-        <ProtectedRoute>
-          <FileLibrary />
-        </ProtectedRoute>
-      }
-    />
-    <Route
-      path="/live"
-      element={
-        <ProtectedRoute>
-          <Live />
-        </ProtectedRoute>
-      }
-    />
-    <Route
-      path="/subscription"
-      element={
-        <ProtectedRoute>
-          <Subscription />
-        </ProtectedRoute>
-      }
-    />
-
-    {/* Catch-All Route */}
-    <Route path="*" element={<NotFound />} />
-  </Routes>
-);
-
-export default AppRoutes;
+    >
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/services" element={<Services />} />
+        <Route path="/work" element={<Work />} />
+        <Route path="/work/:id" element={<Project />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/3d-printing" element={<Printing />} />
+        <Route path="/contact" element={<Contact />} />
+        {dev && (
+          <>
+            <Route path="/dev" element={<Development />} />
+            {[
+              ["/dashboard", Dashboard],
+              ["/live", Live],
+              ["/upload", Upload],
+              ["/file-library", FileLibrary],
+            ].map(([path, Page]) => (
+              <Route
+                key={path}
+                path={path}
+                element={
+                  <ProtectedRoute>
+                    <Page />
+                  </ProtectedRoute>
+                }
+              />
+            ))}
+          </>
+        )}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Suspense>
+  );
+}

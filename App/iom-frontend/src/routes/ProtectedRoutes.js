@@ -1,13 +1,10 @@
-import React from "react";
-import { Navigate } from "react-router-dom";
-
-// Mock authentication state
-const isAuthenticated = () => {
-  return localStorage.getItem("token") !== null; // Example token check
-};
-
-const ProtectedRoute = ({ children }) => {
-  return isAuthenticated() ? children : <Navigate to="/" replace />;
-};
-
-export default ProtectedRoute;
+import { Navigate, useLocation } from "react-router-dom";
+import { getDemoUser } from "../constants/demoAuth";
+export default function ProtectedRoute({ children }) {
+  const location = useLocation();
+  return getDemoUser() ? (
+    children
+  ) : (
+    <Navigate to="/dev" state={{ from: location.pathname }} replace />
+  );
+}

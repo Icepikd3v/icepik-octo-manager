@@ -1,106 +1,58 @@
-import React from "react";
-import streamPlaceholder from "../assets/printer-stream-placeholder.svg";
-
-const Live = () => {
-  // Mock data for active printers
-  const activePrinters = [
-    {
-      id: 1,
-      name: "Printer 1",
-      status: "Printing",
-      progress: 75,
-      streamUrl: streamPlaceholder,
-    },
-    {
-      id: 2,
-      name: "Printer 2",
-      status: "Idle",
-      progress: 0,
-      streamUrl: streamPlaceholder,
-    },
-    {
-      id: 3,
-      name: "Printer 3",
-      status: "Completed",
-      progress: 100,
-      streamUrl: streamPlaceholder,
-    },
-  ];
-
+export default function Live() {
   return (
-    <div className="p-6">
-      {/* Page Title */}
-      <h1 className="text-3xl font-heading mb-4 text-center">
-        Live! Printing Dashboard
-      </h1>
-      <p className="text-center text-fontBlack mb-6">
-        Monitor your prints in real-time and check printer statuses below.
-      </p>
-      <p className="text-center text-sm text-gray-700 mb-6">
-        Demo mode active: live streams and OctoPrint webhooks are currently shown with placeholders until hardware is back online.
-      </p>
-
-      {/* User Project Highlight */}
-      <section className="bg-secondaryGray p-4 rounded-md shadow-md mb-6">
-        <h2 className="text-xl font-subheading mb-2">Your Current Print</h2>
-        <div className="flex flex-col md:flex-row items-center gap-4">
-          <img
-            src={streamPlaceholder}
-            alt="User Print Stream"
-            className="rounded-md shadow-md w-full md:w-1/2"
-            onError={(e) => {
-              e.currentTarget.src = streamPlaceholder;
-            }}
-          />
-          <div className="w-full md:w-1/2">
-            <p className="text-sm font-paragraph">
-              Printer: <strong>Printer 1</strong>
-            </p>
-            <p className="text-sm font-paragraph">
-              Status: <strong>Printing</strong>
-            </p>
-            <p className="text-sm font-paragraph">Progress:</p>
-            <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden mt-1">
-              <div
-                className="bg-primaryTeal h-full"
-                style={{ width: "75%" }}
-              ></div>
-            </div>
-          </div>
+    <div className="page">
+      <p className="eyebrow">THE PRINT STUDIO</p>
+      <div className="page-heading">
+        <div>
+          <h1>Three spaces. Endless ideas.</h1>
+          <p>
+            Printer models and network connections will be confirmed in the next
+            setup step.
+          </p>
         </div>
-      </section>
-
-      {/* Live Stream Grid */}
-      <section>
-        <h2 className="text-2xl font-subheading mb-4">Active Printers</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {activePrinters.map((printer) => (
-            <div key={printer.id} className="bg-white rounded-md shadow-md p-4">
-              <img
-                src={printer.streamUrl}
-                alt={`Stream for ${printer.name}`}
-                className="w-full h-40 object-cover rounded-md mb-4"
-                onError={(e) => {
-                  e.currentTarget.src = streamPlaceholder;
-                }}
-              />
-              <h3 className="text-lg font-subheading mb-1">{printer.name}</h3>
-              <p className="text-sm font-paragraph">
-                Status: <strong>{printer.status}</strong>
-              </p>
-              <p className="text-sm font-paragraph">Progress:</p>
-              <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden mt-1">
-                <div
-                  className={`h-full ${printer.status === "Completed" ? "bg-green-400" : "bg-primaryTeal"}`}
-                  style={{ width: `${printer.progress}%` }}
-                ></div>
+        <span className="pill">0 / 3 connected</span>
+      </div>
+      <div className="printer-grid">
+        {[1, 2, 3].map((n) => (
+          <article className="printer-card" key={n}>
+            <div className="printer-visual">
+              <span className="printer-index">0{n}</span>
+              <div className="printer-drawing" aria-hidden="true">
+                <div className="printer-rail" />
+                <div className="printer-head" />
+                <div className="printer-bed" />
               </div>
+              <span className="camera-label">CAMERA NOT CONNECTED</span>
             </div>
-          ))}
-        </div>
-      </section>
+            <div className="printer-details">
+              <div className="page-heading">
+                <h2>Printer 0{n}</h2>
+                <span className="pill">Not connected</span>
+              </div>
+              <p>Hardware details pending</p>
+              <dl>
+                <div>
+                  <dt>Current job</dt>
+                  <dd>—</dd>
+                </div>
+                <div>
+                  <dt>Temperature</dt>
+                  <dd>—</dd>
+                </div>
+                <div>
+                  <dt>Connection</dt>
+                  <dd>Awaiting setup</dd>
+                </div>
+              </dl>
+            </div>
+          </article>
+        ))}
+      </div>
+      <p className="info-note">
+        These are placeholders for the three planned printers. Live video,
+        temperatures, and print controls will appear after each printer is
+        configured.
+      </p>
     </div>
   );
-};
-
-export default Live;
+}
