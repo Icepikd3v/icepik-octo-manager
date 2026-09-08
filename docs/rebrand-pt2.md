@@ -16,8 +16,8 @@ The home page gives visitors two clear paths:
 
 The service page has four categories. Security-service links preselect the
 security topic in the contact page; software design is also a contact option.
-Contact remains the existing Facebook brief workflow. No inquiry is presented as
-sent until the visitor sends it through Facebook.
+Contact prepares an email draft addressed to ironrootsolutions@gmail.com, with
+Facebook retained as another option. Preparing a brief does not send it.
 
 The local production preview is `http://127.0.0.1:3002` after `npm run build` and
 `npm run preview` in `App/iom-frontend`. This change is not a public deployment.
@@ -46,3 +46,6 @@ The current icon combines a tree silhouette with thick circuit-board traces,
 three circular connection pads, and a solid trunk splitting into angular roots.
 The enclosing hexagon and the literal I-beam have been removed. The header,
 footer, About page, favicon, and web-app manifest share this SVG.
+
+The circuit roots now extend below a horizontal ground line into a dark-blue
+soil shape, keeping the existing traces and connection pads.

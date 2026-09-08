@@ -1,5 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 110" fill="none">
-  <title>IronRoot — a rooted tree built from circuit-board traces</title>
+  <title>IronRoot — circuit-board branches with roots growing into the ground</title>
+  <path d="M5 73H95C95 96 75 109 50 109S5 96 5 73Z" fill="#203C60"/>
+  <path d="M5 73H95" stroke="#77A9DE" stroke-width="3"/>
   <g stroke="#BBDFFF" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
     <path d="M50 17V73"/>
     <path d="M17 33V46L50 66"/>

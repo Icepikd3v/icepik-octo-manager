@@ -4,7 +4,7 @@
 
 Public company pages remain at `/`, `/services`, `/work`, `/work/:id`, `/about`,
 `/3d-printing`, and `/contact`. Contact prepares a brief for the visitor to send
-through the confirmed Facebook destination.
+to ironrootsolutions@gmail.com or through the confirmed Facebook destination.
 
 The print studio is now included in the production build:
 
@@ -48,3 +48,7 @@ This is a local production build, not a public deployment. Domain, HTTPS,
 production database/storage backups, and hosting configuration remain to be set
 for an internet release. Browser visual QA could not be completed because the
 connected browser was unavailable in this session.
+
+Customer email templates and a persistent Gmail delivery queue are implemented.
+See [email setup](email-setup.md) for authentication, activation, and the boundary
+between upload receipts and future customer-owned printer lifecycle updates.

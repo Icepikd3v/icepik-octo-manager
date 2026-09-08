@@ -94,3 +94,46 @@ test("logout clears the session cookie", async () => {
   assert.match(response.headers.get("set-cookie"), /ironroot_session=;/);
   assert.equal((await request("/auth/me")).status, 401);
 });
+
+test('upload receipts queue once, retry failures, and never resend successful deliveries', async () => {
+  const Notification = require('../models/EmailNotification');
+  const { collectNotifications, deliverNext } = require('../services/notificationService');
+  await Notification.init();
+  await collectNotifications(); await collectNotifications();
+  assert.equal(await Notification.countDocuments(), 1);
+  let receipt = await Notification.findOne();
+  assert.equal(receipt.to, 'test@example.test');
+  assert.match(receipt.text, /workspace-test.gcode/);
+  let attempts = 0;
+  const offline = async () => { attempts++; const error = new Error('private SMTP details'); error.code = 'ECONNECTION'; throw error; };
+  const now = new Date();
+  await deliverNext(offline, now);
+  receipt = await Notification.findOne();
+  assert.equal(receipt.status, 'pending'); assert.equal(receipt.attempts, 1);
+  assert.equal(receipt.lastError, 'ECONNECTION');
+  assert.equal(await deliverNext(offline, now), false);
+  await deliverNext(async message => { attempts++; assert.equal(message.to, 'test@example.test'); return { messageId: 'mock-only' }; }, receipt.availableAt);
+  assert.equal((await Notification.findOne()).status, 'sent');
+  assert.equal(await deliverNext(offline, new Date(Date.now() + 86400000)), false);
+  assert.equal(attempts, 2);
+});
+test('only enrolled print jobs queue lifecycle updates and exhausted delivery attempts stop', async () => {
+  const Notification = require('../models/EmailNotification');
+  const PrintJob = require('../models/PrintJob');
+  const User = require('../models/Users');
+  const { collectNotifications, deliverNext } = require('../services/notificationService');
+  const user = await User.findOne({ email: 'test@example.test' });
+  const job = await PrintJob.create({ userId: user._id, filename: 'owned-part.stl', printer: 'ED1' });
+  await collectNotifications(); assert.equal(await Notification.countDocuments(), 1);
+  job.notifyCustomer = true; await job.save();
+  await collectNotifications(); await collectNotifications();
+  assert.equal(await Notification.countDocuments(), 2);
+  job.status = 'printing'; await job.save(); await collectNotifications();
+  assert.equal(await Notification.countDocuments(), 3);
+  assert.match((await Notification.findOne({ eventKey: `job:${job._id}:printing` })).text, /Printing has started/);
+  const failure = async () => { throw new Error('SMTP secret must not be persisted'); };
+  for (let i = 0; i < 5; i++) await deliverNext(failure, new Date(Date.now() + (i + 1) * 86400000));
+  const failed = await Notification.findOne({ eventKey: `job:${job._id}:queued` });
+  assert.equal(failed.status, 'failed'); assert.equal(failed.attempts, 5);
+  assert.equal(failed.lastError, 'DELIVERY_FAILED');
+});

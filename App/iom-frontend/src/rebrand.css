@@ -260,3 +260,7 @@ a, button { -webkit-tap-highlight-color: transparent; }
   .workshop-stage-notes dl { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
   .workshop-stage-picker button { font-size: 10px; padding: 12px 9px; }
 }
+
+.company-email { overflow-wrap: anywhere; }
+.contact-grid .company-email { font-size: 13px; max-width: 100%; }
+.contact-facebook { display: table; margin-top: 20px; }

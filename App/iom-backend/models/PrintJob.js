@@ -1,10 +1,13 @@
 const mongoose = require("mongoose");
 
 const printJobSchema = new mongoose.Schema({
+  notifyCustomer: { type: Boolean, default: false },
+  lastNotifiedStatus: String,
+  trackingUrl: String,
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   printer: {
     type: String,
-    enum: ["EnderMultiColor", "EnderDirect"],
+    enum: ["ED1", "ED2", "EnderMultiColor", "EnderDirect"],
     required: true,
   },
   filename: { type: String, required: true },

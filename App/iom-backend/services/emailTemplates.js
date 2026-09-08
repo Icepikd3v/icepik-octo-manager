@@ -1,92 +1,37 @@
-// services/emailTemplates.js
-
-/**
- * Clean, modern email templates for IOM print-job status updates.
- * Each function returns { subject, html }
- */
-
-function queued({ username, filename }) {
+const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
+const copy = {
+  uploaded: ["Your file is saved for review", "We received your project file. It is saved for review; a print has not started. We’ll discuss preparation and next steps with you."],
+  queued: ["Your print is queued", "Your project has been added to the print queue."],
+  printing: ["Your print has started", "Printing has started for your project."],
+  paused: ["Your print is paused", "Printing is paused. We’ll update you as the project progresses."],
+  completed: ["Your print is complete", "The print has finished. We’ll confirm any finishing and collection or delivery arrangements separately."],
+  canceled: ["Your print was canceled", "This print has been canceled. Reply if you’d like to discuss the next step."],
+  failed: ["Your print needs attention", "The print encountered a problem. We’ll review what happened and discuss the next step with you."],
+  shipped: ["Your print has shipped", "Your project has been marked as shipped."],
+};
+function safeTrackingUrl(value) {
+  if (!value) return null;
+  try { const url = new URL(value); return url.protocol === "https:" && !url.username && !url.password ? url.href : null; }
+  catch { return null; }
+}
+function printUpdate(status, { username, filename, printer, trackingUrl } = {}) {
+  if (!Object.hasOwn(copy, status)) throw new Error("Unsupported print notification status.");
+  const [title, description] = copy[status];
+  const tracking = status === "shipped" ? safeTrackingUrl(trackingUrl) : null;
+  const name = username || "there";
+  const displayedPrinter = ({ EnderDirect: "ED1", EnderMultiColor: "ED2" })[printer] || printer;
+  const text = `Hi ${name},\n\n${title}\n\nFile: ${filename || "Your project"}${displayedPrinter ? `\nPrinter: ${displayedPrinter}` : ""}\n\n${description}${tracking ? `\n\nTracking: ${tracking}` : ""}\n\nQuestions? Reply to this email.\nIronRoot Solutions`;
   return {
-    subject: `🎉 Your job is queued!`,
-    html: `
-      <div style="font-family: sans-serif; max-width:600px; margin:auto;">
-        <h2 style="color:#4A90E2;">Hi ${username},</h2>
-        <p>Thanks for choosing IOM Prints! Your file <strong>${filename}</strong> is now in our queue.</p>
-        <p>📋 We’ll notify you when your print starts. Sit back and relax—creativity is on its way!</p>
-        <footer style="margin-top:20px; font-size:12px; color:#888;">
-          Icepik’s Octo Manager &bull; Innovating 3D printing experiences
-        </footer>
-      </div>
-    `,
+    subject: `IronRoot Solutions — ${title}`,
+    text,
+    html: `<div style="background:#0b111c;padding:28px;font-family:Arial,sans-serif;color:#edf3fc;max-width:600px;margin:auto;border-top:4px solid #88baff"><p style="color:#a8d5ff;letter-spacing:2px;font-size:12px">IRONROOT SOLUTIONS / PRINT STUDIO</p><h1 style="font-size:24px;color:#edf3fc">${escapeHtml(title)}</h1><p>Hi ${escapeHtml(name)},</p><p style="line-height:1.7;color:#c4d3e7">${escapeHtml(description)}</p><div style="background:#172338;padding:18px"><strong>${escapeHtml(filename || "Your project")}</strong>${displayedPrinter ? `<p>Printer: ${escapeHtml(displayedPrinter)}</p>` : ""}</div>${tracking ? `<p><a style="color:#a8d5ff" href="${escapeHtml(tracking)}">Track your shipment</a></p>` : ""}<p style="line-height:1.7;color:#c4d3e7">Questions? Reply to this email and we’ll help.</p><p style="font-size:12px;color:#a5b4c9">IronRoot Solutions · Technology, made practical.</p></div>`,
   };
 }
-
-function started({ username, filename, printer }) {
-  return {
-    subject: `🚀 Your print has started`,
-    html: `
-      <div style="font-family: sans-serif; max-width:600px; margin:auto;">
-        <h2 style="color:#50E3C2;">Hello ${username},</h2>
-        <p>Great news! Your job <strong>${filename}</strong> is now printing on <em>${printer}</em>.</p>
-        <p>🔗 <a href="${process.env.BASE_WEB_URL}/streams/${printer}" style="color:#4A90E2;">Watch live</a> as your creation comes to life.</p>
-        <p>Thank you for inspiring innovation with us!</p>
-        <footer style="margin-top:20px; font-size:12px; color:#888;">
-          Icepik’s Octo Manager &bull; Where imagination meets reality
-        </footer>
-      </div>
-    `,
-  };
-}
-
-function completed({ username, filename }) {
-  return {
-    subject: `🎉 Print completed successfully!`,
-    html: `
-      <div style="font-family: sans-serif; max-width:600px; margin:auto;">
-        <h2 style="color:#F5A623;">Congratulations ${username}!</h2>
-        <p>Your print <strong>${filename}</strong> has finished. We can’t wait to see your feedback!</p>
-        <p>📦 We’re now preparing it for shipping—stay tuned for tracking details.</p>
-        <p>Thanks for creating with IOM Prints.</p>
-        <footer style="margin-top:20px; font-size:12px; color:#888;">
-          Icepik’s Octo Manager &bull; Crafting your visions in 3D
-        </footer>
-      </div>
-    `,
-  };
-}
-
-function canceled({ username, filename }) {
-  return {
-    subject: `⚠️ Your print was canceled`,
-    html: `
-      <div style="font-family: sans-serif; max-width:600px; margin:auto;">
-        <h2 style="color:#D0021B;">Hello ${username},</h2>
-        <p>We’re sorry to let you know that your print <strong>${filename}</strong> was canceled.</p>
-        <p>If you’d like assistance or wish to re-queue, reply to this email or visit your account dashboard.</p>
-        <p>We appreciate your creativity and hope to help again soon.</p>
-        <footer style="margin-top:20px; font-size:12px; color:#888;">
-          Icepik’s Octo Manager &bull; Innovating responsibly
-        </footer>
-      </div>
-    `,
-  };
-}
-
-function shipped({ username, filename, trackingUrl }) {
-  return {
-    subject: `📦 Your print has shipped!`,
-    html: `
-      <div style="font-family: sans-serif; max-width:600px; margin:auto;">
-        <h2 style="color:#9013FE;">Hi ${username},</h2>
-        <p>Your print <strong>${filename}</strong> is on its way.</p>
-        <p>🔍 Track your package: <a href="${trackingUrl}" style="color:#4A90E2;">${trackingUrl}</a></p>
-        <p>We can’t wait for you to unbox your creation—thank you for printing with us!</p>
-        <footer style="margin-top:20px; font-size:12px; color:#888;">
-          Icepik’s Octo Manager &bull; Delivering innovation
-        </footer>
-      </div>
-    `,
-  };
-}
-
-module.exports = { queued, started, completed, canceled, shipped };
+module.exports = {
+  printUpdate, safeTrackingUrl,
+  queued: data => printUpdate("queued", data),
+  started: data => printUpdate("printing", data),
+  completed: data => printUpdate("completed", data),
+  canceled: data => printUpdate("canceled", data),
+  shipped: data => printUpdate("shipped", data),
+};

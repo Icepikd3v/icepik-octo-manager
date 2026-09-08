@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 
 const modelFileSchema = new mongoose.Schema({
+  receiptPending: { type: Boolean, default: false },
   size: { type: Number, default: 0 },
   name: { type: String, required: true },
   filename: { type: String, required: true },

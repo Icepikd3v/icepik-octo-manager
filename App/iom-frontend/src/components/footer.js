@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import Brand from "./Brand";
-import { FACEBOOK_URL } from "../data/company";
+import { FACEBOOK_URL, COMPANY_EMAIL } from "../data/company";
 export default function Footer() {
   return (
     <footer className="company-footer">
@@ -31,6 +31,7 @@ export default function Footer() {
         <div>
           <h2>Let’s connect</h2>
           <Link to="/contact">Start a project ↗</Link>
+          <a className="company-email" href={`mailto:${COMPANY_EMAIL}`}>{COMPANY_EMAIL}</a>
           <a
             href={FACEBOOK_URL}
             target="_blank"

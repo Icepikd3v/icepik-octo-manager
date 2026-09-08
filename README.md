@@ -7,7 +7,7 @@
 Originally Icepik Octo Manager, a Full Sail University Web Development final project. Now the home of the IronRoot Solutions company website and a separate print-commerce project.
 
 - 🔧 Built with: Node.js, React, OctoPrint API, TailwindCSS, MongoDB
-- Public website: web development, technology repair, custom 3D printing, selected work, and Facebook inquiries.
+- Public website: web development, technology repair, custom 3D printing, selected work, and email/Facebook inquiries.
 - Prototype backend: authentication, print jobs, admin controls, and analytics require further integration before commerce launch.
 
 📘 [View Project Log](./docs/log.md)
@@ -103,3 +103,9 @@ uses optimized JPEGs and thumbnails from `public/printing`. The three Instagram
 screenshots use exact photo-only crops, without generated or retouched content.
 On macOS, run `node scripts/prepare-printing-photos.cjs` from the frontend to
 recreate these copies. Captions and display order live in `src/data/printingGallery.js`.
+
+### Customer email
+
+Company contact: **ironrootsolutions@gmail.com**. Gmail SMTP and a persistent
+notification queue support upload receipts and enrolled job status updates.
+See [email setup and current automation scope](docs/email-setup.md) before enabling sending.

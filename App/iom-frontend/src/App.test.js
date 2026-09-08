@@ -8,7 +8,7 @@ jest.mock("./utils/api", () => ({
   default: { get: jest.fn(), post: jest.fn(), interceptors: { response: { use: jest.fn(), eject: jest.fn() } } },
   errorMessage: err => err.response?.data?.message || "Service unavailable",
 }));
-import { FACEBOOK_URL } from "./data/company";
+import { FACEBOOK_URL, COMPANY_EMAIL } from "./data/company";
 let container, root;
 beforeEach(() => {
   sessionStorage.clear();
@@ -106,6 +106,12 @@ test("contact prepares a brief without submitting it and handles unavailable cli
   );
   expect(container.textContent).toContain("Your message has not been sent");
   expect(sessionStorage.length).toBe(0);
+  const draft = container.querySelector('a[href^="mailto:"][href*="subject="]');
+  expect(draft.getAttribute("href").split("?")[0]).toBe(`mailto:${COMPANY_EMAIL}`);
+  const query = new URLSearchParams(draft.getAttribute("href").split("?")[1]);
+  expect(query.get("body")).toBe(container.querySelector("#project-brief").value);
+  expect(query.get("subject")).toContain("3D printing");
+  expect(api.post).not.toHaveBeenCalled();
   await click("Copy message");
   expect(container.querySelector('[role="status"]').textContent).toContain(
     "Copy is unavailable",

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { FACEBOOK_URL } from "../data/company";
+import { FACEBOOK_URL, COMPANY_EMAIL } from "../data/company";
 const options = {
   web: "Website or web application",
   software: "Software design & development",
@@ -45,7 +45,7 @@ export default function Contact() {
     try {
       await navigator.clipboard.writeText(brief);
       setCopyStatus(
-        "Copied. Open Facebook and paste your brief into a message to IronRoot Solutions.",
+        "Copied. Paste your brief into an email to IronRoot Solutions, or use Facebook.",
       );
     } catch {
       setCopyStatus(
@@ -69,11 +69,12 @@ export default function Contact() {
         <aside>
           <h2>A good place to start.</h2>
           <p>
-            Reach IronRoot Solutions through our official Facebook page to
-            discuss your project and request a quote.
+            Email IronRoot Solutions to discuss your project and request a quote.
+            You can also reach us through Facebook.
           </p>
+          <a className="button company-email" href={`mailto:${COMPANY_EMAIL}`}>{COMPANY_EMAIL} ↗</a>
           <a
-            className="button"
+            className="text-link contact-facebook"
             href={FACEBOOK_URL}
             target="_blank"
             rel="noopener noreferrer"
@@ -94,7 +95,7 @@ export default function Contact() {
           <p className="eyebrow">OPTIONAL / PREPARE YOUR MESSAGE</p>
           <h2>A little context goes a long way.</h2>
           <p>
-            This prepares a message for you to copy to Facebook. Nothing is
+            Prepare your message, then open it in your email app. Nothing is
             submitted or saved by this form.
           </p>
           <form onSubmit={prepare}>
@@ -146,6 +147,7 @@ export default function Contact() {
               </label>
               <textarea id="project-brief" readOnly value={brief} rows={8} />
               <div className="hero-actions">
+                <a className="button" href={`mailto:${COMPANY_EMAIL}?subject=${encodeURIComponent(`Project inquiry: ${options[service]}`)}&body=${encodeURIComponent(brief)}`}>Open email draft ↗</a>
                 <button className="button secondary" onClick={copy}>
                   Copy message
                 </button>
@@ -160,8 +162,8 @@ export default function Contact() {
               </div>
               <p role="status">{copyStatus}</p>
               <p className="fine-print">
-                Your message has not been sent. Paste it into a Facebook message
-                to complete your inquiry.
+                Your message has not been sent. Send it from your email app, or
+                paste it into a Facebook message to complete your inquiry.
               </p>
             </div>
           )}
