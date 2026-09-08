@@ -1,3 +1,4 @@
+import useSite from "../hooks/useSite";
 import { Link } from "react-router-dom";
 import { projects, services } from "../data/company";
 import ProjectCard from "../components/ProjectCard";
@@ -5,13 +6,14 @@ import ContactCTA from "../components/ContactCTA";
 import TechVisual from "../components/TechVisual";
 
 export default function HomePage() {
+  const { settings } = useSite();
   return (
     <div className="company-home">
       <section className="company-hero future-hero">
         <div className="company-hero-copy">
           <p className="eyebrow"><span className="status-dot" /> IDEAS INTO WORKING TECHNOLOGY</p>
           <h1>Technology.<br />Built for<br /><em>what’s next.</em></h1>
-          <p className="hero-description">Custom 3D prints. Purpose-built software. Hardware that works. We help people and businesses turn the next idea—or the next problem—into a practical solution.</p>
+          <p className="hero-description">{settings.homeIntro}</p>
           <div className="hero-actions">
             <Link to="/3d-printing" className="button">Explore 3D printing <span>↗</span></Link>
             <Link to="/services" className="text-link">Find your tech service ↗</Link>

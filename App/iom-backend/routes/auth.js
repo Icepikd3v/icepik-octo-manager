@@ -1,5 +1,5 @@
 const express = require("express");
-const { register, login, publicUser, cookieOptions } = require("../controllers/authController");
+const { register, login, publicUser, cookieOptions, verify, resend } = require("../controllers/authController");
 const auth = require("../middleware/authMiddleware");
 const router = express.Router();
 const attempts = new Map();
@@ -15,6 +15,8 @@ function limit(req, res, next) {
 }
 router.post("/register", limit, register);
 router.post("/login", limit, login);
+router.post("/verify-email", limit, verify);
+router.post("/resend-verification", limit, resend);
 router.post("/logout", (req, res) => {
   const { maxAge, ...options } = cookieOptions();
   res.clearCookie("ironroot_session", options).json({ message: "Signed out." });

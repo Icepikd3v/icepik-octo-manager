@@ -5,7 +5,7 @@ import App from "./App";
 import api from "./utils/api";
 jest.mock("./utils/api", () => ({
   __esModule: true,
-  default: { get: jest.fn(), post: jest.fn(), interceptors: { response: { use: jest.fn(), eject: jest.fn() } } },
+  default: { get: jest.fn(), post: jest.fn(), put: jest.fn(), interceptors: { response: { use: jest.fn(), eject: jest.fn() } } },
   errorMessage: err => err.response?.data?.message || "Service unavailable",
 }));
 import { FACEBOOK_URL, COMPANY_EMAIL } from "./data/company";
@@ -231,4 +231,59 @@ test("hero explains a real build and switches between documented stages", async 
   expect(feature.querySelector("img").getAttribute("src")).toBe("/printing/IMG_7428.jpg");
   expect(feature.querySelector('[aria-pressed="true"]').textContent).toContain("Put it to use");
   expect(feature.querySelector('a').getAttribute("href")).toBe("/work/custom-prints");
+});
+
+test('public live view works without login and handles offline cameras', async () => {
+  api.get.mockImplementation(url => url === '/auth/me' ? Promise.reject({ response: { status: 401 } }) : Promise.resolve({ data: url === '/public/printers' ? { printers: [{ id: 'ED1', name: 'ED1', state: 'Operational', connected: true, camera: { enabled: true, stream: '/api/public/cameras/ED1' } }, { id: 'ED2', name: 'ED2', state: 'Unavailable', connected: false, camera: { enabled: false } }] } : {} }));
+  await render('/watch');
+  expect(container.querySelectorAll('.printer-card')).toHaveLength(2);
+  expect(container.textContent).not.toContain('Welcome back.');
+  expect(container.textContent).toContain('Not broadcasting right now');
+  const camera = container.querySelector('.camera-feed');
+  await act(async () => camera.dispatchEvent(new Event('error')));
+  expect(container.textContent).toContain('Camera offline');
+  await click('Retry camera');
+  expect(container.querySelector('.camera-feed')).not.toBeNull();
+  expect(container.textContent).not.toContain('Current file');
+});
+test('members cannot open administration', async () => {
+  api.get.mockImplementation(url => Promise.resolve({ data: url === '/auth/me' ? { user: { username: 'Member', isAdmin: false } } : {} }));
+  await render('/admin');
+  expect(container.textContent).toContain('Administrator access required');
+  expect(api.get).not.toHaveBeenCalledWith('/admin/overview');
+});
+test('admin controls require confirmation and site changes persist through the API', async () => {
+  const settings = { announcement: '', homeIntro: 'Original introduction', liveIntro: 'Studio cameras', acceptingUploads: true, cameras: { ED1: true, ED2: true } };
+  api.get.mockImplementation(url => Promise.resolve({ data: url === '/auth/me' ? { user: { username: 'Owner', isAdmin: true } } : url === '/admin/overview' ? { settings, printers: [{ id: 'ED1', state: 'Operational', job: { filename: 'part.gcode', path: 'part.gcode' } }], audit: [] } : settings }));
+  api.post.mockResolvedValue({ data: { message: 'ED1: start accepted.' } });
+  api.put.mockResolvedValue({ data: { settings } });
+  await render('/admin');
+  await click('Start print');
+  expect(api.post).not.toHaveBeenCalled();
+  expect(container.querySelector('.command-confirm').textContent).toContain('part.gcode');
+  await click('Confirm start');
+  expect(api.post).toHaveBeenCalledWith('/admin/printers/ED1/command', { action: 'start', confirmPrinter: 'ED1', expectedFile: 'part.gcode' });
+  await change(container.querySelector('.admin-settings textarea'), 'Open for commissions');
+  await act(async () => container.querySelector('.admin-settings form').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
+  expect(api.put).toHaveBeenCalledWith('/admin/site', { ...settings, announcement: 'Open for commissions' });
+  expect(container.textContent).toContain('Website settings saved');
+});
+test('signup waits for verification rather than granting a dashboard session', async () => {
+  api.post.mockResolvedValue({ data: { verificationRequired: true, email: 'new@example.test', message: 'Check your email.' } });
+  await render('/signup');
+  await change(container.querySelector('input[name="username"]'), 'New Member');
+  await change(container.querySelector('input[type="email"]'), 'new@example.test');
+  await change(container.querySelector('input[type="password"]'), 'A-new-password-123');
+  await act(async () => container.querySelector('form').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
+  expect(container.textContent).toContain('One more step.');
+  expect(container.querySelector('.workspace-toolbar')).toBeNull();
+});
+test('email link and code verify the account before opening the dashboard', async () => {
+  const token = 'a'.repeat(64);
+  api.post.mockResolvedValue({ data: { user: { username: 'Verified Member' } } });
+  await render(`/verify-email#token=${token}`);
+  await change(container.querySelector('input[autocomplete="one-time-code"]'), '123456');
+  await act(async () => container.querySelector('form').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
+  expect(api.post).toHaveBeenCalledWith('/auth/verify-email', { token, code: '123456' });
+  expect(container.querySelector('.workspace-toolbar')).not.toBeNull();
 });

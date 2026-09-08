@@ -17,6 +17,8 @@ function createApp() {
   });
   app.use(express.json({ limit: "16kb" }));
   app.get("/api/status", (req, res) => res.status(mongoose.connection.readyState === 1 ? 200 : 503).json({ success: mongoose.connection.readyState === 1 }));
+  app.use("/api/public", require("./routes/public").router);
+  app.use("/api/admin", require("./routes/admin"));
   app.use("/api/auth", require("./routes/auth"));
   app.use("/api/models", require("./routes/models"));
   app.use("/api/printers", require("./routes/printers"));

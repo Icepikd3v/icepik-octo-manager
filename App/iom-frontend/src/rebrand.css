@@ -264,3 +264,21 @@ a, button { -webkit-tap-highlight-color: transparent; }
 .company-email { overflow-wrap: anywhere; }
 .contact-grid .company-email { font-size: 13px; max-width: 100%; }
 .contact-facebook { display: table; margin-top: 20px; }
+
+/* Public studio feeds and owner administration */
+.site-announcement { padding: 16px 6%; background: #203c60; color: #edf3fc; text-align: center; overflow-wrap: anywhere; }
+.camera-panel { position: relative; background: #101e30; }
+.camera-feed { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: contain; }
+.camera-placeholder { min-height: 260px; padding: 36px; display: flex; flex-direction: column; justify-content: center; }
+.camera-placeholder p { color: #b5c6db; max-width: 42ch; }
+.camera-controls { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; padding: 14px 22px; border-top: 1px solid #30465f; font-size: 13px; }
+.camera-controls button { background: transparent; color: #b9ddff; border: 1px solid #647e9a; border-radius: 4px; padding: 7px 12px; cursor: pointer; }
+.admin-page .card { padding: 28px; margin-bottom: 28px; }
+.admin-printer label { display: grid; gap: 10px; margin: 22px 0 12px; }
+.admin-printer select { width: 100%; min-width: 0; padding: 12px; background: #15263c; color: #edf3fc; border: 1px solid #54708f; }
+.admin-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 22px; }
+.command-confirm { margin-top: 24px; padding: 20px; border: 1px solid #8bbaff; background: #17283d; overflow-wrap: anywhere; }
+.admin-page .admin-toggle { display: flex; align-items: center; gap: 12px; }
+.admin-toggle input { width: 20px; height: 20px; }
+.admin-page button:disabled { opacity: .45; cursor: not-allowed; }
+@media (max-width: 600px) { .camera-placeholder { min-height: 220px; padding: 24px; } .admin-page .card { padding: 20px; } }

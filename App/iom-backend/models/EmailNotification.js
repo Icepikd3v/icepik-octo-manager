@@ -8,6 +8,7 @@ const schema = new mongoose.Schema({
   status: { type: String, enum: ["pending", "sending", "sent", "failed"], default: "pending" },
   attempts: { type: Number, default: 0 },
   availableAt: { type: Date, default: Date.now },
+  expiresAt: Date,
   sentAt: Date,
   messageId: String,
   lastError: String,

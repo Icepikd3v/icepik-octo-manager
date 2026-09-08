@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import useSite, { SiteProvider } from "./hooks/useSite";
 import Header from "./components/header";
 import Navbar from "./components/navbar";
 import Footer from "./components/footer";
@@ -15,14 +16,19 @@ const pageTitles = {
   "/contact": "Start a Project",
   "/login": "Sign In",
   "/signup": "Create Account",
+  "/watch": "Live Studio Cameras",
+  "/admin": "Administration",
+  "/admin/login": "Admin Sign In",
 };
-export default function App() { return <AuthProvider><AppShell /></AuthProvider>; }
+export default function App() { return <AuthProvider><SiteProvider><AppShell /></SiteProvider></AuthProvider>; }
 function AppShell() {
+  const { settings } = useSite();
   const { user, logout } = useAuth();
   const [logoutError, setLogoutError] = useState("");
   const location = useLocation();
   const navigate = useNavigate();
   const workspace = [
+    "/admin",
     "/dev",
     "/dashboard",
     "/live",
@@ -46,10 +52,12 @@ function AppShell() {
       </a>
       <Header />
       <Navbar />
+      {settings.announcement && <div className="site-announcement">{settings.announcement}</div>}
       {workspace && user && (
         <div className="workspace-toolbar">
           <span>{user.username} · Print studio</span>
           <Link to="/dashboard">Workspace</Link>
+          {user.isAdmin && <Link to="/admin">Admin</Link>}
           <Link to="/live">Printers</Link>
           <Link to="/upload">New project</Link>
           <Link to="/file-library">File library</Link>

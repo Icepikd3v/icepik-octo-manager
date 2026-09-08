@@ -27,6 +27,10 @@ const pages = new Set([
   "/signup",
   "/dashboard",
   "/live",
+  "/watch",
+  "/admin",
+  "/admin/login",
+  "/verify-email",
   "/upload",
   "/file-library",
   "/dev",
@@ -66,6 +70,7 @@ function createServer({ apiPort = Number(process.env.API_PORT || 3001) } = {}) {
           res.end(JSON.stringify({ message: "The workspace service is unavailable. Please try again shortly." }));
         } else res.destroy();
       });
+      res.on("close", () => upstream.destroy());
       req.on("aborted", () => upstream.destroy());
       req.pipe(upstream);
       return;

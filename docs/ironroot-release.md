@@ -19,8 +19,8 @@ The print studio is now included in the production build:
 
 Uploads save real file contents on the backend and metadata in MongoDB. They do
 not transfer to OctoPrint or start prints. The old automatic print, analytics,
-user-listing, and test-email routes are not mounted. Operator execution, quotes,
-payments, fulfillment, and camera feeds remain separate future work.
+user-listing, and test-email routes are not mounted. Owner-only execution of existing OctoPrint files and public camera feeds are now
+available. Quotes, payments, and fulfillment remain separate future work.
 
 ## Run locally
 
@@ -52,3 +52,6 @@ connected browser was unavailable in this session.
 Customer email templates and a persistent Gmail delivery queue are implemented.
 See [email setup](email-setup.md) for authentication, activation, and the boundary
 between upload receipts and future customer-owned printer lifecycle updates.
+
+See [public cameras, administration, and verified signup](live-admin-and-verification.md)
+for the latest additions and the current Gmail delivery blocker.

@@ -9,8 +9,8 @@ module.exports = async (req, res, next) => {
   try { decoded = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ["HS256"] }); }
   catch { return res.status(401).json({ message: "Your session has expired. Please sign in again." }); }
   try {
-    const user = await User.findById(decoded.id).select("username email isAdmin");
-    if (!user) return res.status(401).json({ message: "Please sign in again." });
+    const user = await User.findById(decoded.id).select("username email isAdmin emailVerified");
+    if (!user || !user.emailVerified) return res.status(401).json({ message: "Please sign in again." });
     req.user = { id: user._id.toString(), isAdmin: user.isAdmin };
     req.account = user;
     next();

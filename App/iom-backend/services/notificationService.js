@@ -29,6 +29,7 @@ async function collectNotifications() {
   }
 }
 async function deliverNext(send = sendNotification, now = new Date()) {
+  await Notification.updateMany({ status: { $in: ["pending", "sending"] }, expiresAt: { $lte: now } }, { $set: { status: "failed", lastError: "EXPIRED" } });
   const notification = await Notification.findOneAndUpdate({
     status: { $in: ["pending", "sending"] }, availableAt: { $lte: now }, attempts: { $lt: 5 },
   }, { $set: { status: "sending", availableAt: new Date(now.getTime() + 5 * 60000) }, $inc: { attempts: 1 } }, { sort: { createdAt: 1 }, new: true });

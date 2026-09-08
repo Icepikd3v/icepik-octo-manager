@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon server.js",
-    "test": "node --test test/octoprint.test.js test/email.test.js",
+    "test": "node --test test/octoprint.test.js test/email.test.js test/admin.test.js",
     "start": "node server.js",
     "test:integration": "node --test test/workspace.integration.test.js",
     "email:verify": "node scripts/verify-email.js"

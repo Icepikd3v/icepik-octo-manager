@@ -11,6 +11,17 @@ const database = `ironroot_workspace_test_${randomUUID().replaceAll("-", "")}`;
 const password = "Workspace-test-password-123";
 const request = (route, options = {}) => fetch(base + route, options);
 const post = (route, body, session) => request(route, { method: "POST", headers: { "Content-Type": "application/json", ...(session ? { Cookie: session } : {}) }, body: JSON.stringify(body) });
+async function verifyTestAccount(email) {
+  const Notification = require("../models/EmailNotification");
+  const message = await Notification.findOne({ to: email, eventKey: /^verification:/ });
+  assert.ok(message);
+  const token = message.text.match(/#token=([a-f0-9]{64})/)[1];
+  const code = message.text.match(/Enter this code: (\d{6})/)[1];
+  const response = await post("/auth/verify-email", { token, code });
+  assert.equal((await post("/auth/verify-email", { token, code })).status, 400, "verification is one-time");
+  await Notification.deleteOne({ _id: message._id });
+  return response;
+}
 before(async () => {
   await mongoose.connect(process.env.MONGO_URI, { dbName: database });
   server = createApp().listen(0, "127.0.0.1");
@@ -33,7 +44,11 @@ test("protected data rejects unauthenticated requests and old demo tokens", asyn
 });
 test("registration validates input and creates an HttpOnly session", async () => {
   assert.equal((await post("/auth/register", { username: "Sam", email: { $gt: "" }, password })).status, 400);
-  const response = await post("/auth/register", { username: "Workspace Test", email: "test@example.test", password });
+  const registration = await post("/auth/register", { username: "Workspace Test", email: "test@example.test", password });
+  assert.equal(registration.status, 202);
+  assert.equal(registration.headers.get("set-cookie"), null);
+  assert.equal((await post("/auth/login", { email: "test@example.test", password })).status, 403);
+  const response = await verifyTestAccount("test@example.test");
   assert.equal(response.status, 201);
   const header = response.headers.get("set-cookie");
   assert.match(header, /HttpOnly/); assert.match(header, /SameSite=Strict/);
@@ -59,7 +74,8 @@ test("uploads persist exact contents and remain private to their owner", async (
   assert.equal(await fs.readFile(path.join(__dirname, "../uploads", file.filename), "utf8"), contents);
   const mine = await (await request("/models", { headers: { Cookie: cookie } })).json();
   assert.equal(mine.length, 1); assert.equal(mine[0].size, Buffer.byteLength(contents));
-  const other = await post("/auth/register", { username: "Other Test", email: "other@example.test", password });
+  await post("/auth/register", { username: "Other Test", email: "other@example.test", password });
+  const other = await verifyTestAccount("other@example.test");
   otherCookie = other.headers.get("set-cookie").split(";")[0];
   assert.deepEqual(await (await request("/models", { headers: { Cookie: otherCookie } })).json(), []);
 });
@@ -165,4 +181,74 @@ test("expired, tampered and deleted-account sessions cannot open private data", 
       assert.equal((await request(route, { headers: { Cookie: `ironroot_session=${token}` } })).status, 401);
     }
   }
+});
+
+
+test("public cameras and status never expose customer filenames or printer secrets", async () => {
+  const response = await request("/public/printers");
+  assert.equal(response.status, 200);
+  const data = await response.json();
+  assert.deepEqual(data.printers.map(p => p.id), ["ED1", "ED2"]);
+  assert.doesNotMatch(JSON.stringify(data), /filename|192\.168|apiKey|X-Api-Key/);
+  assert.equal((await request("/public/cameras/unknown")).status, 404);
+});
+test("admin endpoints reject guests and members, and only admin settings persist", async () => {
+  for (const route of ["/admin/overview", "/admin/printers/ED1/files"]) {
+    assert.equal((await request(route)).status, 401);
+    assert.equal((await request(route, { headers: { Cookie: otherCookie } })).status, 403);
+  }
+  assert.equal((await post("/admin/printers/ED1/command", { action: "start", confirmPrinter: "ED1" }, otherCookie)).status, 403);
+  const User = require("../models/Users");
+  await User.updateOne({ email: "test@example.test" }, { $set: { isAdmin: true } });
+  const settings = await (await request("/public/site")).json();
+  const updated = { ...settings, announcement: "Studio maintenance test", acceptingUploads: false, cameras: { ED1: false, ED2: false } };
+  const update = body => request("/admin/site", { method: "PUT", headers: { Cookie: cookie, "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  assert.equal((await update({ ...updated, arbitrary: "not permitted" })).status, 400);
+  assert.equal((await update(updated)).status, 200);
+  assert.equal((await (await request("/public/site")).json()).announcement, updated.announcement);
+  assert.equal((await request("/public/cameras/ED1")).status, 503);
+  const form = new FormData(); form.append("printer", "ED1"); form.append("file", new Blob(["test"]), "closed.gcode");
+  assert.equal((await request("/models/upload", { method: "POST", headers: { Cookie: cookie }, body: form })).status, 503);
+  assert.equal((await post("/admin/printers/ED1/command", { action: "start" }, cookie)).status, 400);
+  assert.equal((await post("/admin/printers/ED1/command", { action: "arbitrary", confirmPrinter: "ED1" }, cookie)).status, 400);
+  assert.equal((await update(settings)).status, 200);
+});
+test("verification codes expire and lock after five incorrect attempts", async () => {
+  const email = "verification-test@example.test";
+  assert.equal((await post("/auth/register", { username: "Verification Test", email, password, isAdmin: true, emailVerified: true })).status, 202);
+  const User = require("../models/Users");
+  const Verification = require("../models/EmailVerification");
+  const Notification = require("../models/EmailNotification");
+  const user = await User.findOne({ email });
+  assert.equal(user.isAdmin, false); assert.equal(user.emailVerified, false);
+  let message = await Notification.findOne({ to: email });
+  const token = message.text.match(/#token=([a-f0-9]{64})/)[1], code = message.text.match(/Enter this code: (\d{6})/)[1];
+  for (let i = 0; i < 5; i++) assert.equal((await post("/auth/verify-email", { token, code: "000000" })).status, 400);
+  assert.equal((await post("/auth/verify-email", { token, code })).status, 400);
+  await Verification.updateOne({ userId: user._id }, { $set: { attempts: 0, expiresAt: new Date(Date.now() - 1000) } });
+  assert.equal((await post("/auth/verify-email", { token, code })).status, 400);
+});
+
+test('camera relay uses a fixed upstream, forwards MJPEG, and stops when broadcasting is disabled', async () => {
+  const http = require('node:http');
+  const { closeCamera } = require('../services/cameras');
+  let requests = 0;
+  const source = http.createServer((req, res) => {
+    requests++; assert.equal(req.headers['x-api-key'], undefined);
+    assert.equal(req.url, '/stream');
+    res.writeHead(200, { 'Content-Type': 'multipart/x-mixed-replace; boundary=frame' });
+    res.write('--frame\r\nContent-Type: image/jpeg\r\nContent-Length: 4\r\n\r\ntest\r\n');
+  });
+  await new Promise(resolve => source.listen(0, '127.0.0.1', resolve));
+  const saved = process.env.OCTOPRINT_ED1_CAMERA_URL;
+  process.env.OCTOPRINT_ED1_CAMERA_URL = `http://127.0.0.1:${source.address().port}/stream`;
+  try {
+    const response = await request('/public/cameras/ED1?url=http://untrusted.example');
+    assert.equal(response.status, 200); assert.match(response.headers.get('content-type'), /multipart/);
+    const reader = response.body.getReader();
+    const first = await reader.read(); assert.match(new TextDecoder().decode(first.value), /--frame/);
+    closeCamera('ED1');
+    await reader.cancel().catch(() => {});
+    assert.equal(requests, 1);
+  } finally { process.env.OCTOPRINT_ED1_CAMERA_URL = saved; source.closeAllConnections(); await new Promise(resolve => source.close(resolve)); }
 });

@@ -13,7 +13,7 @@ async function getPrinterStatus(id) {
     const currentJob = job?.status === "fulfilled" ? job.value.data : null;
     return { id, name: id, reachable: true, connected, state, updatedAt,
       nozzle: temperatures?.tool0 || null, bed: temperatures?.bed || null,
-      job: currentJob ? { filename: currentJob.job?.file?.display || currentJob.job?.file?.name || null, completion: currentJob.progress?.completion ?? null, secondsLeft: currentJob.progress?.printTimeLeft ?? null } : null,
+      job: currentJob ? { path: currentJob.job?.file?.path || currentJob.job?.file?.name || null, filename: currentJob.job?.file?.display || currentJob.job?.file?.name || null, completion: currentJob.progress?.completion ?? null, secondsLeft: currentJob.progress?.printTimeLeft ?? null } : null,
       partial: connected && (printer?.status !== "fulfilled" || job?.status !== "fulfilled") };
   } catch (err) {
     return { id, name: id, reachable: false, connected: false, state: "Unavailable", updatedAt, message: err.response?.status === 401 || err.response?.status === 403 ? "Printer authentication failed." : "Cannot reach this printer. Check its connection." };

@@ -35,8 +35,8 @@ and `notifyCustomer: true`. The worker detects changes to its recorded `status`.
 Only opt in a job after confirming ownership; printer filenames alone do not
 establish which customer owns a job. Old records default to no notifications.
 
-**The current workspace does not start prints or synchronize printer telemetry
-into customer-owned PrintJob records.** This worker is ready for that future
+**Owner controls can start files already in OctoPrint, but the workspace does
+not synchronize printer telemetry into customer-owned PrintJob records.** This worker is ready for that future
 operator workflow, but live printer polling alone does not generate start or
 completion emails. Existing legacy execution endpoints remain unmounted.
 A shipment email is generated only for a recorded `shipped` status, with an
@@ -60,3 +60,6 @@ success may cause a retry, even though retries preserve the Message-ID.
 `npm test` checks templates and mocked SMTP. `npm run test:integration` checks
 queue persistence, deduplication, retry behavior, ownership, and lifecycle opt-in
 in an isolated temporary database. These checks never send customer email.
+
+New account verification uses the same queue with expiring messages. See
+[verified signup](live-admin-and-verification.md) for code/link behavior.
