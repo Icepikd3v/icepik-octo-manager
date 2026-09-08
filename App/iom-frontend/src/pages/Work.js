@@ -18,7 +18,7 @@ export default function Work() {
           to the workbench.
         </h1>
         <p className="lead">
-          A look at real IronRoot projects, documented on our Facebook page.
+          A look at real IronRoot projects, from workshop photos to finished results.
           Practical fixes, custom prints, and the work that connects them.
         </p>
         <div className="work-filters" role="group" aria-label="Filter projects">
@@ -46,7 +46,7 @@ export default function Work() {
           <span className="service-icon">{"</>"}</span>
           <div>
             <p className="eyebrow">WEB DEVELOPMENT & DESIGN</p>
-            <h2>Software is part of our roots.</h2>
+            <h2>Built for the browser. Designed for people.</h2>
             <p>
               Our work also includes custom web development and the evolving
               IronRoot print platform.

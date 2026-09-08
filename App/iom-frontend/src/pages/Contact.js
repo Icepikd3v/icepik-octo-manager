@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { FACEBOOK_URL } from "../data/company";
 const options = {
   web: "Website or web application",
+  software: "Software design & development",
+  security: "Security cameras & system setup",
   maintenance: "Maintenance & support",
-  repair: "Technology repair",
+  repair: "Computer, electronics & hardware repair",
   printing: "3D printing",
   installation: "Device installation",
   other: "Something else",
@@ -16,6 +18,10 @@ export default function Contact() {
       ? params.get("service")
       : "web",
   );
+  const requestedService = params.get("service");
+  useEffect(() => {
+    setService(Object.prototype.hasOwnProperty.call(options, requestedService) ? requestedService : "web");
+  }, [requestedService]);
   const [details, setDetails] = useState("");
   const [name, setName] = useState("");
   const [brief, setBrief] = useState("");

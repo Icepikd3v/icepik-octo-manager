@@ -194,3 +194,21 @@ test("enlarged gallery photos navigate with arrow keys and close cleanly", async
   expect(container.querySelector("dialog").hasAttribute("open")).toBe(false);
   expect(document.body.style.overflow).toBe("");
 });
+
+
+test("technology services lead to a security inquiry with the right topic", async () => {
+  await render("/services");
+  const section = container.querySelector("#security");
+  expect(section.textContent).toContain("Security-camera & video-doorbell setup");
+  await act(async () => section.querySelector("a").dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true })));
+  expect(container.querySelector("select").value).toBe("security");
+  expect(container.querySelector("select").textContent).toContain("Software design & development");
+});
+
+test("home offers direct paths for printing and technology projects", async () => {
+  await render();
+  expect(container.querySelector('.future-hero a[href="/3d-printing"]')).not.toBeNull();
+  expect(container.querySelector('.future-hero a[href="/services"]')).not.toBeNull();
+  expect(container.querySelector('.print-entry a[href="/dashboard"]')).not.toBeNull();
+  expect(container.querySelector('.tech-entry a[href="/contact"]')).not.toBeNull();
+});

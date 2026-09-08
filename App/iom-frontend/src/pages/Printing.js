@@ -17,9 +17,11 @@ export default function Printing() {
             Practical parts, early prototypes, and personal creations. Access
             custom FDM printing without buying and maintaining your own printer.
           </p>
-          <Link className="button" to="/contact?service=printing">
-            Discuss a print project ↗
-          </Link>
+          <div className="hero-actions">
+            <Link className="button" to="/contact?service=printing">Discuss a print project ↗</Link>
+            <Link className="text-link" to="/3d-printing#print-gallery">Browse the gallery ↓</Link>
+          </div>
+          <Link className="text-link printing-studio-link" to="/dashboard">Have a file ready? Open the print studio →</Link>
           <p className="fine-print">
             Projects quoted individually. No membership required.
           </p>
@@ -101,7 +103,7 @@ export default function Printing() {
             ],
             [
               "Can I order and watch a print online?",
-              "Online checkout and live order tracking are being prepared. For now, contact us to discuss availability and your project.",
+              "Use the print studio to save files and see current printer status. Contact us to discuss your project, pricing, and availability; online checkout is not enabled.",
             ],
             [
               "Do I need a subscription?",

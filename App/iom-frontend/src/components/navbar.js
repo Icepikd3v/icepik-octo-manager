@@ -1,9 +1,9 @@
 import { NavLink } from "react-router-dom";
 const links = [
   ["/", "Home"],
-  ["/services", "Services"],
-  ["/work", "Our work"],
   ["/3d-printing", "3D printing"],
+  ["/services", "Tech services"],
+  ["/work", "Our work"],
   ["/about", "About"],
   ["/contact", "Contact"],
 ];
@@ -16,7 +16,7 @@ export default function Navbar() {
         </NavLink>
       ))}
       <span className="nav-note">
-        ROOTED IN IDEAS. BUILT FOR THE REAL WORLD.
+        DESIGN / BUILD / CONNECT
       </span>
     </nav>
   );

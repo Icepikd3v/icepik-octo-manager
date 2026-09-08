@@ -3,11 +3,11 @@ export default function ContactCTA() {
   return (
     <section className="contact-cta">
       <div>
-        <p className="eyebrow">LET’S GET TO THE ROOT OF IT</p>
+        <p className="eyebrow">YOUR NEXT PROJECT STARTS HERE</p>
         <h2>
-          A new idea. A stubborn problem.
+          Ready for the next step?
           <br />
-          Let’s put it in motion.
+          Let’s make it work.
         </h2>
       </div>
       <Link className="button" to="/contact">

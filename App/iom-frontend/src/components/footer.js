@@ -10,9 +10,9 @@ export default function Footer() {
             <Brand />
           </Link>
           <p>
-            Technology with roots.
+            Built for what’s next.
             <br />
-            Ideas with purpose.
+            Made to work for you.
           </p>
         </div>
         <div>
@@ -26,6 +26,7 @@ export default function Footer() {
           <Link to="/services#web">Web & applications</Link>
           <Link to="/services#repair">Technology & repair</Link>
           <Link to="/3d-printing">3D printing</Link>
+          <Link to="/services#security">Security & setup</Link>
         </div>
         <div>
           <h2>Let’s connect</h2>
@@ -42,7 +43,7 @@ export default function Footer() {
       </div>
       <div className="footer-bottom">
         <span>© {new Date().getFullYear()} IronRoot Solutions</span>
-        <span>DESIGN. REPAIR. CREATE.</span>
+        <span>DESIGN. BUILD. CONNECT.</span>
         <Link to="/dashboard">Print studio ↗</Link>
       </div>
     </footer>

@@ -13,19 +13,19 @@ export default function About() {
         </h1>
         <p className="lead">
           IronRoot brings web development, practical technology support, and
-          custom fabrication together under one roof.
+          custom fabrication together with hardware repair and connected-system setup.
         </p>
       </section>
       <section className="about-split">
         <div className="brand-panel">
           <Brand large />
-          <p>powered by A.I.</p>
+          <p>DESIGN / BUILD / CONNECT</p>
           <div className="brand-panel-bottom">
-            <span>THINK. MAKE. GROW.</span>
+            <span>IDEAS INTO WORKING TECHNOLOGY.</span>
           </div>
         </div>
         <div>
-          <p className="eyebrow">TECHNOLOGY WITH ROOTS</p>
+          <p className="eyebrow">TECHNICAL SKILL. PERSONAL ATTENTION.</p>
           <h2>
             Built to solve
             <br />
