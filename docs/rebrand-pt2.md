@@ -4,7 +4,7 @@ Branch: `rebrand-pt2`. The prior live workspace and gallery are saved on `ReBran
 at checkpoint `f05c753` before this design begins.
 
 IronRoot Solutions keeps its name and shifts to a graphite/electric-blue visual
-identity. The circuit-root mark, typography, workshop-photo hero, navigation,
+identity. The rooted I-beam mark, typography, workshop-photo hero, navigation,
 service presentation, public pages, gallery, and authenticated print workspace
 share the new palette. No stock or generated product photos are introduced.
 
@@ -41,3 +41,7 @@ navigation underlines, and form-focus feedback. Scroll reveals progressively
 enhance browsers supporting CSS view timelines. All animations are finite;
 reduced-motion preferences disable them. Hover movement is limited to fine
 pointers, and keyboard focus receives equivalent visual emphasis.
+
+The current icon uses a solid steel I-beam and three broad angular roots. The
+hexagonal frame and circuit nodes were removed for recognition at small sizes.
+The header, footer, About page, favicon, and web-app manifest share this SVG.

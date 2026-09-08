@@ -3,7 +3,7 @@
   "name": "IronRoot Solutions",
   "icons": [
     {
-      "src": "ironroot-mark.svg",
+      "src": "ironroot-mark.svg?v=rooted",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"

@@ -1,1 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 110" fill="none"><path d="M50 5 92 29v48l-42 27L8 77V29L50 5Z" fill="#111f34" stroke="#83bcff" stroke-width="3"/><g stroke="#a1d6ff" stroke-width="4" stroke-linecap="square" stroke-linejoin="miter"><path d="M50 70V26M50 51 29 39V29M50 61l22-13V35M50 70 30 82M50 70v21M50 70l21 12"/></g><g fill="#77a7ff"><path d="M45 20h10v10H45zM24 22h10v10H24zM67 28h10v10H67zM25 79h8v8h-8zM46 87h8v8h-8zM68 79h8v8h-8z"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 110" fill="none">
+  <title>IronRoot — a steel I-beam rooted in the ground</title>
+  <path d="M43 59H57V69L73 81L91 86L87 97L68 92L57 83V98L50 108L43 98V83L32 92L13 97L9 86L27 81L43 69V59Z" fill="#82B9FF"/>
+  <path d="M20 6H80L84 10V23H61V47H75L79 51V63H21V51L25 47H39V23H16V10L20 6Z" fill="#C8E5FF"/>
+</svg>
