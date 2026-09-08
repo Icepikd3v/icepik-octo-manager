@@ -1,7 +1,7 @@
 export default function Brand({ large = false }) {
   return (
     <span className={`brand ${large ? "brand-large" : ""}`}>
-      <img src="/ironroot-mark.svg?v=rooted" alt="" />
+      <img src="/ironroot-mark.svg?v=circuit-tree" alt="" />
       <span>
         <strong>IRONROOT</strong>
         <small>SOLUTIONS</small>

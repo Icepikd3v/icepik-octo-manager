@@ -1,5 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 110" fill="none">
-  <title>IronRoot — a steel I-beam rooted in the ground</title>
-  <path d="M43 59H57V69L73 81L91 86L87 97L68 92L57 83V98L50 108L43 98V83L32 92L13 97L9 86L27 81L43 69V59Z" fill="#82B9FF"/>
-  <path d="M20 6H80L84 10V23H61V47H75L79 51V63H21V51L25 47H39V23H16V10L20 6Z" fill="#C8E5FF"/>
+  <title>IronRoot — a rooted tree built from circuit-board traces</title>
+  <g stroke="#BBDFFF" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M50 17V73"/>
+    <path d="M17 33V46L50 66"/>
+    <path d="M83 25V39L50 59"/>
+  </g>
+  <path d="M44 63H56V78L76 92H89V102H72L56 91V107H44V91L28 102H11V92H24L44 78V63Z" fill="#83BCFF"/>
+  <g fill="#0B111C" stroke="#A8D5FF" stroke-width="6">
+    <circle cx="50" cy="12" r="8"/>
+    <circle cx="17" cy="26" r="8"/>
+    <circle cx="83" cy="18" r="8"/>
+  </g>
+  <path d="M47 72H53V82H47Z" fill="#D7EEFF"/>
 </svg>
