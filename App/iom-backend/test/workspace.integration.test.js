@@ -137,3 +137,32 @@ test('only enrolled print jobs queue lifecycle updates and exhausted delivery at
   assert.equal(failed.status, 'failed'); assert.equal(failed.attempts, 5);
   assert.equal(failed.lastError, 'DELIVERY_FAILED');
 });
+
+
+test("credential validation rejects duplicate accounts and unsafe password lengths", async () => {
+  assert.equal((await post("/auth/register", { username: "Duplicate", email: "TEST@example.test", password })).status, 409);
+  for (const invalid of ["short", "x".repeat(73), "🔒".repeat(19)]) {
+    assert.equal((await post("/auth/register", { username: "Invalid Password", email: "invalid@example.test", password: invalid })).status, 400);
+  }
+  assert.equal((await post("/auth/login", { email: "missing@example.test", password })).status, 401);
+  const response = await post("/auth/login", { email: "  TEST@example.test  ", password });
+  assert.equal(response.status, 200);
+  const session = response.headers.get("set-cookie").split(";")[0];
+  assert.equal((await request("/auth/me", { headers: { Cookie: session } })).status, 200);
+  const user = await require("../models/Users").findOne({ email: "test@example.test" });
+  assert.notEqual(user.password, password);
+  assert.equal(await require("bcryptjs").compare(password, user.password), true);
+  assert.equal(user.isAdmin, false);
+});
+test("expired, tampered and deleted-account sessions cannot open private data", async () => {
+  const jwt = require("jsonwebtoken");
+  const User = require("../models/Users");
+  const user = await User.findOne({ email: "test@example.test" });
+  const expired = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: -1 });
+  const missing = jwt.sign({ id: new mongoose.Types.ObjectId() }, process.env.JWT_SECRET, { expiresIn: "1h" });
+  for (const token of [expired, missing, "tampered.session.token"]) {
+    for (const route of ["/auth/me", "/models", "/printers"]) {
+      assert.equal((await request(route, { headers: { Cookie: `ironroot_session=${token}` } })).status, 401);
+    }
+  }
+});
