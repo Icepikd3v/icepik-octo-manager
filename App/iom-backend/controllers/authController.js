@@ -3,11 +3,12 @@ const bcrypt = require("bcryptjs");
 const { requestVerification, verifyCode } = require("../services/emailVerification");
 const { emailEnabled } = require("../services/emailService");
 const jwt = require("jsonwebtoken");
-const cookieOptions = () => ({ httpOnly: true, sameSite: "strict", secure: process.env.COOKIE_SECURE === "true", path: "/api", maxAge: 7 * 24 * 60 * 60 * 1000 });
+const cookieOptions = () => ({ httpOnly: true, sameSite: "strict", secure: process.env.COOKIE_SECURE === "true", path: "/", maxAge: 7 * 24 * 60 * 60 * 1000 });
 const publicUser = user => ({ id: user._id, username: user.username, email: user.email, isAdmin: user.isAdmin === true });
 function signIn(res, user, status = 200) {
   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
   res.cookie("ironroot_session", token, cookieOptions());
+  res.clearCookie("ironroot_session", { ...cookieOptions(), path: "/api", maxAge: undefined });
   return res.status(status).json({ user: publicUser(user) });
 }
 const register = async (req, res) => {
@@ -52,4 +53,4 @@ const resend = async (req, res) => {
     return res.json({ message: emailEnabled() ? "If this account needs verification, a link and code will be emailed. Allow a minute between requests." : "Verification email delivery is currently unavailable. Please try again later." });
   } catch { return res.status(503).json({ message: "Could not request verification. Try again later." }); }
 };
-module.exports = { register, login, publicUser, cookieOptions, verify, resend };
+module.exports = { register, login, publicUser, cookieOptions, verify, resend, signIn };

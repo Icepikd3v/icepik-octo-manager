@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import api, { errorMessage } from '../utils/api';
+import OctoPrintWorkspace from '../components/OctoPrintWorkspace';
 import useSite from '../hooks/useSite';
 function PrinterControls({ printer, refresh }) {
   const [files, setFiles] = useState([]), [selected, setSelected] = useState('');
@@ -14,12 +15,15 @@ function PrinterControls({ printer, refresh }) {
   function prepare(action) { setPending({ action, confirmPrinter: printer.id, expectedFile: printer.job?.path, ...(action === 'select' ? { path: selected } : {}) }); }
   const available = { start: printer.state === 'Operational' && printer.job?.path, pause: printer.state === 'Printing', resume: printer.state === 'Paused', cancel: ['Printing', 'Paused'].includes(printer.state) };
   return <article className="card admin-printer"><div className="page-heading"><h2>{printer.id}</h2><span className="pill">{printer.state}</span></div><p>Selected file: <strong>{printer.job?.filename || 'None'}</strong></p><p>{printer.job?.completion != null ? `${printer.job.completion.toFixed(1)}% complete` : 'No active progress'}</p>
+    <OctoPrintWorkspace id={printer.id} />
+    <details className="quick-printer-controls"><summary>Quick controls</summary>
     <button className="button secondary" onClick={loadFiles} disabled={busy}>Load printer files</button>
     <label>G-code already on {printer.id}<select value={selected} onChange={event => setSelected(event.target.value)}><option value="">Choose a file</option>{files.map(file => <option key={file.path} value={file.path}>{file.name}</option>)}</select></label>
     <button className="button secondary" disabled={!selected || busy || printer.state !== 'Operational'} onClick={() => prepare('select')}>Select file without starting</button>
     <div className="admin-actions">{['start', 'pause', 'resume', 'cancel'].map(action => <button className="button secondary" key={action} disabled={busy || !available[action]} onClick={() => prepare(action)}>{action === 'start' ? 'Start print' : `${action[0].toUpperCase()}${action.slice(1)} print`}</button>)}</div>
     {pending && <section className="command-confirm" aria-label={`Confirm ${printer.id} command`}><h3>Confirm {pending.action} on {printer.id}</h3><p>File: {pending.path || pending.expectedFile}</p><p>{pending.action === 'select' ? 'This selects the file; printing will not start.' : 'This sends a command to the physical printer.'}</p><button className="button" disabled={busy} onClick={execute}>{busy ? 'Sending…' : `Confirm ${pending.action}`}</button> <button className="button secondary" disabled={busy} onClick={() => setPending(null)}>Go back</button></section>}
     {error && <p role="alert">{error}</p>}{message && <p role="status">{message}</p>}
+    </details>
   </article>;
 }
 export default function Admin() {
@@ -29,7 +33,7 @@ export default function Admin() {
   useEffect(() => { refresh(); }, []);
   async function save(event) { event.preventDefault(); setSaving(true); setMessage(''); try { const { data: result } = await api.put('/admin/site', settings); setSettings(result.settings); await refreshSite(); setMessage('Website settings saved.'); await refresh(); } catch (err) { setError(errorMessage(err)); } finally { setSaving(false); } }
   return <div className="page admin-page"><p className="eyebrow">IRONROOT / ADMINISTRATION</p><div className="page-heading"><div><h1>Your studio. Your controls.</h1><p>Operate the printers and keep the website current.</p></div><button className="button secondary" onClick={refresh}>Refresh dashboard</button></div>{error && <p role="alert">{error}</p>}{!data && !error && <p role="status">Loading administration…</p>}
-    {data && <><section aria-label="Printer controls" className="printer-grid">{data.printers.map(printer => <PrinterControls key={printer.id} printer={printer} refresh={refresh} />)}</section>
+    {data && <><section aria-label="Printer controls" className="admin-printer-workspaces">{data.printers.map(printer => <PrinterControls key={printer.id} printer={printer} refresh={refresh} />)}</section>
     <section className="card admin-settings"><h2>Website maintenance</h2><form className="workspace-form" onSubmit={save}>
       <label>Site announcement (leave blank to hide)<textarea maxLength={240} value={settings.announcement} onChange={e => setSettings({ ...settings, announcement: e.target.value })} /></label>
       <label>Homepage introduction<textarea required maxLength={600} value={settings.homeIntro} onChange={e => setSettings({ ...settings, homeIntro: e.target.value })} /></label>

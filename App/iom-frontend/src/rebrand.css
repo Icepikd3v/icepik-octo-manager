@@ -282,3 +282,13 @@ a, button { -webkit-tap-highlight-color: transparent; }
 .admin-toggle input { width: 20px; height: 20px; }
 .admin-page button:disabled { opacity: .45; cursor: not-allowed; }
 @media (max-width: 600px) { .camera-placeholder { min-height: 220px; padding: 24px; } .admin-page .card { padding: 20px; } }
+
+.admin-printer-workspaces { display: grid; gap: 28px; }
+.octoprint-workspace { margin: 24px 0; border-top: 1px solid #30465f; padding-top: 24px; }
+.octoprint-workspace .page-heading p { max-width: 66ch; }
+.octoprint-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 20px; padding: 14px 0; }
+.octoprint-toolbar .button { margin-left: auto; }
+.octoprint-frame { display: block; width: 100%; height: min(900px, 80vh); min-height: 580px; border: 1px solid #54708f; border-radius: 6px; background: #fff; }
+.quick-printer-controls { padding-top: 16px; border-top: 1px solid #30465f; }
+.quick-printer-controls summary { cursor: pointer; color: #b9ddff; margin-bottom: 20px; }
+@media (max-width: 600px) { .octoprint-frame { min-height: 640px; } .octoprint-toolbar .button { margin-left: 0; } }

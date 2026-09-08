@@ -99,3 +99,31 @@ test("same-origin API proxy preserves sessions, request bodies, and status codes
     await Promise.all([new Promise(resolve => proxy.close(resolve)), new Promise(resolve => upstream.close(resolve))]);
   }
 });
+
+test('OctoPrint paths preserve native page policy and websocket upgrades through the preview', async () => {
+  const http = require('node:http'); const { createHash } = require('node:crypto'); let remoteSocket;
+  const upstream = http.createServer((req, res) => { res.setHeader('X-Frame-Options', 'SAMEORIGIN'); res.end('Native printer page: ' + req.url); });
+  upstream.on('upgrade', (req, socket) => {
+    remoteSocket = socket;
+    assert.equal(req.url, '/ED1/sockjs/websocket'); assert.equal(req.headers.cookie, 'ironroot_session=fixture');
+    const accept = createHash('sha1').update(req.headers['sec-websocket-key'] + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11').digest('base64');
+    socket.write(`HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: ${accept}\r\n\r\n`);
+  });
+  await new Promise(resolve => upstream.listen(0, '127.0.0.1', resolve));
+  const proxy = createServer({ apiPort: upstream.address().port });
+  await new Promise(resolve => proxy.listen(0, '127.0.0.1', resolve));
+  try {
+    const url = `http://127.0.0.1:${proxy.address().port}`;
+    const response = await fetch(url + '/ED1/'); assert.match(await response.text(), /Native printer page: \/ED1\//);
+    assert.equal(response.headers.get('x-frame-options'), 'SAMEORIGIN');
+    assert.doesNotMatch(response.headers.get('content-security-policy'), /script-src/);
+    const status = await new Promise((resolve, reject) => {
+      const request = http.request(url + '/ED1/sockjs/websocket', { headers: { Connection: 'Upgrade', Upgrade: 'websocket', Cookie: 'ironroot_session=fixture', 'Sec-WebSocket-Key': 'dGhlIHNhbXBsZSBub25jZQ==', 'Sec-WebSocket-Version': '13' } });
+      request.on('upgrade', (res, socket) => { socket.destroy(); resolve(res.statusCode); }); request.on('error', reject); request.end();
+    });
+    assert.equal(status, 101);
+  } finally {
+    remoteSocket?.destroy(); proxy.closeAllConnections(); upstream.closeAllConnections();
+    await Promise.all([new Promise(resolve => proxy.close(resolve)), new Promise(resolve => upstream.close(resolve))]);
+  }
+});

@@ -287,3 +287,19 @@ test('email link and code verify the account before opening the dashboard', asyn
   expect(api.post).toHaveBeenCalledWith('/auth/verify-email', { token, code: '123456' });
   expect(container.querySelector('.workspace-toolbar')).not.toBeNull();
 });
+
+test('admin opens independent full OctoPrint workspaces after preparing the site session', async () => {
+  const settings = { announcement: '', homeIntro: 'Intro', liveIntro: 'Cameras', acceptingUploads: true, cameras: { ED1: true, ED2: true } };
+  api.get.mockImplementation(url => Promise.resolve({ data: url === '/auth/me' ? { user: { username: 'Owner', isAdmin: true } } : url === '/admin/overview' ? { settings, printers: [{ id: 'ED1', state: 'Operational' }, { id: 'ED2', state: 'Operational' }], audit: [] } : settings }));
+  api.post.mockResolvedValue({ data: { user: { username: 'Owner', isAdmin: true } } });
+  await render('/admin');
+  expect(container.querySelectorAll('iframe')).toHaveLength(0);
+  await click('Open ED1 OctoPrint');
+  expect(api.post).toHaveBeenCalledWith('/admin/octoprint/session');
+  expect(container.querySelector('iframe').getAttribute('src')).toBe('/ED1/');
+  await click('Open ED2 OctoPrint');
+  expect([...container.querySelectorAll('iframe')].map(el => el.getAttribute('src'))).toEqual(['/ED1/', '/ED2/']);
+  await click('Close workspace');
+  expect(container.querySelectorAll('iframe')).toHaveLength(1);
+  expect(container.querySelector('iframe').getAttribute('src')).toBe('/ED2/');
+});

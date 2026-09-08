@@ -25,6 +25,7 @@ async function verifyTestAccount(email) {
 before(async () => {
   await mongoose.connect(process.env.MONGO_URI, { dbName: database });
   server = createApp().listen(0, "127.0.0.1");
+  require("../services/octoprintWorkspace").attachWorkspaceUpgrade(server);
   await new Promise(resolve => server.once("listening", resolve));
   base = `http://127.0.0.1:${server.address().port}/api`;
 });
@@ -251,4 +252,70 @@ test('camera relay uses a fixed upstream, forwards MJPEG, and stops when broadca
     await reader.cancel().catch(() => {});
     assert.equal(requests, 1);
   } finally { process.env.OCTOPRINT_ED1_CAMERA_URL = saved; source.closeAllConnections(); await new Promise(resolve => source.close(resolve)); }
+});
+
+test('full OctoPrint HTTP proxy requires admin access and preserves native requests', async () => {
+  const http = require('node:http');
+  const received = [];
+  const source = http.createServer(async (req, res) => {
+    const chunks = []; for await (const chunk of req) chunks.push(chunk);
+    received.push({ url: req.url, method: req.method, cookie: req.headers.cookie, key: req.headers['x-api-key'], body: Buffer.concat(chunks).toString() });
+    res.setHeader('Set-Cookie', 'octoprint_session=fixture; Path=/ED1/; HttpOnly');
+    res.end('<html>Native OctoPrint fixture</html>');
+  });
+  await new Promise(resolve => source.listen(0, '127.0.0.1', resolve));
+  const saved = process.env.OCTOPRINT_ED1_URL;
+  process.env.OCTOPRINT_ED1_URL = `http://127.0.0.1:${source.address().port}/ED1`;
+  const url = base.slice(0, -4) + '/ED1/';
+  try {
+    assert.equal((await fetch(url)).status, 401);
+    assert.equal((await fetch(url, { headers: { Cookie: otherCookie } })).status, 403);
+    assert.equal(received.length, 0);
+    const response = await fetch(url, { headers: { Cookie: cookie + '; octoprint_session=fixture' } });
+    assert.equal(response.status, 200); assert.match(await response.text(), /Native OctoPrint/);
+    assert.equal(response.headers.get('x-frame-options'), 'SAMEORIGIN');
+    assert.match(response.headers.get('set-cookie'), /Path=\/ED1\//);
+    assert.equal(received[0].cookie, 'octoprint_session=fixture'); assert.equal(received[0].key, undefined);
+    const body = '{"user":"test","pass":"mock-only"}';
+    assert.equal((await fetch(url + 'api/login', { method: 'POST', headers: { Cookie: cookie, 'Content-Type': 'application/json' }, body })).status, 200);
+    assert.equal(received[1].body, body); assert.equal(received[1].url, '/ED1/api/login');
+    assert.equal((await fetch(url + 'static/test.js', { headers: { Cookie: otherCookie } })).status, 403);
+    const bootstrap = await post('/admin/octoprint/session', {}, cookie);
+    assert.equal(bootstrap.status, 200); assert.ok(bootstrap.headers.getSetCookie().some(value => /Path=\/;/.test(value) && !value.includes('Expires=Thu, 01 Jan 1970')));
+  } finally { process.env.OCTOPRINT_ED1_URL = saved; source.closeAllConnections(); await new Promise(resolve => source.close(resolve)); }
+});
+
+test('OctoPrint websocket upgrades reject guests and members and relay admin connections', async () => {
+  const http = require('node:http'); const { createHash } = require('node:crypto');
+  const source = http.createServer(); let upgrades = 0; let remoteSocket;
+  source.on('upgrade', (req, socket) => {
+    upgrades++; remoteSocket = socket;
+    assert.doesNotMatch(req.headers.cookie || '', /ironroot_session/);
+    const accept = createHash('sha1').update(req.headers['sec-websocket-key'] + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11').digest('base64');
+    socket.write(`HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: ${accept}\r\n\r\n`);
+  });
+  await new Promise(resolve => source.listen(0, '127.0.0.1', resolve));
+  const saved = process.env.OCTOPRINT_ED1_URL;
+  process.env.OCTOPRINT_ED1_URL = `http://127.0.0.1:${source.address().port}/ED1`;
+  function connect(session, origin = 'http://127.0.0.1:3002') { return new Promise((resolve, reject) => {
+    const request = http.request(base.slice(0, -4) + '/ED1/sockjs/websocket', { headers: { Connection: 'Upgrade', Upgrade: 'websocket', Origin: origin, 'Sec-WebSocket-Version': '13', 'Sec-WebSocket-Key': 'dGhlIHNhbXBsZSBub25jZQ==', ...(session ? { Cookie: session } : {}) } });
+    request.on('response', response => { response.resume(); resolve(response.statusCode); });
+    request.on('upgrade', (response, socket) => { socket.destroy(); resolve(response.statusCode); });
+    request.on('error', reject); request.setTimeout(5000, () => request.destroy(Error('Upgrade timed out'))); request.end();
+  }); }
+  try {
+    assert.equal(await connect(), 401); assert.equal(await connect(otherCookie), 401);
+    assert.equal(await connect(cookie, 'http://foreign.example'), 403); assert.equal(upgrades, 0);
+    assert.equal(await connect(cookie), 101); assert.equal(upgrades, 1);
+  } finally { process.env.OCTOPRINT_ED1_URL = saved; remoteSocket?.destroy(); source.closeAllConnections(); await new Promise(resolve => source.close(resolve)); }
+});
+test('real OctoPrint login screens load through the isolated admin proxy', async () => {
+  for (const id of ['ED1', 'ED2']) {
+    const response = await fetch(base.slice(0, -4) + `/${id}/`, { headers: { Cookie: cookie } });
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get('x-frame-options'), 'SAMEORIGIN');
+    const html = await response.text();
+    assert.match(html, /password/i); assert.match(html, new RegExp(`/${id}/static/`));
+    assert.ok(!html.includes(process.env[`OCTOPRINT_${id}_API_KEY`]));
+  }
 });

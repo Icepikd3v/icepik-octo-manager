@@ -30,3 +30,13 @@ test('public status strips filenames and site controls reject unsafe input', () 
   assert.equal(control.validPath('folder/part.gcode'), true);
   assert.throws(() => validateSettings({ announcement: { $gt: '' } }));
 });
+
+test('OctoPrint proxy has fixed destinations and never forwards the site session or bearer token', () => {
+  const workspace = require('../services/octoprintWorkspace');
+  const target = workspace.destination('/ED1/static/app.js?test=1');
+  assert.equal(target.path, '/ED1/static/app.js?test=1');
+  assert.equal(workspace.destination('/untrusted/'), null);
+  const result = workspace.headers({ headers: { cookie: 'ironroot_session=private; octoprint_session=native', authorization: 'Bearer private', origin: 'http://website', 'x-forwarded-host': 'untrusted' } }, target);
+  assert.equal(result.cookie, 'octoprint_session=native');
+  assert.equal(result.authorization, undefined); assert.equal(result['x-forwarded-host'], undefined); assert.equal(result['x-api-key'], undefined);
+});

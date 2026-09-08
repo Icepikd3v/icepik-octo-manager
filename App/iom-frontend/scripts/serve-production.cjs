@@ -43,7 +43,7 @@ const projects = new Set([
   "five-boards",
 ]);
 function createServer({ apiPort = Number(process.env.API_PORT || 3001) } = {}) {
-  return http.createServer((req, res) => {
+  const server = http.createServer((req, res) => {
     res.setHeader("X-Content-Type-Options", "nosniff");
     res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
     res.setHeader("X-Frame-Options", "DENY");
@@ -55,7 +55,12 @@ function createServer({ apiPort = Number(process.env.API_PORT || 3001) } = {}) {
       "Content-Security-Policy",
       "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'",
     );
-    if (req.url.startsWith("/api/")) {
+    const octoprint = /^\/(?:ED1|ED2|cam_ED1|cam_ED2)(?=\/|\?|$)/.test(req.url);
+    if (octoprint) {
+      res.setHeader("Content-Security-Policy", "frame-ancestors 'self'; object-src 'none'");
+      res.setHeader("X-Frame-Options", "SAMEORIGIN");
+    }
+    if (req.url.startsWith("/api/") || octoprint) {
       const upstream = http.request({
         hostname: "127.0.0.1", port: apiPort, path: req.url,
         method: req.method, headers: { ...req.headers, host: `127.0.0.1:${apiPort}` },
@@ -143,6 +148,21 @@ function createServer({ apiPort = Number(process.env.API_PORT || 3001) } = {}) {
       });
     }
   });
+  server.on("upgrade", (req, socket, head) => {
+    if (!/^\/(ED1|ED2)\//.test(req.url) || req.headers.upgrade?.toLowerCase() !== "websocket") { socket.destroy(); return; }
+    const upstream = http.request({ hostname: "127.0.0.1", port: apiPort, path: req.url, method: "GET", headers: { ...req.headers, host: `127.0.0.1:${apiPort}` } });
+    upstream.on("upgrade", (response, remote, remoteHead) => {
+      socket.write("HTTP/1.1 101 Switching Protocols\r\n" + Object.entries(response.headers).map(([key, value]) => `${key}: ${value}`).join("\r\n") + "\r\n\r\n");
+      if (remoteHead.length) socket.write(remoteHead); if (head.length) remote.write(head);
+      socket.pipe(remote); remote.pipe(socket);
+      const close = () => { remote.destroy(); socket.destroy(); };
+      socket.on("error", close); remote.on("error", close); socket.on("close", close); remote.on("close", close);
+    });
+    upstream.on("response", response => { socket.end(`HTTP/1.1 ${response.statusCode} Rejected\r\nConnection: close\r\nContent-Length: 0\r\n\r\n`); response.resume(); });
+    upstream.on("error", () => socket.destroy()); socket.on("close", () => upstream.destroy());
+    upstream.setTimeout(130000, () => upstream.destroy()); upstream.end();
+  });
+  return server;
 }
 if (require.main === module) {
   if (!fs.existsSync(path.join(build, "index.html"))) {

@@ -15,6 +15,10 @@ function createApp() {
     }
     next();
   });
+  // Mount before body parsing: OctoPrint receives native JSON, multipart uploads,
+  // downloads and SockJS requests unchanged, after site admin authorization.
+  app.use(/^\/(ED1|ED2)(?=\/|$)/, require("./middleware/authMiddleware"), require("./middleware/adminMiddleware"), require("./services/octoprintWorkspace").proxyWorkspace);
+  app.get(/^\/cam_(ED1|ED2)\/?$/, require("./middleware/authMiddleware"), require("./middleware/adminMiddleware"), (req, res) => require("./services/cameras").streamCamera(req.params[0], req, res));
   app.use(express.json({ limit: "16kb" }));
   app.get("/api/status", (req, res) => res.status(mongoose.connection.readyState === 1 ? 200 : 503).json({ success: mongoose.connection.readyState === 1 }));
   app.use("/api/public", require("./routes/public").router);
@@ -30,7 +34,8 @@ if (require.main === module) {
   if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) throw new Error("Set a JWT_SECRET of at least 32 characters in the backend .env.");
   connectDB().then(() => {
     require("./services/notificationService").startNotificationWorker();
-    createApp().listen(Number(process.env.PORT || 3001), process.env.HOST || "127.0.0.1", () => console.log("IronRoot workspace API listening"));
+    const server = createApp().listen(Number(process.env.PORT || 3001), process.env.HOST || "127.0.0.1", () => console.log("IronRoot workspace API listening"));
+    require("./services/octoprintWorkspace").attachWorkspaceUpgrade(server);
   });
 }
 module.exports = { createApp };

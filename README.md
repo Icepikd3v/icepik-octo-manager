@@ -116,3 +116,6 @@ See [email setup and current automation scope](docs/email-setup.md) before enabl
 Visit `/watch` for public ED1/ED2 live views and `/admin/login` for owner controls
 and website settings. New accounts require an emailed verification link and code.
 See [setup, access rules, and current email limitation](docs/live-admin-and-verification.md).
+
+The admin dashboard also embeds [full native OctoPrint workspaces](docs/octoprint-workspaces.md)
+for both printers, using their existing OctoPrint logins.

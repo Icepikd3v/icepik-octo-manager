@@ -19,6 +19,7 @@ router.post("/verify-email", limit, verify);
 router.post("/resend-verification", limit, resend);
 router.post("/logout", (req, res) => {
   const { maxAge, ...options } = cookieOptions();
+  res.clearCookie("ironroot_session", { ...options, path: "/api" });
   res.clearCookie("ironroot_session", options).json({ message: "Signed out." });
 });
 router.get("/me", auth, (req, res) => res.json({ user: publicUser(req.account) }));

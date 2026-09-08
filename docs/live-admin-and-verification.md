@@ -56,8 +56,9 @@ Public text is rendered as text, not executable HTML. Existing visitors see
 updated copy after refresh; stopped broadcasts terminate existing connections.
 
 This is the initial site-maintenance interface, not a general page builder.
-Customer upload transfer/slicing, customer-job association, temperature/jog/raw
-G-code controls, gallery asset editing, and automatic shipping are not included.
+Customer upload transfer/customer-job association, gallery asset editing, and
+automatic shipping are not included. Temperature, jog, terminal, and other native
+features are now available through the [embedded OctoPrint workspaces](octoprint-workspaces.md).
 Print execution endpoints follow the [OctoPrint job API](https://docs.octoprint.org/en/main/api/job.html)
 and [file-selection API](https://docs.octoprint.org/en/main/api/files.html).
 
