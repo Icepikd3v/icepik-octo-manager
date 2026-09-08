@@ -212,3 +212,17 @@ test("home offers direct paths for printing and technology projects", async () =
   expect(container.querySelector('.print-entry a[href="/dashboard"]')).not.toBeNull();
   expect(container.querySelector('.tech-entry a[href="/contact"]')).not.toBeNull();
 });
+
+test("hero explains a real build and switches between documented stages", async () => {
+  await render();
+  const feature = container.querySelector(".workshop-feature");
+  expect(feature.querySelector("img").getAttribute("src")).toBe("/printing/IMG_7402.jpg");
+  expect(feature.textContent).toContain("Grid infill");
+  await click("Assemble");
+  expect(feature.querySelector("img").getAttribute("src")).toBe("/printing/IMG_7430.jpg");
+  expect(feature.textContent).toContain("Wall sections");
+  await click("Put it to use");
+  expect(feature.querySelector("img").getAttribute("src")).toBe("/printing/IMG_7428.jpg");
+  expect(feature.querySelector('[aria-pressed="true"]').textContent).toContain("Put it to use");
+  expect(feature.querySelector('a').getAttribute("href")).toBe("/work/custom-prints");
+});

@@ -4,7 +4,7 @@ Branch: `rebrand-pt2`. The prior live workspace and gallery are saved on `ReBran
 at checkpoint `f05c753` before this design begins.
 
 IronRoot Solutions keeps its name and shifts to a graphite/electric-blue visual
-identity. The circuit-root mark, typography, technical SVG hero, navigation,
+identity. The circuit-root mark, typography, workshop-photo hero, navigation,
 service presentation, public pages, gallery, and authenticated print workspace
 share the new palette. No stock or generated product photos are introduced.
 
@@ -27,3 +27,10 @@ inquiry navigation, and the existing account, gallery, and upload flows. The
 production build and production server tests check the compiled route/asset
 behavior. The in-app browser was unavailable, so a rendered desktop/mobile visual
 review remains outstanding.
+
+The homepage hero now follows the octagonal collector display through three
+documented stages: printing the base, assembling the enclosure, and arranging
+the collectibles. Visitors can select a stage to see the original photo and
+plain-language explanations of visible details. This replaces the abstract
+layered-cube illustration. No dimensions, materials, or production metrics are
+invented.
