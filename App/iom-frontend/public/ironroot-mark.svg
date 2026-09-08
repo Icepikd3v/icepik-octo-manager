@@ -1,17 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 110" fill="none">
   <title>IronRoot — circuit-board branches with roots growing into the ground</title>
-  <path d="M5 73H95C95 96 75 109 50 109S5 96 5 73Z" fill="#203C60"/>
-  <path d="M5 73H95" stroke="#77A9DE" stroke-width="3"/>
+  <path d="M5 79H19L27 74H37M63 74H73L81 79H95" stroke="#9B968A" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
   <g stroke="#BBDFFF" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
     <path d="M50 17V73"/>
     <path d="M17 33V46L50 66"/>
     <path d="M83 25V39L50 59"/>
   </g>
-  <path d="M44 63H56V78L76 92H89V102H72L56 91V107H44V91L28 102H11V92H24L44 78V63Z" fill="#83BCFF"/>
+  <path d="M44 63H56V78L81 91V102L76 108L71 102V97L56 89V104L50 110L44 104V89L29 97V102L24 108L19 102V91L44 78V63Z" fill="#83BCFF"/>
   <g fill="#0B111C" stroke="#A8D5FF" stroke-width="6">
     <circle cx="50" cy="12" r="8"/>
     <circle cx="17" cy="26" r="8"/>
     <circle cx="83" cy="18" r="8"/>
   </g>
-  <path d="M47 72H53V82H47Z" fill="#D7EEFF"/>
 </svg>

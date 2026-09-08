@@ -47,5 +47,6 @@ three circular connection pads, and a solid trunk splitting into angular roots.
 The enclosing hexagon and the literal I-beam have been removed. The header,
 footer, About page, favicon, and web-app manifest share this SVG.
 
-The circuit roots now extend below a horizontal ground line into a dark-blue
-soil shape, keeping the existing traces and connection pads.
+The circuit roots now descend beneath a broken, warm-gray earth contour.
+The filled blue bowl and continuous surface line are removed to avoid a water
+reading. Downward root tips retain the angular circuit styling and connection pads.
