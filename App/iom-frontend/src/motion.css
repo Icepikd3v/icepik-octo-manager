@@ -1,0 +1,138 @@
+/* Motion is optional: the complete interface remains usable without it. */
+:root { --motion-ease: cubic-bezier(.22, 1, .36, 1); }
+
+.button, .service-card, .entry-card, .project-card, .stat, .task-row,
+.gallery-photo-button, .service-icon, .gallery-enlarge, .brand img,
+.workshop-stage-picker button, .gallery-filters button, .work-filters button {
+  transition: transform 240ms var(--motion-ease), box-shadow 240ms ease,
+    border-color 200ms ease, background-color 200ms ease, color 200ms ease;
+}
+.button { position: relative; overflow: hidden; isolation: isolate; }
+.button::after {
+  content: "";
+  position: absolute;
+  inset: -20% -45%;
+  background: linear-gradient(110deg, transparent 35%, #ffffff30 50%, transparent 65%);
+  transform: translateX(-110%);
+  pointer-events: none;
+}
+.button > span, .service-link b, .task-row b {
+  display: inline-block;
+  transition: transform 220ms var(--motion-ease);
+}
+.site-nav a { position: relative; transition: color 180ms ease; }
+.site-nav a::after {
+  content: "";
+  position: absolute;
+  height: 2px;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  background: #a6d3ff;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 220ms var(--motion-ease);
+}
+.site-nav a.active::after, .site-nav a:focus-visible::after { transform: scaleX(1); }
+.text-link, .workshop-feature-footer a { transition: color 180ms ease, border-color 180ms ease, text-shadow 180ms ease; }
+.service-card, .entry-card { position: relative; }
+.service-card::after, .entry-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, #7dbeff0f, transparent 55%);
+  opacity: 0;
+  transition: opacity 220ms ease;
+  pointer-events: none;
+}
+.workshop-feature { overflow: hidden; }
+.tech-visual-heading { position: relative; overflow: hidden; }
+.tech-visual-heading::after {
+  content: "";
+  position: absolute;
+  height: 1px;
+  width: 45%;
+  left: -45%;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, #b4dcff, transparent);
+  pointer-events: none;
+}
+.workshop-stage-photo { overflow: hidden; }
+.gallery-photo-button img, .project-image img { transition: transform 450ms var(--motion-ease); }
+.brief-card input, .brief-card textarea, .brief-card select, .workspace-form input, .printer-select select {
+  transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+}
+.brief-card input:focus, .brief-card textarea:focus, .brief-card select:focus,
+.workspace-form input:focus, .printer-select select:focus {
+  border-color: #acd5ff;
+  box-shadow: 0 0 0 3px #76b7ff18;
+  background-color: #0f1e32;
+}
+.button:focus-visible:not(:disabled) { box-shadow: 0 0 22px #79b4ff28; }
+.service-card:focus-visible, .entry-card:focus-within { border-color: #92c4ff; box-shadow: 0 12px 30px #00000024; }
+.service-card:focus-visible::after, .entry-card:focus-within::after { opacity: 1; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .future-hero .company-hero-copy > .eyebrow { animation: tech-rise 600ms var(--motion-ease) both; }
+  .future-hero h1 { animation: tech-rise 700ms 70ms var(--motion-ease) both; }
+  .future-hero .hero-description { animation: tech-rise 700ms 140ms var(--motion-ease) both; }
+  .future-hero .hero-actions { animation: tech-rise 650ms 210ms var(--motion-ease) both; }
+  .future-hero .workshop-feature { animation: panel-arrive 850ms 120ms var(--motion-ease) both; }
+  .workshop-stage-photo img, .workshop-stage-notes { animation: stage-arrive 380ms var(--motion-ease) both; }
+  .tech-visual-heading::after { animation: circuit-sweep 1400ms 500ms var(--motion-ease) both; }
+  .gallery-dialog[open] { animation: dialog-arrive 230ms var(--motion-ease) both; }
+  .gallery-dialog[open]::backdrop { animation: backdrop-arrive 200ms ease both; }
+  .gallery-full-photo { animation: stage-arrive 300ms var(--motion-ease) both; }
+  .printing-faq details[open] > p, .prepared-brief { animation: tech-rise 280ms var(--motion-ease) both; }
+  .button:focus-visible:not(:disabled)::after { animation: button-sweep 600ms ease; }
+
+  /* Progressive enhancement; unsupported browsers keep fully visible content. */
+  @supports (animation-timeline: view()) {
+    .entry-card, .service-card, .project-card, .printing-gallery-card, .approach-list li {
+      animation: scroll-arrive linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 25%;
+    }
+    .entry-card:focus-within, .service-card:focus-visible, .project-card:focus-within,
+    .printing-gallery-card:focus-within { animation: none; }
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .site-nav a:hover::after { transform: scaleX(1); }
+  .button:hover:not(:disabled) { box-shadow: 0 5px 25px #75b4ff24; }
+  .service-card:hover, .entry-card:hover { box-shadow: 0 15px 35px #00000035, 0 0 0 1px #8abcff20; }
+  .service-card:hover::after, .entry-card:hover::after { opacity: 1; }
+  .text-link:hover, .workshop-feature-footer a:hover { text-shadow: 0 0 16px #86bdff45; }
+  .stat:hover { border-color: #6b98c8; background: #16263b; }
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .button:hover:not(:disabled) { transform: translateY(-2px); }
+  .button:hover:not(:disabled)::after { animation: button-sweep 650ms ease; }
+  .button:hover > span, .service-card:hover .service-link b { transform: translate(3px, -3px); }
+  .service-card:hover, .entry-card:hover { transform: translateY(-4px); }
+  .service-card:hover .service-icon { transform: translateY(-2px); }
+  .task-row:hover b { transform: translate(3px, -3px); }
+  .site-header a:hover .brand img { transform: translateY(-2px); }
+  .gallery-photo-button:hover img, .project-image:hover img { transform: scale(1.045); }
+  .gallery-photo-button:hover .gallery-enlarge { transform: translate(2px, -2px); }
+  .workshop-stage-picker button:hover span { color: #d3eaff; }
+  .button:active:not(:disabled), .gallery-photo-button:active { transform: translateY(0) scale(.985); }
+}
+
+@keyframes tech-rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes panel-arrive { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes stage-arrive { from { opacity: .3; } to { opacity: 1; } }
+@keyframes circuit-sweep { from { left: -45%; } to { left: 110%; } }
+@keyframes button-sweep { from { transform: translateX(-110%); } to { transform: translateX(110%); } }
+@keyframes dialog-arrive { from { opacity: 0; transform: translateY(10px) scale(.99); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes backdrop-arrive { from { opacity: 0; } to { opacity: 1; } }
+@keyframes scroll-arrive { from { opacity: .4; translate: 0 16px; } to { opacity: 1; translate: 0 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .project-image:hover img, .gallery-photo-button:hover img { transform: none; }
+}

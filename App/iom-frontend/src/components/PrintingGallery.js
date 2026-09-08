@@ -77,7 +77,7 @@ export default function PrintingGallery() {
         {current && <div className="gallery-dialog-content">
           <div className="gallery-dialog-top"><span>{selected + 1} / {photos.length}</span>
             <button type="button" className="gallery-close" onClick={() => setSelected(null)} autoFocus>Close ×</button></div>
-          <img className="gallery-full-photo" src={current.src} alt={current.alt} />
+          <img key={current.id} className="gallery-full-photo" src={current.src} alt={current.alt} />
           <div className="gallery-dialog-caption"><p className="eyebrow">{current.category}</p><h3 id="gallery-photo-title">{current.title}</h3></div>
           <div className="gallery-dialog-nav"><button type="button" onClick={() => move(-1)}>← Previous</button>
             <button type="button" onClick={() => move(1)}>Next →</button></div>

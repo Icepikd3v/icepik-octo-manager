@@ -67,7 +67,7 @@ export default function TechVisual() {
             width="1080" height="1440" alt={stage.alt} fetchPriority={selected === 0 ? "high" : "auto"} />
           <figcaption>WORKSHOP PHOTO / 0{selected + 1}</figcaption>
         </figure>
-        <div className="workshop-stage-notes">
+        <div key={stage.image} className="workshop-stage-notes">
           <h3>{stage.title}</h3>
           <p>{stage.description}</p>
           <dl>{stage.details.map(([title, detail]) => (

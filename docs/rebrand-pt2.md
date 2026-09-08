@@ -34,3 +34,10 @@ the collectibles. Visitors can select a stage to see the original photo and
 plain-language explanations of visible details. This replaces the abstract
 layered-cube illustration. No dimensions, materials, or production metrics are
 invented.
+
+Motion includes a staggered hero entrance, a brief circuit-line sweep, photo
+fades on stage/gallery changes, hover lift and border highlights, button sheen,
+navigation underlines, and form-focus feedback. Scroll reveals progressively
+enhance browsers supporting CSS view timelines. All animations are finite;
+reduced-motion preferences disable them. Hover movement is limited to fine
+pointers, and keyboard focus receives equivalent visual emphasis.
