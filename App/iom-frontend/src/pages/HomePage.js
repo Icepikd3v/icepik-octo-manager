@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { projects, services } from "../data/company";
 import ProjectCard from "../components/ProjectCard";
 import ContactCTA from "../components/ContactCTA";
+import HomeCameras from "../components/HomeCameras";
 import TechVisual from "../components/TechVisual";
 
 export default function HomePage() {
@@ -25,6 +26,7 @@ export default function HomePage() {
         <span>ONE STUDIO.<br />CONNECTED CAPABILITIES.</span>
         <p>3D printing</p><i>+</i><p>Web & software</p><i>+</i><p>Hardware repair</p><i>+</i><p>Security & setup</p>
       </div>
+      <HomeCameras />
       <section className="company-section entry-section">
         <div className="section-heading"><div><p className="eyebrow">01 / START HERE</p><h2>What brings you in?</h2></div><p>Choose a starting point. We’ll help you work out the details.</p></div>
         <div className="entry-grid">

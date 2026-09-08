@@ -292,3 +292,8 @@ a, button { -webkit-tap-highlight-color: transparent; }
 .quick-printer-controls { padding-top: 16px; border-top: 1px solid #30465f; }
 .quick-printer-controls summary { cursor: pointer; color: #b9ddff; margin-bottom: 20px; }
 @media (max-width: 600px) { .octoprint-frame { min-height: 640px; } .octoprint-toolbar .button { margin-left: 0; } }
+
+.home-cameras { scroll-margin-top: 30px; }
+.home-camera-card > h3 { margin: 0; padding: 18px 24px; font-size: 20px; }
+.printing-filename { margin: 0; padding: 18px 24px; overflow-wrap: anywhere; color: #b9cde4; }
+.printing-filename strong { color: #edf3fc; }

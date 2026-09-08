@@ -6,7 +6,7 @@ let cached, expires = 0, pending;
 function safePrinter(p) {
   const states = ["Operational", "Printing", "Paused", "Pausing", "Resuming", "Cancelling", "Finishing", "Closed", "Offline", "Connecting", "Detecting serial connection", "Error"];
   return { id: p.id, name: p.id, reachable: p.reachable, connected: p.connected, state: p.reachable && states.includes(p.state) ? p.state : 'Unavailable', updatedAt: p.updatedAt, partial: p.partial,
-    nozzle: p.nozzle, bed: p.bed, job: p.job ? { completion: p.job.completion, secondsLeft: p.job.secondsLeft } : null };
+    nozzle: p.nozzle, bed: p.bed, job: p.job ? { ...(p.connected && p.state === "Printing" && p.job.filename ? { filename: p.job.filename.split(/[\\/]/).pop() } : {}), completion: p.job.completion, secondsLeft: p.job.secondsLeft } : null };
 }
 async function statuses() {
   if (cached && Date.now() < expires) return cached;

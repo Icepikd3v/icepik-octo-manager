@@ -303,3 +303,14 @@ test('admin opens independent full OctoPrint workspaces after preparing the site
   expect(container.querySelectorAll('iframe')).toHaveLength(1);
   expect(container.querySelector('iframe').getAttribute('src')).toBe('/ED2/');
 });
+
+test('homepage cameras show only actively printing filenames and no printer telemetry', async () => {
+  api.get.mockImplementation(url => url === '/auth/me' ? Promise.reject({ response: { status: 401 } }) : Promise.resolve({ data: url === '/public/printers' ? { printers: [{ id: 'ED1', name: 'ED1', connected: true, state: 'Printing', job: { filename: 'active-part.gcode', completion: 25 }, nozzle: { actual: 210, target: 210 }, camera: { enabled: true, stream: '/api/public/cameras/ED1' } }, { id: 'ED2', name: 'ED2', connected: true, state: 'Operational', job: { filename: 'previous-part.gcode' }, camera: { enabled: true, stream: '/api/public/cameras/ED2' } }] } : {} }));
+  await render('/');
+  const cameras = container.querySelector('#live-cameras');
+  expect(cameras.querySelectorAll('.camera-feed')).toHaveLength(2);
+  expect(cameras.textContent).toContain('active-part.gcode');
+  expect(cameras.textContent).not.toContain('previous-part.gcode');
+  expect(cameras.textContent).not.toMatch(/Nozzle|Time remaining|25%|210/);
+  expect(container.querySelector('.site-nav a[href="/watch"]')).toBeNull();
+});

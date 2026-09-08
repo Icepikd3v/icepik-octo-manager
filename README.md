@@ -59,7 +59,7 @@ every 15 seconds. `/upload` saves STL and G-code files (up to 50 MB) to the back
 and MongoDB. `/file-library` shows only the signed-in user's saved files. Uploads
 are saved for review; automatic transfer and payments are not enabled.
 Owner-only controls operate files already stored in OctoPrint; public camera
-streams are available at `/watch`. Legacy command and test-email routes
+streams are available on the homepage. Legacy command and test-email routes
 are not mounted by the workspace API.
 
 Sessions use an HttpOnly cookie. API requests use `/api` on the website's origin;
@@ -113,7 +113,7 @@ See [email setup and current automation scope](docs/email-setup.md) before enabl
 
 ### Public cameras and owner administration
 
-Visit `/watch` for public ED1/ED2 live views and `/admin/login` for owner controls
+Visit `/#live-cameras` for public ED1/ED2 live views and `/admin/login` for owner controls
 and website settings. New accounts require an emailed verification link and code.
 See [setup, access rules, and current email limitation](docs/live-admin-and-verification.md).
 

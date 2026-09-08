@@ -185,12 +185,13 @@ test("expired, tampered and deleted-account sessions cannot open private data", 
 });
 
 
-test("public cameras and status never expose customer filenames or printer secrets", async () => {
+test("public cameras expose only active filenames and no printer secrets", async () => {
   const response = await request("/public/printers");
   assert.equal(response.status, 200);
   const data = await response.json();
   assert.deepEqual(data.printers.map(p => p.id), ["ED1", "ED2"]);
-  assert.doesNotMatch(JSON.stringify(data), /filename|192\.168|apiKey|X-Api-Key/);
+  assert.doesNotMatch(JSON.stringify(data), /192\.168|apiKey|X-Api-Key/);
+  for (const printer of data.printers) if (printer.state !== "Printing") assert.equal(printer.job?.filename, undefined);
   assert.equal((await request("/public/cameras/unknown")).status, 404);
 });
 test("admin endpoints reject guests and members, and only admin settings persist", async () => {

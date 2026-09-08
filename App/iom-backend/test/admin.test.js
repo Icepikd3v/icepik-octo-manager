@@ -40,3 +40,10 @@ test('OctoPrint proxy has fixed destinations and never forwards the site session
   assert.equal(result.cookie, 'octoprint_session=native');
   assert.equal(result.authorization, undefined); assert.equal(result['x-forwarded-host'], undefined); assert.equal(result['x-api-key'], undefined);
 });
+
+test('public filenames appear only during active printing and omit directory paths', () => {
+  const printer = { id: 'ED1', reachable: true, connected: true, state: 'Printing', job: { filename: 'customer-folder/bracket.gcode', path: 'private/path', completion: 12 } };
+  assert.equal(safePrinter(printer).job.filename, 'bracket.gcode');
+  for (const state of ['Operational', 'Paused', 'Unavailable', 'Finishing']) assert.equal(safePrinter({ ...printer, state }).job.filename, undefined);
+  assert.equal(safePrinter({ ...printer, connected: false }).job.filename, undefined);
+});

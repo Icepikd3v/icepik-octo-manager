@@ -2,7 +2,9 @@
 
 ## Pages
 
-- `/watch`: public status and MJPEG camera views for ED1 and ED2, with no login.
+- `/#live-cameras`: public homepage MJPEG feeds for ED1 and ED2, with no login.
+  `/watch` redirects here. Public cards show only video and the filename during
+  active printing, with no temperatures, progress bars, or remaining-time details.
 - `/live`: the same camera/status view within the authenticated Print Studio.
 - `/admin/login`: owner sign-in using the existing account password.
 - `/admin`: administrator dashboard, accessible only to verified admin accounts.
@@ -28,8 +30,9 @@ Streams close when visitors disconnect or an admin disables broadcasting.
 The client retries failed feeds every 30 seconds and reconnects healthy feeds
 periodically. Visitors can stop a feed on their own device.
 
-Public printer reads are cached/coalesced for ten seconds. Public status strips
-job names/paths and keeps connection state, temperatures, progress and time left.
+Public printer reads are cached/coalesced for ten seconds. Public status strips directory paths and exposes a filename only while connected
+and actively Printing. The homepage shows no printer telemetry; the authenticated
+Print Studio retains its detailed readings.
 Cameras can still reveal the physical object being printed: use the per-printer
 broadcast switch before printing confidential work.
 

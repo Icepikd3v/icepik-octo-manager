@@ -2,7 +2,6 @@ import { NavLink } from "react-router-dom";
 const links = [
   ["/", "Home"],
   ["/3d-printing", "3D printing"],
-  ["/watch", "Live cameras"],
   ["/services", "Tech services"],
   ["/work", "Our work"],
   ["/about", "About"],

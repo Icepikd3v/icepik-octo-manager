@@ -21,7 +21,7 @@ export default function AppRoutes() {
   return <Suspense fallback={<div className="page" role="status">Loading workspace…</div>}><Routes>
     <Route path="/" element={<HomePage />} /><Route path="/services" element={<Services />} /><Route path="/work" element={<Work />} /><Route path="/work/:id" element={<Project />} /><Route path="/about" element={<About />} /><Route path="/3d-printing" element={<Printing />} /><Route path="/contact" element={<Contact />} />
     <Route path="/verify-email" element={<VerifyEmail />} />
-    <Route path="/watch" element={<Live publicView />} /><Route path="/admin/login" element={<Signup key="admin-login" mode="login" adminLogin />} /><Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
+    <Route path="/watch" element={<Navigate to="/#live-cameras" replace />} /><Route path="/admin/login" element={<Signup key="admin-login" mode="login" adminLogin />} /><Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
     <Route path="/login" element={<Signup key="login" mode="login" />} /><Route path="/signup" element={<Signup key="register" />} /><Route path="/dev" element={<Navigate to="/dashboard" replace />} />
     {[["/dashboard", Dashboard], ["/live", Live], ["/upload", Upload], ["/file-library", FileLibrary]].map(([path, Page]) => <Route key={path} path={path} element={<ProtectedRoute><Page /></ProtectedRoute>} />)}
     <Route path="*" element={<NotFound />} />
