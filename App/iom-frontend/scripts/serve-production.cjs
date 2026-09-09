@@ -28,6 +28,7 @@ const pages = new Set([
   "/dashboard",
   "/live",
   "/watch",
+  "/admin/website",
   "/admin",
   "/admin/login",
   "/verify-email",
@@ -118,6 +119,13 @@ function createServer({ apiPort = Number(process.env.API_PORT || 3001) } = {}) {
       const known =
         pages.has(route) ||
         (route.startsWith("/work/") && projects.has(route.slice(6)));
+      if (!known && /^\/work\/[a-z0-9-]+-[a-f0-9]{8}$/.test(route)) {
+        const check = http.get({ hostname: "127.0.0.1", port: apiPort, path: `/api/public/projects/${route.slice(6)}` }, response => {
+          response.resume(); send(path.join(build, "index.html"), response.statusCode === 200 ? 200 : response.statusCode === 404 ? 404 : 503);
+        });
+        check.setTimeout(5000, () => check.destroy()); check.on("error", () => { if (!res.headersSent) send(path.join(build, "index.html"), 503); });
+        return;
+      }
       send(path.join(build, "index.html"), known ? 200 : 404);
     });
     function send(target, status) {

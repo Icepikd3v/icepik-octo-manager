@@ -9,6 +9,9 @@ const control = require('../services/printerControl');
 const { getPrinterStatus } = require('../services/printerStatus');
 const busy = new Set();
 router.use(auth, admin);
+router.use('/projects', require('./portfolioAdmin'));
+router.get('/printers', async (req, res) => res.json({ printers: await Promise.all(['ED1', 'ED2'].map(getPrinterStatus)) }));
+router.get('/website', async (req, res) => res.json({ settings: await getSettings(), audit: await Audit.find().sort({ createdAt: -1 }).limit(20).select('printer action result createdAt').lean() }));
 router.post("/octoprint/session", (req, res) => require("../controllers/authController").signIn(res, req.account));
 router.get('/overview', async (req, res) => res.json({ settings: await getSettings(), printers: await Promise.all(['ED1', 'ED2'].map(getPrinterStatus)), audit: await Audit.find().sort({ createdAt: -1 }).limit(20).select('printer action result createdAt').lean() }));
 router.put('/site', async (req, res) => {

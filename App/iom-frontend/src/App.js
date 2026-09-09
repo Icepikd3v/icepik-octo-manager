@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import useSite, { SiteProvider } from "./hooks/useSite";
+import { ProjectsProvider } from "./hooks/useProjects";
 import Header from "./components/header";
 import Navbar from "./components/navbar";
 import Footer from "./components/footer";
@@ -20,7 +21,7 @@ const pageTitles = {
   "/admin": "Administration",
   "/admin/login": "Admin Sign In",
 };
-export default function App() { return <AuthProvider><SiteProvider><AppShell /></SiteProvider></AuthProvider>; }
+export default function App() { return <AuthProvider><SiteProvider><ProjectsProvider><AppShell /></ProjectsProvider></SiteProvider></AuthProvider>; }
 function AppShell() {
   const { settings } = useSite();
   const { user, logout } = useAuth();
@@ -28,6 +29,7 @@ function AppShell() {
   const location = useLocation();
   const navigate = useNavigate();
   const workspace = [
+    "/admin/website",
     "/admin",
     "/dev",
     "/dashboard",

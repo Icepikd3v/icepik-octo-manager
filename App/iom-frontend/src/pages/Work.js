@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { projects, webPost } from "../data/company";
+import useProjects from "../hooks/useProjects";
+import { RESUME_URL, webPost } from "../data/company";
 import { Link } from "react-router-dom";
 import ProjectCard from "../components/ProjectCard";
 import ContactCTA from "../components/ContactCTA";
 export default function Work() {
+  const { projects, loading, error } = useProjects();
   const [filter, setFilter] = useState("All work");
   const list = projects.filter(
     (p) => filter === "All work" || p.category === filter,
@@ -22,7 +24,7 @@ export default function Work() {
           Practical fixes, custom prints, and the work that connects them.
         </p>
         <div className="work-filters" role="group" aria-label="Filter projects">
-          {["All work", "3D printing", "Electronics", "Installations"].map(
+          {["All work", "3D printing", "Electronics", "Installations", "Web & software"].map(
             (f) => (
               <button
                 key={f}
@@ -37,6 +39,7 @@ export default function Work() {
         <p className="sr-only" role="status">
           {list.length} projects shown
         </p>
+        {loading && <p role="status">Loading projects…</p>}{error && <p role="alert">{error}</p>}
         <div className="project-grid work-gallery">
           {list.map((p) => (
             <ProjectCard project={p} key={p.id} />
@@ -52,6 +55,7 @@ export default function Work() {
               IronRoot print platform.
             </p>
             <div className="hero-actions">
+              <a className="text-link" href={RESUME_URL} target="_blank" rel="noopener noreferrer">Samuel’s résumé & development portfolio ↗</a>
               <Link className="text-link" to="/services#web">
                 Explore web services ↗
               </Link>

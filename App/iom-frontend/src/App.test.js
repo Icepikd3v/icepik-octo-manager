@@ -8,12 +8,12 @@ jest.mock("./utils/api", () => ({
   default: { get: jest.fn(), post: jest.fn(), put: jest.fn(), interceptors: { response: { use: jest.fn(), eject: jest.fn() } } },
   errorMessage: err => err.response?.data?.message || "Service unavailable",
 }));
-import { FACEBOOK_URL, COMPANY_EMAIL } from "./data/company";
+import { FACEBOOK_URL, COMPANY_EMAIL, projects as originalProjects, RESUME_URL } from "./data/company";
 let container, root;
 beforeEach(() => {
   sessionStorage.clear();
   jest.clearAllMocks();
-  api.get.mockImplementation(url => url === "/auth/me" ? Promise.reject({ response: { status: 401 } }) : Promise.resolve({ data: url === "/printers" ? { printers: [] } : [] }));
+  api.get.mockImplementation(url => url === "/auth/me" ? Promise.reject({ response: { status: 401 } }) : Promise.resolve({ data: url === "/public/projects" ? { projects: originalProjects } : url === "/printers" ? { printers: [] } : [] }));
   container = document.createElement("div");
   document.body.appendChild(container);
   root = createRoot(container);
@@ -252,17 +252,12 @@ test('members cannot open administration', async () => {
   expect(container.textContent).toContain('Administrator access required');
   expect(api.get).not.toHaveBeenCalledWith('/admin/overview');
 });
-test('admin controls require confirmation and site changes persist through the API', async () => {
+test('website maintenance has its own view and persists settings', async () => {
   const settings = { announcement: '', homeIntro: 'Original introduction', liveIntro: 'Studio cameras', acceptingUploads: true, cameras: { ED1: true, ED2: true } };
-  api.get.mockImplementation(url => Promise.resolve({ data: url === '/auth/me' ? { user: { username: 'Owner', isAdmin: true } } : url === '/admin/overview' ? { settings, printers: [{ id: 'ED1', state: 'Operational', job: { filename: 'part.gcode', path: 'part.gcode' } }], audit: [] } : settings }));
-  api.post.mockResolvedValue({ data: { message: 'ED1: start accepted.' } });
+  api.get.mockImplementation(url => Promise.resolve({ data: url === '/auth/me' ? { user: { username: 'Owner', isAdmin: true } } : url === '/admin/website' ? { settings, audit: [] } : url.includes('projects') ? { projects: [] } : settings }));
   api.put.mockResolvedValue({ data: { settings } });
-  await render('/admin');
-  await click('Start print');
-  expect(api.post).not.toHaveBeenCalled();
-  expect(container.querySelector('.command-confirm').textContent).toContain('part.gcode');
-  await click('Confirm start');
-  expect(api.post).toHaveBeenCalledWith('/admin/printers/ED1/command', { action: 'start', confirmPrinter: 'ED1', expectedFile: 'part.gcode' });
+  await render('/admin/website');
+  expect(container.querySelector('iframe')).toBeNull();
   await change(container.querySelector('.admin-settings textarea'), 'Open for commissions');
   await act(async () => container.querySelector('.admin-settings form').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
   expect(api.put).toHaveBeenCalledWith('/admin/site', { ...settings, announcement: 'Open for commissions' });
@@ -288,20 +283,20 @@ test('email link and code verify the account before opening the dashboard', asyn
   expect(container.querySelector('.workspace-toolbar')).not.toBeNull();
 });
 
-test('admin opens independent full OctoPrint workspaces after preparing the site session', async () => {
-  const settings = { announcement: '', homeIntro: 'Intro', liveIntro: 'Cameras', acceptingUploads: true, cameras: { ED1: true, ED2: true } };
-  api.get.mockImplementation(url => Promise.resolve({ data: url === '/auth/me' ? { user: { username: 'Owner', isAdmin: true } } : url === '/admin/overview' ? { settings, printers: [{ id: 'ED1', state: 'Operational' }, { id: 'ED2', state: 'Operational' }], audit: [] } : settings }));
-  api.post.mockResolvedValue({ data: { user: { username: 'Owner', isAdmin: true } } });
+test('printer console opens OctoPrint directly, preserves tab sessions, and supports focus view', async () => {
+  api.get.mockImplementation(url => Promise.resolve({ data: url === '/auth/me' ? { user: { username: 'Owner', isAdmin: true } } : url === '/admin/printers' ? { printers: [{ id: 'ED1', state: 'Operational' }, { id: 'ED2', state: 'Printing' }] } : {} }));
+  api.post.mockResolvedValue({ data: {} });
   await render('/admin');
-  expect(container.querySelectorAll('iframe')).toHaveLength(0);
-  await click('Open ED1 OctoPrint');
-  expect(api.post).toHaveBeenCalledWith('/admin/octoprint/session');
-  expect(container.querySelector('iframe').getAttribute('src')).toBe('/ED1/');
-  await click('Open ED2 OctoPrint');
-  expect([...container.querySelectorAll('iframe')].map(el => el.getAttribute('src'))).toEqual(['/ED1/', '/ED2/']);
-  await click('Close workspace');
-  expect(container.querySelectorAll('iframe')).toHaveLength(1);
-  expect(container.querySelector('iframe').getAttribute('src')).toBe('/ED2/');
+  const first = container.querySelector('iframe');
+  expect(first.getAttribute('src')).toBe('/ED1/');
+  await act(async () => container.querySelector('#tab-ED2').click());
+  expect(container.querySelectorAll('iframe')).toHaveLength(2);
+  expect(container.querySelector('#workspace-ED1').hidden).toBe(true);
+  await act(async () => container.querySelector('#tab-ED1').click());
+  expect(container.querySelector('#workspace-ED1 iframe')).toBe(first);
+  expect(container.querySelector('.admin-settings')).toBeNull();
+  await click('Focus view'); expect(container.querySelector('.admin-console-focused')).not.toBeNull();
+  await click('Exit focus view'); expect(container.querySelector('.admin-console-focused')).toBeNull();
 });
 
 test('homepage cameras show only actively printing filenames and no printer telemetry', async () => {
@@ -313,4 +308,30 @@ test('homepage cameras show only actively printing filenames and no printer tele
   expect(cameras.textContent).not.toContain('previous-part.gcode');
   expect(cameras.textContent).not.toMatch(/Nozzle|Time remaining|25%|210/);
   expect(container.querySelector('.site-nav a[href="/watch"]')).toBeNull();
+});
+
+
+test('résumé portfolio is linked from About', async () => {
+  await render('/about');
+  expect(container.querySelector(`a[href="${RESUME_URL}"]`)).not.toBeNull();
+});
+test('website project editor creates a draft and can publish it', async () => {
+  const settings = { announcement: '', homeIntro: 'Intro', liveIntro: 'Cameras', acceptingUploads: true, cameras: { ED1: true, ED2: true } };
+  api.get.mockImplementation(url => Promise.resolve({ data: url === '/auth/me' ? { user: { username: 'Owner', isAdmin: true } } : url === '/admin/website' ? { settings, audit: [] } : { projects: [] } }));
+  let saved;
+  api.post.mockImplementation((url, body) => { saved = { ...body, id: 'new-print-1234abcd' }; return Promise.resolve({ data: { project: saved } }); });
+  api.put.mockImplementation((url, body) => Promise.resolve({ data: { project: { ...body, id: saved.id } } }));
+  await render('/admin/website');
+  const form = container.querySelector('.portfolio-editor form');
+  await change(form.querySelector('input'), 'New bracket print');
+  await change(form.querySelector('textarea'), 'A completed custom bracket for a customer.');
+  await change(form.querySelector('input[maxlength="250"]'), 'Printed bracket on the workbench');
+  await act(async () => form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
+  expect(saved.status).toBe('draft');
+  expect(container.textContent).toContain('Draft saved.');
+  const visibility = [...form.querySelectorAll('select')].find(select => select.querySelector('option[value="published"]'));
+  await change(visibility, 'published');
+  await act(async () => form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
+  expect(api.put).toHaveBeenCalledWith('/admin/projects/new-print-1234abcd', expect.objectContaining({ status: 'published', title: 'New bracket print' }));
+  expect(container.textContent).toContain('Project published on the website.');
 });

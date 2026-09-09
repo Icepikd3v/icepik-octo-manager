@@ -320,3 +320,43 @@ test('real OctoPrint login screens load through the isolated admin proxy', async
     assert.ok(!html.includes(process.env[`OCTOPRINT_${id}_API_KEY`]));
   }
 });
+
+test('portfolio drafts remain private, publication persists, and existing projects can be unpublished', async () => {
+  const Project = require('../models/PortfolioProject');
+  const original = (await (await request('/public/projects')).json()).projects;
+  assert.equal(original.length, 5);
+  const values = { title: 'New tech completion', category: 'Web & software', description: 'A completed website project.', body: 'The work and outcome.', date: '2026-09-08', stage: 'Completed', status: 'draft', image: '/printing/IMG_7639.jpg', alt: 'Workshop photo', externalUrl: 'https://resume-site-eight-snowy.vercel.app/' };
+  assert.equal((await post('/admin/projects', values, otherCookie)).status, 403);
+  const response = await post('/admin/projects', values, cookie); assert.equal(response.status, 201);
+  const { project } = await response.json();
+  assert.equal((await request('/public/projects/' + project.id)).status, 404);
+  const put = (id, body) => request('/admin/projects/' + id, { method: 'PUT', headers: { Cookie: cookie, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  assert.equal((await put(project.id, { ...values, externalUrl: 'javascript:alert(1)' })).status, 400);
+  assert.equal((await put(project.id, { ...values, image: '/../../private' })).status, 400);
+  assert.equal((await put(project.id, { ...values, status: 'published' })).status, 200);
+  const published = await (await request('/public/projects/' + project.id)).json(); assert.equal(published.project.title, values.title);
+  assert.equal((await Project.findById(project.id)).status, 'published');
+  const existing = original[0]; const fields = Object.keys(values); const edit = Object.fromEntries(fields.map(field => [field, existing[field]]));
+  assert.equal((await put(existing.id, { ...edit, status: 'draft' })).status, 200);
+  assert.equal((await request('/public/projects/' + existing.id)).status, 404);
+  await Project.deleteOne({ _id: existing.id });
+});
+test('portfolio photos validate bytes and remain private until their project is published', async () => {
+  const portfolio = require('../services/portfolio'); const Project = require('../models/PortfolioProject');
+  const upload = (content, filename, session = cookie) => { const form = new FormData(); form.append('image', new Blob([content]), filename); return request('/admin/projects/images', { method: 'POST', headers: { Cookie: session }, body: form }); };
+  assert.equal((await upload('<script>bad</script>', 'photo.jpg')).status, 400);
+  assert.equal((await upload('no', 'photo.jpg', otherCookie)).status, 403);
+  const bytes = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aX1sAAAAASUVORK5CYII=', 'base64');
+  const response = await upload(bytes, 'photo.png'); assert.equal(response.status, 201);
+  const { image } = await response.json();
+  try {
+    assert.equal((await fetch(base.slice(0,-4) + image)).status, 404);
+    const preview = await fetch(base.slice(0,-4) + image.replace('/public/', '/admin/projects/').replace('/project-images/', '/images/'), { headers: { Cookie: cookie } });
+    assert.equal(preview.status, 200);
+    const values = { title: 'Photo publication', category: '3D printing', description: 'Finished print photo.', body: '', date: '2026-09-08', stage: 'Completed', status: 'published', image, alt: 'A project photo', externalUrl: '' };
+    const created = await (await post('/admin/projects', values, cookie)).json();
+    const publicImage = await fetch(base.slice(0,-4) + image); assert.equal(publicImage.status, 200); assert.match(publicImage.headers.get('content-type'), /image\/png/);
+    assert.deepEqual(Buffer.from(await publicImage.arrayBuffer()), bytes);
+    await Project.deleteOne({ _id: created.project.id });
+  } finally { await fs.unlink(path.join(portfolio.imageDirectory, image.split('/').pop())); }
+});

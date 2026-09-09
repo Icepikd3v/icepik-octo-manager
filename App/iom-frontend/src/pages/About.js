@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { RESUME_URL } from "../data/company";
 import Brand from "../components/Brand";
 import ContactCTA from "../components/ContactCTA";
 export default function About() {
@@ -44,6 +45,7 @@ export default function About() {
           <Link className="text-link" to="/work">
             See the work behind the words ↗
           </Link>
+          <p><a className="text-link" href={RESUME_URL} target="_blank" rel="noopener noreferrer">Explore Samuel Farmer’s résumé & development portfolio ↗</a></p>
         </div>
       </section>
       <section className="company-section">

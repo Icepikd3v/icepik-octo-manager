@@ -1,3 +1,4 @@
+export const RESUME_URL = "https://resume-site-eight-snowy.vercel.app/";
 export const COMPANY_EMAIL = "ironrootsolutions@gmail.com";
 export const FACEBOOK_URL =
   "https://www.facebook.com/profile.php?id=61579584716845";

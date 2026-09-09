@@ -1,12 +1,14 @@
 import useSite from "../hooks/useSite";
 import { Link } from "react-router-dom";
-import { projects, services } from "../data/company";
+import useProjects from "../hooks/useProjects";
+import { services } from "../data/company";
 import ProjectCard from "../components/ProjectCard";
 import ContactCTA from "../components/ContactCTA";
 import HomeCameras from "../components/HomeCameras";
 import TechVisual from "../components/TechVisual";
 
 export default function HomePage() {
+  const { projects } = useProjects();
   const { settings } = useSite();
   return (
     <div className="company-home">
@@ -56,7 +58,7 @@ export default function HomePage() {
       </section>
       <section className="company-section work-section">
         <div className="section-heading"><div><p className="eyebrow">03 / PROOF IN THE PROCESS</p><h2>Real projects.<br />From our workbench.</h2></div><Link to="/work" className="text-link">Explore selected work ↗</Link></div>
-        <div className="project-grid">{[projects[0], projects[1], projects[3]].map(project => <ProjectCard project={project} key={project.id} />)}</div>
+        <div className="project-grid">{projects.slice(0, 3).map(project => <ProjectCard project={project} key={project.id} />)}</div>
       </section>
       <section className="company-section approach-section">
         <div><p className="eyebrow">04 / THE WAY WE WORK</p><h2>Technical work.<br />A human conversation.</h2><p>Clear scope, practical recommendations, and a conversation before a commitment. You don’t need to arrive with every answer.</p><Link to="/about" className="text-link">Meet IronRoot ↗</Link></div>

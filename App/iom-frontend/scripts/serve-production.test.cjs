@@ -21,6 +21,8 @@ test("public deep links serve the compiled website with security headers", async
     "/login",
     "/signup",
     "/dashboard",
+    "/admin",
+    "/admin/website",
     "/live",
     "/upload",
     "/file-library",
@@ -124,6 +126,27 @@ test('OctoPrint paths preserve native page policy and websocket upgrades through
     assert.equal(status, 101);
   } finally {
     remoteSocket?.destroy(); proxy.closeAllConnections(); upstream.closeAllConnections();
+    await Promise.all([new Promise(resolve => proxy.close(resolve)), new Promise(resolve => upstream.close(resolve))]);
+  }
+});
+
+
+test("published project deep links resolve through the content API", async () => {
+  const http = require("node:http");
+  const upstream = http.createServer((req, res) => {
+    res.statusCode = req.url === "/api/public/projects/new-print-1234abcd" ? 200 : 404;
+    res.end("{}");
+  });
+  await new Promise(resolve => upstream.listen(0, "127.0.0.1", resolve));
+  const proxy = createServer({ apiPort: upstream.address().port });
+  await new Promise(resolve => proxy.listen(0, "127.0.0.1", resolve));
+  try {
+    const url = `http://127.0.0.1:${proxy.address().port}`;
+    assert.equal((await fetch(url + "/work/new-print-1234abcd")).status, 200);
+    assert.equal((await fetch(url + "/work/private-print-1234abcd")).status, 404);
+    assert.equal((await fetch(base + "/work/new-print-1234abcd")).status, 503);
+  } finally {
+    proxy.closeAllConnections(); upstream.closeAllConnections();
     await Promise.all([new Promise(resolve => proxy.close(resolve)), new Promise(resolve => upstream.close(resolve))]);
   }
 });

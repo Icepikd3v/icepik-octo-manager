@@ -1,8 +1,12 @@
 import { Link } from "react-router-dom";
 import { projects } from "../data/company";
+import useProjects from "../hooks/useProjects";
+import ProjectCard from "../components/ProjectCard";
 import PrintingGallery from "../components/PrintingGallery";
 import ContactCTA from "../components/ContactCTA";
 export default function Printing() {
+  const { projects: published } = useProjects();
+  const updates = published.filter(project => project.category === "3D printing" && project.id !== "custom-prints");
   return (
     <>
       <section className="printing-hero">
@@ -120,6 +124,7 @@ export default function Printing() {
           ))}
         </div>
       </section>
+      {updates.length > 0 && <section className="company-section"><h2>Latest print projects</h2><div className="project-grid">{updates.map(project => <ProjectCard key={project.id} project={project} />)}</div></section>}
       <ContactCTA />
     </>
   );

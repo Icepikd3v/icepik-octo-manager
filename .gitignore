@@ -28,3 +28,6 @@ yarn-error.log*
 # Private workspace uploads
 App/iom-backend/uploads/*
 !App/iom-backend/uploads/.gitkeep
+
+# Photos uploaded through the website editor (back up separately)
+App/iom-backend/content-images/

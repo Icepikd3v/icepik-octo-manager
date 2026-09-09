@@ -1,8 +1,10 @@
 # Native OctoPrint in the admin dashboard
 
-Open `/admin` and choose **Open ED1 OctoPrint** or **Open ED2 OctoPrint**.
-Each printer now has a full-width embedded OctoPrint interface with reload,
-close, and full-page options. Quick controls remain in a collapsible section.
+Open `/admin` to load the native ED1 interface automatically. Use the ED1/ED2
+switcher to change printers without remounting previously opened interfaces.
+The sidebar refreshes status every 15 seconds. Focus view expands the workspace;
+Escape restores the normal layout. Reload, close, and full-page options remain.
+Website editing lives separately at `/admin/website`.
 Sign into each instance with its existing OctoPrint username and password.
 The site account and the OctoPrint accounts remain separate.
 
@@ -46,8 +48,8 @@ which must retain connectivity to the printer LAN.
 
 ## Validation
 
-55 automated checks pass: 11 backend unit, 19 integration, 20 frontend interaction,
-and 5 production-server tests. Coverage includes admin/guest/member HTTP and
+The original native-proxy validation covered backend unit, integration, frontend
+interaction, and production-server tests. Coverage includes admin/guest/member HTTP and
 WebSocket access, raw body preservation, stripping site credentials, native
 cookie handling, independent panels, and both production proxy transports.
 Both real OctoPrint login screens loaded through an isolated admin proxy with

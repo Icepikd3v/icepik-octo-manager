@@ -13,6 +13,17 @@ async function statuses() {
   if (!pending) pending = Promise.all(['ED1', 'ED2'].map(getPrinterStatus)).then(result => { cached = result.map(safePrinter); expires = Date.now() + 10000; return cached; }).finally(() => { pending = null; });
   return pending;
 }
+router.get('/projects', async (req, res) => res.json({ projects: await require('../services/portfolio').listProjects() }));
+router.get('/projects/:id', async (req, res) => {
+  const project = (await require('../services/portfolio').listProjects()).find(project => project.id === req.params.id);
+  return project ? res.json({ project }) : res.status(404).json({ message: 'Project not found.' });
+});
+router.get('/project-images/:filename', async (req, res) => {
+  const { imageName, imageDirectory } = require('../services/portfolio');
+  if (!imageName.test(req.params.filename)) return res.sendStatus(404);
+  if (!(await require('../services/portfolio').listProjects()).some(project => project.image === `/api/public/project-images/${req.params.filename}`)) return res.sendStatus(404);
+  res.sendFile(require('node:path').join(imageDirectory, req.params.filename), error => { if (error && !res.headersSent) res.sendStatus(404); });
+});
 router.get('/site', async (req, res) => res.json(await getSettings()));
 router.get('/printers', async (req, res) => {
   const settings = await getSettings();
