@@ -4,11 +4,10 @@ import { FACEBOOK_URL, COMPANY_EMAIL } from "../data/company";
 const options = {
   web: "Website or web application",
   software: "Software design & development",
-  security: "Security cameras & system setup",
+  general: "General tech help",
   maintenance: "Maintenance & support",
   repair: "Computer, electronics & hardware repair",
   printing: "3D printing",
-  installation: "Device installation",
   other: "Something else",
 };
 export default function Contact() {

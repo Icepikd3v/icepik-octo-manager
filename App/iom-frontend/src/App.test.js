@@ -202,12 +202,11 @@ test("enlarged gallery photos navigate with arrow keys and close cleanly", async
 });
 
 
-test("technology services lead to a security inquiry with the right topic", async () => {
+test("general tech requests lead to the right inquiry topic", async () => {
   await render("/services");
-  const section = container.querySelector("#security");
-  expect(section.textContent).toContain("Security-camera & video-doorbell setup");
-  await act(async () => section.querySelector("a").dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true })));
-  expect(container.querySelector("select").value).toBe("security");
+  const link = container.querySelector('a[href="/contact?service=general"]');
+  await act(async () => link.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true })));
+  expect(container.querySelector("select").value).toBe("general");
   expect(container.querySelector("select").textContent).toContain("Software design & development");
 });
 
@@ -334,4 +333,41 @@ test('website project editor creates a draft and can publish it', async () => {
   await act(async () => form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
   expect(api.put).toHaveBeenCalledWith('/admin/projects/new-print-1234abcd', expect.objectContaining({ status: 'published', title: 'New bracket print' }));
   expect(container.textContent).toContain('Project published on the website.');
+});
+
+function useBuildProjects() {
+  const projects = require('../../iom-backend/config/projectDefaults.json');
+  api.get.mockImplementation(url => url === '/auth/me' ? Promise.reject({ response: { status: 401 } }) : Promise.resolve({ data: url === '/public/projects' ? { projects } : [] }));
+}
+test('web project thumbnails open an embedded demo with working display and restart controls', async () => {
+  useBuildProjects();
+  await render('/work');
+  await act(async () => [...container.querySelectorAll('.work-filters button')].find(button => button.textContent === 'Web & software').click());
+  expect(container.querySelectorAll('.project-card')).toHaveLength(7);
+  const link = container.querySelector('.project-image[href="/work/rick-and-morty-react"]');
+  await act(async () => link.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true })));
+  const frame = container.querySelector('iframe');
+  expect(frame.src).toBe('https://resume-site-eight-snowy.vercel.app/embedded/rick-and-morty-react');
+  expect(frame.title).toContain('interactive demo');
+  expect(frame.getAttribute('sandbox')).not.toContain('allow-top-navigation');
+  const button = label => [...container.querySelectorAll('button')].find(value => value.textContent === label);
+  await act(async () => button('Mobile').click());
+  expect(container.querySelector('.build-frame-mobile')).not.toBeNull();
+  await act(async () => button('Reload demo').click());
+  expect(container.querySelector('iframe')).not.toBe(frame);
+  await act(async () => button('Close demo').click());
+  expect(container.querySelector('iframe')).toBeNull();
+  await act(async () => button('Launch demo').click());
+  expect(container.querySelector('iframe')).not.toBeNull();
+  expect(container.querySelector('a[href="https://github.com/Icepikd3v/rick-and-morty-react"]')).not.toBeNull();
+});
+test('AOTG shows a selectable screenshot walkthrough without connecting to the app', async () => {
+  useBuildProjects();
+  await render('/work/aotg-transportation');
+  expect(container.querySelector('iframe')).toBeNull();
+  expect(container.querySelectorAll('.build-screenshots button')).toHaveLength(8);
+  await act(async () => container.querySelectorAll('.build-screenshots button')[2].click());
+  expect(container.querySelector('.build-screen-view img').getAttribute('src')).toBe('/web-builds/aotg-consumer_upcoming_rides.png');
+  expect(container.querySelectorAll('.build-screenshots button')[2].getAttribute('aria-pressed')).toBe('true');
+  expect(container.textContent).not.toContain('Original company post');
 });

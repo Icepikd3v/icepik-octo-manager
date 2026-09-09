@@ -5,8 +5,9 @@ const { emailEnabled } = require("../services/emailService");
 const jwt = require("jsonwebtoken");
 const cookieOptions = () => ({ httpOnly: true, sameSite: "strict", secure: process.env.COOKIE_SECURE === "true", path: "/", maxAge: 7 * 24 * 60 * 60 * 1000 });
 const publicUser = user => ({ id: user._id, username: user.username, email: user.email, isAdmin: user.isAdmin === true });
-function signIn(res, user, status = 200) {
+async function signIn(res, user, status = 200) {
   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
+  await User.updateOne({ _id: user._id }, { $set: { lastLoginAt: new Date() } });
   res.cookie("ironroot_session", token, cookieOptions());
   res.clearCookie("ironroot_session", { ...cookieOptions(), path: "/api", maxAge: undefined });
   return res.status(status).json({ user: publicUser(user) });
@@ -33,7 +34,7 @@ const login = async (req, res) => {
     const user = await User.findOne({ email: email.trim().toLowerCase() });
     if (!user || !(await bcrypt.compare(password, user.password))) return res.status(401).json({ message: "Email or password is incorrect." });
     if (!user.emailVerified) return res.status(403).json({ verificationRequired: true, email: user.email, message: "Verify your email before signing in." });
-    return signIn(res, user);
+    return await signIn(res, user);
   } catch {
     return res.status(503).json({ message: "Sign-in is unavailable. Please try again." });
   }
@@ -42,7 +43,7 @@ const verify = async (req, res) => {
   try {
     const user = await verifyCode(req.body?.token, req.body?.code);
     if (!user) return res.status(400).json({ message: "The code or link is invalid, expired, or has too many attempts. Request a new email." });
-    return signIn(res, user, 201);
+    return await signIn(res, user, 201);
   } catch { return res.status(503).json({ message: "Verification is temporarily unavailable." }); }
 };
 const resend = async (req, res) => {

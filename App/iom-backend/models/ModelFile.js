@@ -17,6 +17,8 @@ const modelFileSchema = new mongoose.Schema({
     enum: ["ED1", "ED2", "EnderMultiColor", "EnderDirect"], // printer destination
     default: "ED1",
   },
-});
+}, { timestamps: true });
+
+modelFileSchema.index({ userId: 1, uploadDate: -1 });
 
 module.exports = mongoose.model("ModelFile", modelFileSchema);

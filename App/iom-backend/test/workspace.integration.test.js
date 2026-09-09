@@ -48,9 +48,21 @@ test("registration validates input and creates an HttpOnly session", async () =>
   const registration = await post("/auth/register", { username: "Workspace Test", email: "test@example.test", password });
   assert.equal(registration.status, 202);
   assert.equal(registration.headers.get("set-cookie"), null);
+  const User = require("../models/Users");
+  const pending = await User.findOne({ email: "test@example.test" });
+  assert.ok(pending.createdAt instanceof Date);
+  assert.ok(pending.updatedAt instanceof Date);
+  assert.equal(pending.emailVerifiedAt, null);
+  assert.equal(pending.lastLoginAt, null);
+  assert.notEqual(pending.password, password);
+  assert.equal(await require("bcryptjs").compare(password, pending.password), true);
   assert.equal((await post("/auth/login", { email: "test@example.test", password })).status, 403);
   const response = await verifyTestAccount("test@example.test");
   assert.equal(response.status, 201);
+  const verified = await User.findById(pending._id);
+  assert.ok(verified.emailVerifiedAt >= pending.createdAt);
+  assert.ok(verified.lastLoginAt >= verified.emailVerifiedAt);
+  assert.equal(verified.createdAt.getTime(), pending.createdAt.getTime());
   const header = response.headers.get("set-cookie");
   assert.match(header, /HttpOnly/); assert.match(header, /SameSite=Strict/);
   cookie = header.split(";")[0];
@@ -61,8 +73,14 @@ test("registration validates input and creates an HttpOnly session", async () =>
   assert.equal((await request("/auth/me", { headers: { Cookie: cookie } })).status, 200);
 });
 test("login rejects wrong passwords and normalizes email", async () => {
+  const User = require("../models/Users");
+  const before = await User.findOne({ email: "test@example.test" });
   assert.equal((await post("/auth/login", { email: "test@example.test", password: "wrong-password" })).status, 401);
+  assert.equal((await User.findById(before._id)).lastLoginAt.getTime(), before.lastLoginAt.getTime());
   assert.equal((await post("/auth/login", { email: "TEST@example.test", password })).status, 200);
+  const after = await User.findById(before._id);
+  assert.ok(after.lastLoginAt > before.lastLoginAt);
+  assert.equal(after.createdAt.getTime(), before.createdAt.getTime());
   assert.equal((await post("/auth/login", { email: { $ne: null }, password })).status, 400);
 });
 test("uploads persist exact contents and remain private to their owner", async () => {
@@ -75,6 +93,26 @@ test("uploads persist exact contents and remain private to their owner", async (
   assert.equal(await fs.readFile(path.join(__dirname, "../uploads", file.filename), "utf8"), contents);
   const mine = await (await request("/models", { headers: { Cookie: cookie } })).json();
   assert.equal(mine.length, 1); assert.equal(mine[0].size, Buffer.byteLength(contents));
+  // Read through a fresh database connection to prove these are persisted records.
+  const reader = await mongoose.createConnection(process.env.MONGO_URI, { dbName: database }).asPromise();
+  try {
+    const stored = await reader.db.collection("modelfiles").findOne({ _id: new mongoose.Types.ObjectId(file._id) });
+    const owner = await reader.db.collection("users").findOne({ _id: stored.userId });
+    assert.equal(owner.email, "test@example.test");
+    assert.ok(owner.createdAt instanceof Date);
+    assert.ok(owner.emailVerifiedAt instanceof Date);
+    assert.ok(owner.lastLoginAt instanceof Date);
+    assert.ok(stored.uploadDate instanceof Date);
+    assert.ok(stored.createdAt instanceof Date);
+    assert.ok(stored.updatedAt instanceof Date);
+    assert.equal(stored.size, Buffer.byteLength(contents));
+    await ModelFile.updateOne({ _id: stored._id }, { $set: { status: "queued" } });
+    const changed = await reader.db.collection("modelfiles").findOne({ _id: stored._id });
+    assert.ok(changed.updatedAt > stored.updatedAt);
+    assert.equal(changed.createdAt.getTime(), stored.createdAt.getTime());
+    assert.equal(changed.uploadDate.getTime(), stored.uploadDate.getTime());
+    await ModelFile.updateOne({ _id: stored._id }, { $set: { status: "ready" } });
+  } finally { await reader.close(); }
   await post("/auth/register", { username: "Other Test", email: "other@example.test", password });
   const other = await verifyTestAccount("other@example.test");
   otherCookie = other.headers.get("set-cookie").split(";")[0];
@@ -324,7 +362,7 @@ test('real OctoPrint login screens load through the isolated admin proxy', async
 test('portfolio drafts remain private, publication persists, and existing projects can be unpublished', async () => {
   const Project = require('../models/PortfolioProject');
   const original = (await (await request('/public/projects')).json()).projects;
-  assert.equal(original.length, 5);
+  assert.equal(original.length, require("../config/projectDefaults.json").length);
   const values = { title: 'New tech completion', category: 'Web & software', description: 'A completed website project.', body: 'The work and outcome.', date: '2026-09-08', stage: 'Completed', status: 'draft', image: '/printing/IMG_7639.jpg', alt: 'Workshop photo', externalUrl: 'https://resume-site-eight-snowy.vercel.app/' };
   assert.equal((await post('/admin/projects', values, otherCookie)).status, 403);
   const response = await post('/admin/projects', values, cookie); assert.equal(response.status, 201);

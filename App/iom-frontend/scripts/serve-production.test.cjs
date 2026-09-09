@@ -150,3 +150,31 @@ test("published project deep links resolve through the content API", async () =>
     await Promise.all([new Promise(resolve => proxy.close(resolve)), new Promise(resolve => upstream.close(resolve))]);
   }
 });
+
+test('web showcases load directly and permit only the intended frame origin', async () => {
+  const projects = require('../../iom-backend/config/projectDefaults.json').filter(p => p.position === 'web');
+  for (const project of projects) {
+    const response = await fetch(base + '/work/' + project.id);
+    assert.equal(response.status, 200, project.id);
+    assert.match(response.headers.get('content-security-policy'), /frame-src 'self' https:\/\/resume-site-eight-snowy\.vercel\.app;/);
+    assert.equal(response.headers.get('x-frame-options'), 'DENY');
+    for (const file of [project.image, ...(project.screenshots || []).map(photo => photo.src)]) {
+      assert.equal((await fetch(base + file)).status, 200, file);
+    }
+  }
+});
+test('travel demo allows same-site embedding and all local page links resolve', async () => {
+  for (const page of ['index.html', 'About.html', 'Destinations.html', 'tours.html', 'blogs.html']) {
+    const response = await fetch(base + '/demos/ready-set-travel/' + page);
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get('x-frame-options'), 'SAMEORIGIN');
+    assert.match(response.headers.get('content-security-policy'), /frame-ancestors 'self'/);
+    const html = await response.text();
+    assert.ok(!html.includes('/Users/'));
+    for (const [, target] of html.matchAll(/(?:href|src)=["']([^"']+)/g)) {
+      if (/^(https?:|#|mailto:)/.test(target)) continue;
+      const linked = await fetch(new URL(target, base + '/demos/ready-set-travel/' + page));
+      assert.equal(linked.status, 200, `${page}: ${target}`);
+    }
+  }
+});

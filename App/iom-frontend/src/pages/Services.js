@@ -80,6 +80,11 @@ export default function Services() {
           ))}
         </div>
       </section>
+      <section className="company-section">
+        <h2>Have another tech question?</h2>
+        <p>Tell us what you need. We’ll review the request and let you know how we can help.</p>
+        <Link className="text-link" to="/contact?service=general">Ask about general tech help ↗</Link>
+      </section>
       <ContactCTA />
     </>
   );

@@ -1054,11 +1054,6 @@ dt {
   height: 125%;
   object-position: center bottom;
 }
-.crop-dashcam img {
-  height: 145%;
-  object-position: center center;
-  bottom: -12%;
-}
 .crop-batch img {
   height: 140%;
   object-position: center bottom;
@@ -1853,3 +1848,35 @@ dt {
 .printing-photo.crop-gallery img { object-fit: contain; }
 .gallery-archive { margin: 30px 0; padding: 20px 0; border-top: 1px solid var(--line); }
 .gallery-archive summary { cursor: pointer; }
+
+/* Web project cards and embedded build walkthroughs. */
+.crop-web { background: #121c2e; display: flex; align-items: center; justify-content: center; }
+.photo-window.crop-web img { position: static; width: 100%; height: 100%; object-fit: contain; }
+.build-showcase { margin: 32px 0; min-width: 0; }
+.build-stack { display: flex; flex-wrap: wrap; gap: 8px; padding: 0; list-style: none; }
+.build-stack li { padding: 7px 12px; border: 1px solid #334155; border-radius: 20px; font-size: 13px; }
+.build-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px; margin: 28px 0 14px; }
+.build-toolbar h2 { margin: 0; }
+.build-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.build-controls button, .build-screenshots button { border: 1px solid #475569; border-radius: 6px; background: #142036; color: #edf3fc; padding: 10px 14px; cursor: pointer; }
+.build-controls button[aria-pressed="true"], .build-screenshots button[aria-pressed="true"] { background: #264366; border-color: #a8d5ff; }
+.build-controls button:focus-visible, .build-screenshots button:focus-visible, .build-launch:focus-visible { outline: 3px solid #a8d5ff; outline-offset: 3px; }
+.build-controls a, .build-screen-view a { color: #a8d5ff; }
+.build-hint { max-width: 850px; color: #b5c4d9; line-height: 1.7; }
+.build-frame-shell { margin: 20px auto; width: 100%; background: #fff; border: 1px solid #475569; border-radius: 10px; overflow: hidden; }
+.build-frame-mobile { max-width: 390px; }
+.build-frame-shell iframe { display: block; width: 100%; height: 760px; max-height: 85vh; min-height: 440px; border: 0; background: #fff; }
+.build-launch { width: 100%; padding: 24px; background: #142036; color: #edf3fc; border: 1px solid #475569; border-radius: 10px; cursor: pointer; }
+.build-launch img { display: block; width: 100%; height: 260px; object-fit: contain; margin-bottom: 20px; }
+.build-screenshots { display: flex; gap: 12px; overflow-x: auto; padding: 4px 4px 14px; }
+.build-screenshots button { flex-shrink: 0; display: flex; flex-direction: column; gap: 10px; width: 170px; text-align: left; }
+.build-screenshots img { width: 100%; height: 100px; object-fit: contain; }
+.project-detail .build-screen-view { margin: 24px 0; padding: 20px; background: #111b2b; border-radius: 10px; }
+.project-detail .build-screen-view img { width: 100%; max-height: 78vh; object-fit: contain; }
+.build-screen-view figcaption { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; padding-top: 16px; }
+@media (max-width: 600px) {
+  .build-controls { align-items: stretch; }
+  .build-controls button { min-height: 44px; }
+  .build-screenshots button { width: 150px; }
+  .project-detail .build-screen-view { padding: 10px; }
+}

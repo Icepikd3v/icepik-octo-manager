@@ -3,6 +3,8 @@ const mongoose = require("mongoose");
 const userSchema = new mongoose.Schema(
   {
     emailVerified: { type: Boolean, default: false },
+    emailVerifiedAt: { type: Date, default: null },
+    lastLoginAt: { type: Date, default: null },
     username: { type: String, required: true, minlength: 3 },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },

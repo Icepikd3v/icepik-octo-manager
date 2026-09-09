@@ -24,13 +24,6 @@ export const services = [
     description: "Hands-on diagnostics and repair for computers, electronics, and the devices you rely on.",
     items: ["Desktop & laptop diagnostics", "Screen & component repair", "Circuit-board repair assessment", "Device upgrades & troubleshooting"],
   },
-  {
-    id: "security", number: "04", icon: "⌖",
-    title: "Security & setup",
-    short: "Connect the equipment. Make it usable.",
-    description: "Security-camera systems, device installations, and network setup with a practical handover.",
-    items: ["Security-camera & video-doorbell setup", "Camera placement & connectivity planning", "Home & small-business network setup", "Device configuration & user walkthroughs"],
-  },
 ];
 const shot = (time) => `/Screenshot 2026-09-07 at ${time}\u202fPM.png`;
 export const projects = [
@@ -68,17 +61,6 @@ export const projects = [
     alt: "IronRoot Facebook post showing an Acer laptop disassembled and running after screen repair",
     date: "August 14, 2025",
     position: "laptop",
-  },
-  {
-    id: "dashcam",
-    category: "Installations",
-    title: "A cleaner dashcam installation",
-    description:
-      "A Vantrue N4 Pro installation with front, rear, and cabin views and concealed cabling.",
-    image: shot("7.12.39"),
-    alt: "IronRoot Facebook post documenting a Vantrue N4 Pro dashcam installation",
-    date: "August 14, 2025",
-    position: "dashcam",
   },
   {
     id: "five-boards",

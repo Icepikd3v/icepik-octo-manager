@@ -28,6 +28,6 @@ async function verifyCode(token, code) {
   // Consume atomically, so a successful code can only create one session.
   const consumed = await Verification.findOneAndDelete({ _id: challenge._id, tokenHash: hash(token) });
   if (!consumed) return null;
-  return User.findByIdAndUpdate(challenge.userId, { $set: { emailVerified: true } }, { new: true });
+  return User.findByIdAndUpdate(challenge.userId, { $set: { emailVerified: true, emailVerifiedAt: new Date() } }, { new: true });
 }
 module.exports = { requestVerification, verifyCode };

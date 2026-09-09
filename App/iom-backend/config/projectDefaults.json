@@ -44,20 +44,6 @@
     "externalUrl": ""
   },
   {
-    "id": "dashcam",
-    "category": "Installations",
-    "title": "A cleaner dashcam installation",
-    "description": "A Vantrue N4 Pro installation with front, rear, and cabin views and concealed cabling.",
-    "image": "/Screenshot 2026-09-07 at 7.12.39 PM.png",
-    "alt": "IronRoot Facebook post documenting a Vantrue N4 Pro dashcam installation",
-    "date": "2025-08-14",
-    "position": "dashcam",
-    "status": "published",
-    "stage": "Completed",
-    "body": "",
-    "externalUrl": ""
-  },
-  {
     "id": "five-boards",
     "category": "Electronics",
     "title": "Back on the bench. Back in service.",
@@ -70,5 +56,253 @@
     "stage": "Completed",
     "body": "",
     "externalUrl": ""
+  },
+  {
+    "id": "rick-and-morty-react",
+    "category": "Web & software",
+    "title": "Rick and Morty character explorer",
+    "description": "Search the Rick and Morty universe in a themed React app with character results, animated pages, and community submissions.",
+    "image": "/web-builds/rick-and-morty.png",
+    "alt": "Rick and Morty character explorer project artwork",
+    "date": "2026-09-09",
+    "dateLabel": "Development portfolio",
+    "position": "web",
+    "status": "published",
+    "stage": "Completed",
+    "body": "",
+    "externalUrl": "",
+    "stack": [
+      "React",
+      "Express",
+      "MongoDB",
+      "REST API"
+    ],
+    "demoUrl": "https://resume-site-eight-snowy.vercel.app/embedded/rick-and-morty-react",
+    "demoHint": "Try searching for Rick or Morty, then explore the About and submission pages. This is the portfolio demo hosted with the résumé.",
+    "repositories": [
+      {
+        "label": "View repository",
+        "url": "https://github.com/Icepikd3v/rick-and-morty-react"
+      }
+    ]
+  },
+  {
+    "id": "ufc-api",
+    "category": "Web & software",
+    "title": "UFC fighter explorer",
+    "description": "A React Native web build connected to a REST API for browsing fighter records and trying create, update, and delete workflows.",
+    "image": "/web-builds/ufc.svg",
+    "alt": "UFC fighter explorer project artwork",
+    "date": "2026-09-09",
+    "dateLabel": "Development portfolio",
+    "position": "web",
+    "status": "published",
+    "stage": "Completed",
+    "body": "",
+    "externalUrl": "",
+    "stack": [
+      "React Native",
+      "Expo",
+      "Express",
+      "REST API"
+    ],
+    "demoUrl": "https://resume-site-eight-snowy.vercel.app/embedded/ufc-api/index.html",
+    "demoHint": "Explore fighter records and the app’s editing screens. This shared portfolio demo contains sample data, not current official UFC statistics.",
+    "repositories": [
+      {
+        "label": "Mobile app repository",
+        "url": "https://github.com/Icepikd3v/ufc-mobile"
+      },
+      {
+        "label": "API repository",
+        "url": "https://github.com/Icepikd3v/ufc-api"
+      }
+    ]
+  },
+  {
+    "id": "ready-set-travel",
+    "category": "Web & software",
+    "title": "ReadySetTravel",
+    "description": "A travel website concept with destination browsing, tour pages, and responsive layouts. Explore the original multi-page frontend.",
+    "image": "/web-builds/ready-set-travel.jpg",
+    "alt": "ReadySetTravel project artwork",
+    "date": "2026-09-09",
+    "dateLabel": "Development portfolio",
+    "position": "web",
+    "status": "published",
+    "stage": "Completed",
+    "body": "",
+    "externalUrl": "",
+    "stack": [
+      "HTML",
+      "CSS",
+      "JavaScript",
+      "Tailwind CSS"
+    ],
+    "demoUrl": "/demos/ready-set-travel/index.html",
+    "demoHint": "Browse destinations, tours, and articles. This student website is a design demo; it does not accept real bookings.",
+    "repositories": [
+      {
+        "label": "View repository",
+        "url": "https://github.com/Icepikd3v/ReadySetTravel"
+      }
+    ]
+  },
+  {
+    "id": "aotg-transportation",
+    "category": "Web & software",
+    "title": "AOTG Transportation",
+    "description": "A transportation app built for Manuel, connecting passenger ride requests, driver assignments, and dispatch operations. Explore the captured app screens.",
+    "image": "/web-builds/aotg-consumer_request_ride_form.png",
+    "alt": "AOTG ride request screen with passenger counts and fare estimate",
+    "date": "2026-09-09",
+    "dateLabel": "Development portfolio",
+    "position": "web",
+    "status": "published",
+    "stage": "Completed",
+    "body": "Explore eight development screens covering ride requests, fares, upcoming trips, payment status, driver shifts, and dispatch administration. The sample rides and prices shown belong to the captured build. This visual walkthrough does not create rides or process payments.",
+    "externalUrl": "",
+    "stack": [
+      "Flutter",
+      "Firebase",
+      "iOS",
+      "Android"
+    ],
+    "screenshots": [
+      {
+        "src": "/web-builds/aotg-consumer_request_ride_form.png",
+        "title": "Request a ride",
+        "alt": "Passenger form for pickup details, passenger counts, luggage, and estimated fare"
+      },
+      {
+        "src": "/web-builds/aotg-consumer_request_checkout_button.png",
+        "title": "Fare and checkout",
+        "alt": "Passenger fare estimate and request ride checkout action"
+      },
+      {
+        "src": "/web-builds/aotg-consumer_upcoming_rides.png",
+        "title": "Upcoming rides",
+        "alt": "Sample upcoming port ride with pickup, dropoff, and tracking action"
+      },
+      {
+        "src": "/web-builds/aotg-consumer_track_awaiting_payment.png",
+        "title": "Payment history",
+        "alt": "Sample ride payment history showing unpaid and cancelled requests"
+      },
+      {
+        "src": "/web-builds/aotg-driver_home_on_duty.png",
+        "title": "Driver on duty",
+        "alt": "Driver workspace with current assignment, shift status, and daily summary"
+      },
+      {
+        "src": "/web-builds/aotg-admin_dispatch_payment_holds.png",
+        "title": "Dispatch dashboard",
+        "alt": "Dispatch dashboard with sample ride requests and payment-hold status"
+      },
+      {
+        "src": "/web-builds/aotg-admin_pricing_settings.png",
+        "title": "Fare settings",
+        "alt": "Admin fare settings for passenger categories and age confirmation"
+      },
+      {
+        "src": "/web-builds/aotg-admin_menu_operations.png",
+        "title": "Operations menu",
+        "alt": "Dispatch navigation for accounts, locations, payments, payroll, and audit logs"
+      }
+    ]
+  },
+  {
+    "id": "homefit-ai",
+    "category": "Web & software",
+    "title": "HomeFit AI capstone backend",
+    "description": "A FastAPI backend for workout sessions, exercise data, and research logging. Screenshots show Samuel’s backend contribution to the team’s fitness app.",
+    "image": "/web-builds/homefit-dashboard.png",
+    "alt": "HomeFit AI capstone backend project artwork",
+    "date": "2026-09-09",
+    "dateLabel": "Development portfolio",
+    "position": "web",
+    "status": "published",
+    "stage": "Completed",
+    "body": "A capstone backend showcase covering workout data, retry-safe writes, and recommendation support. Screenshots document the development build; a public interactive backend is not connected here.",
+    "externalUrl": "",
+    "stack": [
+      "Python",
+      "FastAPI",
+      "PostgreSQL",
+      "Docker"
+    ],
+    "screenshots": [
+      {
+        "src": "/web-builds/homefit-dashboard.png",
+        "title": "Backend dashboard",
+        "alt": "Backend dashboard in the original development build"
+      },
+      {
+        "src": "/web-builds/homefit-api.png",
+        "title": "API documentation",
+        "alt": "API documentation in the original development build"
+      }
+    ],
+    "repositories": [
+      {
+        "label": "Team repository",
+        "url": "https://github.com/FullSailGameStudies/capstone-project-homefit-ai"
+      }
+    ]
+  },
+  {
+    "id": "octo-manager-demo",
+    "category": "Web & software",
+    "title": "Icepik Octo Manager",
+    "description": "The earlier multi-user print-management build, with a demo dashboard, file library, and print workflow screens.",
+    "image": "/web-builds/octo-manager.jpg",
+    "alt": "Icepik Octo Manager project artwork",
+    "date": "2026-09-09",
+    "dateLabel": "Development portfolio",
+    "position": "web",
+    "status": "published",
+    "stage": "Completed",
+    "body": "",
+    "externalUrl": "",
+    "stack": [
+      "React",
+      "Node.js",
+      "MongoDB",
+      "OctoPrint"
+    ],
+    "demoUrl": "https://resume-site-eight-snowy.vercel.app/embedded/icepik-octo-manager",
+    "demoHint": "This is the archived résumé demo. Explore its sample workspace; it is separate from the printers and accounts on this website.",
+    "repositories": [
+      {
+        "label": "View repository",
+        "url": "https://github.com/Icepikd3v/icepik-octo-manager"
+      }
+    ]
+  },
+  {
+    "id": "my-brothers-finds",
+    "category": "Web & software",
+    "title": "MyBrothersFinds",
+    "description": "An archived resale website for vintage finds and used goods. A snapshot of the earlier build, currently described in the résumé as being redeveloped.",
+    "image": "/web-builds/my-brothers-finds.png",
+    "alt": "MyBrothersFinds project artwork",
+    "date": "2026-09-09",
+    "dateLabel": "Development portfolio",
+    "position": "web",
+    "status": "published",
+    "stage": "Completed",
+    "body": "",
+    "externalUrl": "",
+    "stack": [
+      "Web design",
+      "Archived project"
+    ],
+    "screenshots": [
+      {
+        "src": "/web-builds/my-brothers-finds.png",
+        "title": "Resale storefront",
+        "alt": "Resale storefront in the original development build"
+      }
+    ]
   }
 ]

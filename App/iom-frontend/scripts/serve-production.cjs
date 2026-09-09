@@ -40,8 +40,14 @@ const projects = new Set([
   "custom-prints",
   "board-repair",
   "laptop-repair",
-  "dashcam",
   "five-boards",
+  "rick-and-morty-react",
+  "ufc-api",
+  "ready-set-travel",
+  "aotg-transportation",
+  "homefit-ai",
+  "octo-manager-demo",
+  "my-brothers-finds",
 ]);
 function createServer({ apiPort = Number(process.env.API_PORT || 3001) } = {}) {
   const server = http.createServer((req, res) => {
@@ -54,8 +60,12 @@ function createServer({ apiPort = Number(process.env.API_PORT || 3001) } = {}) {
     );
     res.setHeader(
       "Content-Security-Policy",
-      "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'",
+      "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-src 'self' https://resume-site-eight-snowy.vercel.app; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'",
     );
+    if (req.url.startsWith("/demos/ready-set-travel/")) {
+      res.setHeader("X-Frame-Options", "SAMEORIGIN");
+      res.setHeader("Content-Security-Policy", "default-src 'self'; script-src 'self' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'self'; form-action 'none'");
+    }
     const octoprint = /^\/(?:ED1|ED2|cam_ED1|cam_ED2)(?=\/|\?|$)/.test(req.url);
     if (octoprint) {
       res.setHeader("Content-Security-Policy", "frame-ancestors 'self'; object-src 'none'");

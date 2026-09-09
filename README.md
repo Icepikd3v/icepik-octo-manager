@@ -67,6 +67,8 @@ the production preview proxies these requests to the backend on port 3001.
 Both the preview and backend bind to loopback by default. Run both servers to use
 the workspace. No deployment to a public host has occurred.
 
+See [account timestamps, file persistence, and backup requirements](docs/data-storage.md).
+
 Validate the frontend with `npm run build`,
 `CI=true npm test -- --watchAll=false --runInBand --watchman=false`, and
 `npm run test:production` from `App/iom-frontend`.
@@ -119,3 +121,7 @@ See [setup, access rules, and current email limitation](docs/live-admin-and-veri
 
 The admin dashboard also embeds [full native OctoPrint workspaces](docs/octoprint-workspaces.md)
 for both printers, using their existing OctoPrint logins.
+
+### Web development showcase
+
+Selected Work includes embedded web demos and screenshot walkthroughs from the Resume portfolio and AOTG. See [project sources, runtime dependencies, and validation](docs/web-build-showcase.md).

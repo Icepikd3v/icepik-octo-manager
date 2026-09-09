@@ -26,7 +26,7 @@ export default function HomePage() {
       </section>
       <div className="capability-strip">
         <span>ONE STUDIO.<br />CONNECTED CAPABILITIES.</span>
-        <p>3D printing</p><i>+</i><p>Web & software</p><i>+</i><p>Hardware repair</p><i>+</i><p>Security & setup</p>
+        <p>3D printing</p><i>+</i><p>Web & software</p><i>+</i><p>Hardware repair</p>
       </div>
       <HomeCameras />
       <section className="company-section entry-section">
@@ -40,7 +40,7 @@ export default function HomePage() {
             <img src="/printing/IMG_7624.jpg" alt="Blue and black printed helmeted figure, assembled on the workshop printer bed" width="1080" height="1440" loading="lazy" />
           </article>
           <article className="entry-card tech-entry">
-            <div className="entry-copy"><p className="eyebrow">BUILD. REPAIR. CONNECT.</p><h3>Technology that<br />works for you.</h3><p>A web application, a software idea, hardware that needs attention, or a security-system setup. Start with what you need.</p>
+            <div className="entry-copy"><p className="eyebrow">BUILD. REPAIR. CONNECT.</p><h3>Technology that<br />works for you.</h3><p>A web application, a software idea, hardware that needs attention, or another tech question. Start with what you need.</p>
               <Link className="button secondary" to="/contact">Tell us about the job ↗</Link>
               <Link className="text-link" to="/services">Explore technology services →</Link>
             </div><span className="entry-circuit" aria-hidden="true">[ IR / TECH ]</span>

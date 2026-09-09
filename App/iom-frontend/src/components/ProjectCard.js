@@ -4,7 +4,7 @@ export default function ProjectCard({ project }) {
     <article className="project-card">
       <Link
         to={`/work/${project.id}`}
-        className={`project-image photo-window crop-${project.position}`}
+        className={`project-image ${project.position === "web" ? "project-artwork" : "photo-window"} crop-${project.position}`}
         aria-label={`View project: ${project.title}`}
       >
         <img
@@ -15,7 +15,7 @@ export default function ProjectCard({ project }) {
         />
       </Link>
       <div className="project-caption">
-        <span className="eyebrow">{project.category}</span>
+        <span className="eyebrow">{project.category}{project.demoUrl ? " / TRY THE DEMO" : project.screenshots ? " / SCREENSHOTS" : ""}</span>
         <Link to={`/work/${project.id}`}>
           <h3>
             {project.title} <span aria-hidden="true">↗</span>

@@ -20,11 +20,11 @@ export default function Work() {
           to the workbench.
         </h1>
         <p className="lead">
-          A look at real IronRoot projects, from workshop photos to finished results.
-          Practical fixes, custom prints, and the work that connects them.
+          Explore web builds, try interactive demos, and browse the work behind our apps, repairs, and custom prints.
+          Choose a thumbnail to take a closer look.
         </p>
         <div className="work-filters" role="group" aria-label="Filter projects">
-          {["All work", "3D printing", "Electronics", "Installations", "Web & software"].map(
+          {["All work", "3D printing", "Electronics", "Web & software"].map(
             (f) => (
               <button
                 key={f}
@@ -51,8 +51,7 @@ export default function Work() {
             <p className="eyebrow">WEB DEVELOPMENT & DESIGN</p>
             <h2>Built for the browser. Designed for people.</h2>
             <p>
-              Our work also includes custom web development and the evolving
-              IronRoot print platform.
+              From API explorers to transportation workflows, these builds show how we turn ideas into useful software.
             </p>
             <div className="hero-actions">
               <a className="text-link" href={RESUME_URL} target="_blank" rel="noopener noreferrer">Samuel’s résumé & development portfolio ↗</a>

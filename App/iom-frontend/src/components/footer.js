@@ -26,7 +26,6 @@ export default function Footer() {
           <Link to="/services#web">Web & applications</Link>
           <Link to="/services#repair">Technology & repair</Link>
           <Link to="/3d-printing">3D printing</Link>
-          <Link to="/services#security">Security & setup</Link>
         </div>
         <div>
           <h2>Let’s connect</h2>

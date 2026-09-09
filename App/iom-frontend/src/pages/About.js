@@ -14,7 +14,7 @@ export default function About() {
         </h1>
         <p className="lead">
           IronRoot brings web development, practical technology support, and
-          custom fabrication together with hardware repair and connected-system setup.
+          custom fabrication together with hardware repair and general tech support.
         </p>
       </section>
       <section className="about-split">
@@ -39,7 +39,7 @@ export default function About() {
           </p>
           <p>
             Sometimes the answer is a better application. Sometimes it is a
-            repaired board, a thoughtful installation, or a custom part. We
+            repaired board, a resolved tech issue, or a custom part. We
             start by understanding what you need.
           </p>
           <Link className="text-link" to="/work">

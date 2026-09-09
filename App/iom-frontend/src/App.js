@@ -5,6 +5,7 @@ import { ProjectsProvider } from "./hooks/useProjects";
 import Header from "./components/header";
 import Navbar from "./components/navbar";
 import Footer from "./components/footer";
+import TechBackground from "./components/TechBackground";
 import AppRoutes from "./routes/routes";
 import useAuth, { AuthProvider } from "./hooks/useAuth";
 import { errorMessage } from "./utils/api";
@@ -49,6 +50,7 @@ function AppShell() {
   }, [location.pathname, location.hash, workspace]);
   return (
     <div className="app-shell">
+      <TechBackground />
       <a className="skip-link" href="#main">
         Skip to content
       </a>

@@ -1,6 +1,7 @@
 import { Link, useParams } from "react-router-dom";
 import useProjects from "../hooks/useProjects";
 import { FACEBOOK_URL } from "../data/company";
+import BuildShowcase from "../components/BuildShowcase";
 import PrintingGallery from "../components/PrintingGallery";
 import NotFound from "./NotFound";
 export default function Project() {
@@ -15,13 +16,13 @@ export default function Project() {
       <Link className="text-link" to="/work">
         ← Selected work
       </Link>
-      <p className="eyebrow">{project.category} / WORKSHOP JOURNAL</p>
+      <p className="eyebrow">{project.category} / {project.position === "web" ? "BUILD SHOWCASE" : "WORKSHOP JOURNAL"}</p>
       <h1>{project.title}</h1>
       <p className="lead">{project.description}</p>
       <p className="project-date">
-        {project.gallery ? "The IronRoot workshop photo collection" : `Shared by IronRoot Solutions · ${project.date}`}
+        {project.dateLabel || (project.gallery ? "The IronRoot workshop photo collection" : `Shared by IronRoot Solutions · ${project.date}`)}
       </p>
-      {project.gallery ? <PrintingGallery /> : <figure>
+      {project.position === "web" ? <BuildShowcase key={project.id} project={project} /> : project.gallery ? <PrintingGallery /> : <figure>
         <img src={project.image} alt={project.alt} />
         <figcaption>
           {project.legacy ? "Original company post supplied from Facebook. Any prices shown belong to that historical project; current projects are quoted individually." : project.alt}
@@ -35,7 +36,7 @@ export default function Project() {
       </details>}
       {project.body && <div className="project-story">{project.body}</div>}
       <div className="hero-actions">
-        {project.externalUrl && <a className="text-link" href={project.externalUrl} target="_blank" rel="noopener noreferrer">Related project / résumé ↗</a>}
+        {project.externalUrl && <a className="text-link" href={project.externalUrl} target="_blank" rel="noopener noreferrer">Open project website ↗</a>}
         <Link className="button" to="/contact">
           Have a similar project? ↗
         </Link>
